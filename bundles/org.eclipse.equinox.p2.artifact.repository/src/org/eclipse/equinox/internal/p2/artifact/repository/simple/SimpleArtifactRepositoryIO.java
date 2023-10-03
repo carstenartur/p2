@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2022 IBM Corporation and others.
+ * Copyright (c) 2007, 2023 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -29,8 +29,7 @@ import org.eclipse.equinox.internal.p2.persistence.XMLWriter;
 import org.eclipse.equinox.p2.core.IProvisioningAgent;
 import org.eclipse.equinox.p2.core.ProvisionException;
 import org.eclipse.equinox.p2.metadata.*;
-import org.eclipse.equinox.p2.repository.artifact.IArtifactRepository;
-import org.eclipse.equinox.p2.repository.artifact.IProcessingStepDescriptor;
+import org.eclipse.equinox.p2.repository.artifact.*;
 import org.eclipse.equinox.p2.repository.artifact.spi.ProcessingStepDescriptor;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.osgi.util.NLS;
@@ -544,10 +543,16 @@ public class SimpleArtifactRepositoryIO {
 				}
 			}
 
+			@SuppressWarnings("removal")
 			@Override
 			protected void finished() {
 				if (isValidXML() && currentArtifact != null) {
 					Map<String, String> properties = (propertiesHandler == null ? new OrderedProperties(0) : propertiesHandler.getProperties());
+					String format = properties.get(IArtifactDescriptor.FORMAT);
+					if (format != null && format.equals(IArtifactDescriptor.FORMAT_PACKED)) {
+						// ignore packed artifacts as they can no longer be handled at all
+						return;
+					}
 					currentArtifact.addProperties(properties);
 
 					properties = (repositoryPropertiesHandler == null ? new OrderedProperties(0) : repositoryPropertiesHandler.getProperties());

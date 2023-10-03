@@ -330,11 +330,13 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 		this.artifactDescriptors.addAll(artifacts);
 		this.mappingRules = mappingRules;
 		for (SimpleArtifactDescriptor desc : artifactDescriptors)
-			mapDescriptor(desc);
+			mapDescriptor(desc, false);
 	}
 
-	private synchronized void mapDescriptor(SimpleArtifactDescriptor descriptor) {
-		addedDescriptors.add(descriptor);
+	private synchronized void mapDescriptor(SimpleArtifactDescriptor descriptor, boolean added) {
+		if (added) {
+			addedDescriptors.add(descriptor);
+		}
 		IArtifactKey key = descriptor.getArtifactKey();
 		if (snapshotNeeded) {
 			cloneAritfactMap();
@@ -410,7 +412,7 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 
 			SimpleArtifactDescriptor internalDescriptor = createInternalDescriptor(toAdd);
 			artifactDescriptors.add(internalDescriptor);
-			mapDescriptor(internalDescriptor);
+			mapDescriptor(internalDescriptor, true);
 			save();
 		} finally {
 			if (lockAcquired)
@@ -455,7 +457,7 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 					continue;
 				SimpleArtifactDescriptor internalDescriptor = createInternalDescriptor(descriptor);
 				artifactDescriptors.add(internalDescriptor);
-				mapDescriptor(internalDescriptor);
+				mapDescriptor(internalDescriptor, true);
 			}
 			save();
 		} finally {
@@ -1322,7 +1324,7 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 						jarFile.createNewFile();
 					}
 					os = new JarOutputStream(new FileOutputStream(jarFile));
-					((JarOutputStream) os).putNextEntry(new JarEntry(new Path(artifactsFile.getAbsolutePath()).lastSegment()));
+					((JarOutputStream) os).putNextEntry(new JarEntry(IPath.fromOSString(artifactsFile.getAbsolutePath()).lastSegment()));
 				}
 				super.setProperty(IRepository.PROP_TIMESTAMP, Long.toString(System.currentTimeMillis()), new NullProgressMonitor());
 				new SimpleArtifactRepositoryIO(getProvisioningAgent()).write(this, os);
@@ -1381,7 +1383,7 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 			synchronized (SimpleArtifactRepository.this) {
 				snapshotNeeded = true;
 				Collection<List<IArtifactDescriptor>> descs = SimpleArtifactRepository.this.artifactMap.values();
-				return query.perform(new CompoundIterator<IArtifactDescriptor>(descs.iterator()));
+				return query.perform(new CompoundIterator<>(descs.iterator()));
 			}
 		};
 	}

@@ -17,7 +17,8 @@ import java.io.*;
 import java.util.*;
 import java.util.jar.JarFile;
 import java.util.zip.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.osgi.util.NLS;
 
 public class FileUtils {
@@ -287,7 +288,7 @@ public class FileUtils {
 	 * @throws IOException
 	 */
 	public static void zip(ZipOutputStream output, File source, Set<File> exclusions, IPathComputer pathComputer) throws IOException {
-		zip(output, source, exclusions, pathComputer, new HashSet<IPath>());
+		zip(output, source, exclusions, pathComputer, new HashSet<>());
 	}
 
 	public static void zip(ZipOutputStream output, File source, Set<File> exclusions, IPathComputer pathComputer, Set<IPath> directoryEntries) throws IOException {
@@ -340,8 +341,8 @@ public class FileUtils {
 		// foo/something/bar2.txt
 		// foo/something/else/bar3.txt
 		Arrays.sort(files, (arg0, arg1) -> {
-			Path a = new Path(arg0.getAbsolutePath());
-			Path b = new Path(arg1.getAbsolutePath());
+			IPath a = IPath.fromOSString(arg0.getAbsolutePath());
+			IPath b = IPath.fromOSString(arg1.getAbsolutePath());
 			if (a.segmentCount() == b.segmentCount()) {
 				if (arg0.isDirectory() && arg1.isFile())
 					return 1;
@@ -396,7 +397,7 @@ public class FileUtils {
 		}
 
 		if (isManifest) {
-			zipDirectoryEntry(output, new Path("META-INF"), source.lastModified(), directoryEntries); //$NON-NLS-1$
+			zipDirectoryEntry(output, IPath.fromOSString("META-INF"), source.lastModified(), directoryEntries); //$NON-NLS-1$
 		}
 	}
 
@@ -432,8 +433,8 @@ public class FileUtils {
 		return new IPathComputer() {
 			@Override
 			public IPath computePath(File source) {
-				IPath result = new Path(source.getAbsolutePath());
-				IPath rootPath = new Path(root.getAbsolutePath());
+				IPath result = IPath.fromOSString(source.getAbsolutePath());
+				IPath rootPath = IPath.fromOSString(root.getAbsolutePath());
 				result = result.removeFirstSegments(rootPath.matchingFirstSegments(result));
 				return result.setDevice(null);
 			}
@@ -472,7 +473,7 @@ public class FileUtils {
 			@Override
 			public IPath computePath(File source) {
 				if (computer == null) {
-					IPath sourcePath = new Path(source.getAbsolutePath());
+					IPath sourcePath = IPath.fromOSString(source.getAbsolutePath());
 					sourcePath = sourcePath.removeLastSegments(segmentsToKeep);
 					computer = createRootPathComputer(sourcePath.toFile());
 				}
@@ -495,7 +496,7 @@ public class FileUtils {
 		return new IPathComputer() {
 			@Override
 			public IPath computePath(File source) {
-				IPath sourcePath = new Path(source.getAbsolutePath());
+				IPath sourcePath = IPath.fromOSString(source.getAbsolutePath());
 				sourcePath = sourcePath.removeFirstSegments(Math.max(0, sourcePath.segmentCount() - segmentsToKeep));
 				return sourcePath.setDevice(null);
 			}

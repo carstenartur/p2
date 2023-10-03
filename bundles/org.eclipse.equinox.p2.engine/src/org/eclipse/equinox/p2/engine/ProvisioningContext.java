@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2008, 2017 IBM Corporation and others.
+ *  Copyright (c) 2008, 2023 IBM Corporation and others.
  *
  *  This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License 2.0
@@ -40,7 +40,7 @@ import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
 public class ProvisioningContext {
 	private IProvisioningAgent agent;
 	private URI[] artifactRepositories; //artifact repositories to consult
-	private final List<IInstallableUnit> extraIUs = Collections.synchronizedList(new ArrayList<IInstallableUnit>());
+	private final List<IInstallableUnit> extraIUs = Collections.synchronizedList(new ArrayList<>());
 	private URI[] metadataRepositories; //metadata repositories to consult
 	private final Map<String, String> properties = new HashMap<>();
 	private Map<String, URI> referencedArtifactRepositories = null;
@@ -63,6 +63,11 @@ public class ProvisioningContext {
 		@Override
 		public IQueryResult<IArtifactRepository> query(IQuery<IArtifactRepository> query, IProgressMonitor mon) {
 			return query.perform(repositories.listIterator());
+		}
+
+		@Override
+		public boolean contains(IArtifactRepository element) {
+			return repositories.contains(element);
 		}
 	}
 
@@ -171,9 +176,9 @@ public class ProvisioningContext {
 		Arrays.sort(repositories, LOCAL_FIRST_COMPARATOR);
 
 		List<IArtifactRepository> repos = new ArrayList<>();
-		SubMonitor sub = SubMonitor.convert(monitor, (repositories.length + 1) * 100);
+		SubMonitor sub = SubMonitor.convert(monitor, repositories.length + 1);
 		for (URI location : repositories) {
-			getLoadedRepository(location, repoManager, repos, sub);
+			getLoadedRepository(location, repoManager, repos, sub.split(1));
 			// Remove this URI from the list of extra references if it is there.
 			if (referencedArtifactRepositories != null && location != null) {
 				referencedArtifactRepositories.remove(location.toString());
@@ -181,25 +186,23 @@ public class ProvisioningContext {
 		}
 		// Are there any extra artifact repository references to consider?
 		if (referencedArtifactRepositories != null && referencedArtifactRepositories.size() > 0 && shouldFollowArtifactReferences()) {
-			SubMonitor innerSub = SubMonitor.convert(sub.newChild(100), referencedArtifactRepositories.size() * 100);
+			SubMonitor innerSub = SubMonitor.convert(sub.split(1), referencedArtifactRepositories.size());
 			for (URI referencedURI : referencedArtifactRepositories.values()) {
-				getLoadedRepository(referencedURI, repoManager, repos, innerSub);
+				getLoadedRepository(referencedURI, repoManager, repos, innerSub.split(1));
 			}
 		}
 		return repos;
 	}
 
-	private void getLoadedRepository(URI location, IArtifactRepositoryManager repoManager, List<IArtifactRepository> repos, SubMonitor monitor) {
-		if (monitor.isCanceled()) {
-			throw new OperationCanceledException();
-		}
+	private void getLoadedRepository(URI location, IArtifactRepositoryManager repoManager,
+			List<IArtifactRepository> repos, IProgressMonitor monitor) {
 		if (failedArtifactRepositories.contains(location)) {
 			return;
 		}
 		try {
 			IArtifactRepository repository = loadedArtifactRepositories.get(location);
 			if (repository == null) {
-				repository = repoManager.loadRepository(location, monitor.newChild(100));
+				repository = repoManager.loadRepository(location, monitor);
 				loadedArtifactRepositories.put(location, repository);
 			}
 			repos.add(repository);
@@ -213,37 +216,31 @@ public class ProvisioningContext {
 		IMetadataRepositoryManager repoManager = agent.getService(IMetadataRepositoryManager.class);
 		URI[] repositories = metadataRepositories == null ? repoManager.getKnownRepositories(IRepositoryManager.REPOSITORIES_ALL) : metadataRepositories;
 
-		HashMap<String, IMetadataRepository> repos = new HashMap<>();
-		SubMonitor sub = SubMonitor.convert(monitor, repositories.length * 100);
+		Map<String, IMetadataRepository> repos = new HashMap<>();
+		SubMonitor sub = SubMonitor.convert(monitor, repositories.length);
 
 		// Clear out the list of remembered artifact repositories
 		referencedArtifactRepositories = new HashMap<>();
 		for (URI repositorie : repositories) {
-			if (sub.isCanceled())
-				throw new OperationCanceledException();
-			loadMetadataRepository(repoManager, repositorie, repos, shouldFollowReferences(), sub.newChild(100));
+			loadMetadataRepository(repoManager, repositorie, repos, shouldFollowReferences(), sub.split(1));
 		}
-		Set<IMetadataRepository> set = new HashSet<>();
-		set.addAll(repos.values());
-		return set;
+		return new HashSet<>(repos.values());
 	}
 
-	private void loadMetadataRepository(IMetadataRepositoryManager manager, URI location, HashMap<String, IMetadataRepository> repos, boolean followMetadataRepoReferences, IProgressMonitor monitor) {
-		if (monitor.isCanceled()) {
-			throw new OperationCanceledException();
-		}
+	private void loadMetadataRepository(IMetadataRepositoryManager manager, URI location,
+			Map<String, IMetadataRepository> repos, boolean followMetadataRepoReferences, IProgressMonitor monitor) {
 		// if we've already processed this repo, don't do it again.  This keeps us from getting
 		// caught up in circular references.
 		if (repos.containsKey(location.toString()) || failedMetadataRepositories.contains(location)) {
 			return;
 		}
 
-		SubMonitor sub = SubMonitor.convert(monitor, 1000);
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
 		// First load the repository itself.
 		IMetadataRepository repository = loadedMetadataRepositories.get(location);
 		if (repository == null) {
 			try {
-				repository = manager.loadRepository(location, sub.newChild(500));
+				repository = manager.loadRepository(location, subMonitor.split(1));
 				loadedMetadataRepositories.put(location, repository);
 			} catch (ProvisionException e) {
 				failedMetadataRepositories.add(location);
@@ -254,25 +251,22 @@ public class ProvisioningContext {
 		Collection<IRepositoryReference> references = repository.getReferences();
 		// We always load artifact repositories referenced by this repository.  We might load
 		// metadata repositories
-		if (references.size() > 0) {
+		if (!references.isEmpty()) {
 			IArtifactRepositoryManager artifactManager = agent.getService(IArtifactRepositoryManager.class);
-			SubMonitor repoSubMon = SubMonitor.convert(sub.newChild(500), 100 * references.size());
+			SubMonitor repoMon = SubMonitor.convert(subMonitor.split(1), references.size());
 			for (IRepositoryReference ref : references) {
 				try {
 					if (ref.getType() == IRepository.TYPE_METADATA && followMetadataRepoReferences && isEnabled(manager, ref)) {
-						loadMetadataRepository(manager, ref.getLocation(), repos, followMetadataRepoReferences, repoSubMon.newChild(100));
-					} else if (ref.getType() == IRepository.TYPE_ARTIFACT) {
+						loadMetadataRepository(manager, ref.getLocation(), repos, followMetadataRepoReferences, repoMon.split(1));
+					} else if (ref.getType() == IRepository.TYPE_ARTIFACT && isEnabled(artifactManager, ref)) {
 						// We want to remember all enabled artifact repository locations.
-						if (isEnabled(artifactManager, ref))
-							referencedArtifactRepositories.put(ref.getLocation().toString(), ref.getLocation());
+						referencedArtifactRepositories.put(ref.getLocation().toString(), ref.getLocation());
 					}
 				} catch (IllegalArgumentException e) {
 					// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=311338
 					// ignore invalid location and keep going
 				}
 			}
-		} else {
-			sub.done();
 		}
 
 	}
@@ -350,84 +344,72 @@ public class ProvisioningContext {
 		}
 	}
 
-	private interface Manager<T> {
-		T loadRepository(URI location, IProgressMonitor monitor) throws ProvisionException;
-	}
-
 	private Collection<IMetadataRepository> getAllLoadedMetadataRepositories(IProgressMonitor monitor) {
 		if (allLoadedMetadataRepositories == null) {
+			SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
 			var repoManager = agent.getService(IMetadataRepositoryManager.class);
-			getLoadedMetadataRepositories(monitor);
-			allLoadedMetadataRepositories = getAllLoadedRepositories(repoManager::loadRepository,
-					loadedMetadataRepositories, failedMetadataRepositories, monitor);
+			getLoadedMetadataRepositories(subMonitor.split(1));
+			allLoadedMetadataRepositories = getAllLoadedRepositories(repoManager,
+					loadedMetadataRepositories, failedMetadataRepositories, subMonitor.split(1));
 		}
 		return allLoadedMetadataRepositories.values();
 	}
 
 	private Collection<IArtifactRepository> getAllLoadedArtifactRepositories(IProgressMonitor monitor) {
 		if (allLoadedArtifactRepositories == null) {
+			SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
 			var repoManager = agent.getService(IArtifactRepositoryManager.class);
-			getLoadedArtifactRepositories(monitor);
-			allLoadedArtifactRepositories = getAllLoadedRepositories(repoManager::loadRepository,
-					loadedArtifactRepositories, failedArtifactRepositories, monitor);
+			getLoadedArtifactRepositories(subMonitor.split(1));
+			allLoadedArtifactRepositories = getAllLoadedRepositories(repoManager,
+					loadedArtifactRepositories, failedArtifactRepositories, subMonitor.split(1));
 		}
 		return allLoadedArtifactRepositories.values();
 	}
 
-	private <T> Map<URI, T> getAllLoadedRepositories(Manager<T> manager,
-			Map<URI, T> loadedRepositories,
-			Set<URI> failedRepositories,
-			IProgressMonitor monitor) {
+	private <T, R extends IRepository<T>> Map<URI, R> getAllLoadedRepositories(IRepositoryManager<T> manager,
+			Map<URI, R> loadedRepositories, Set<URI> failedRepositories, IProgressMonitor monitor) {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, loadedRepositories.size());
 		var allLoadedRepositories = new HashMap<>(loadedRepositories);
-		if (!loadedRepositories.isEmpty()) {
-			for (var repository : loadedRepositories.values()) {
-				loadComposites(manager, repository, allLoadedRepositories, failedRepositories, monitor);
-				if (monitor.isCanceled()) {
-					throw new OperationCanceledException();
-				}
-			}
+		for (var repository : loadedRepositories.values()) {
+			loadComposites(manager, repository, allLoadedRepositories, failedRepositories, subMonitor.split(1));
 		}
 		return allLoadedRepositories;
 	}
 
-	private <T> void loadComposites(Manager<T> manager, T repository, Map<URI, T> repos, Set<URI> failedRepositories,
-			IProgressMonitor monitor) {
+	private <T, R extends IRepository<T>> void loadComposites(IRepositoryManager<T> manager, R repository,
+			Map<URI, R> repos, Set<URI> failedRepositories, IProgressMonitor monitor) {
 		if (repository instanceof ICompositeRepository<?> composite) {
-			for (var location : composite.getChildren()) {
-				loadRepository(manager, location, repos, failedRepositories, monitor);
+			List<URI> children = composite.getChildren();
+			SubMonitor subMonitor = SubMonitor.convert(monitor, children.size());
+			for (var location : children) {
+				loadRepository(manager, location, repos, failedRepositories, subMonitor.split(1));
 			}
 		}
 	}
 
-	private <T> void loadRepository(Manager<T> manager, URI location, Map<URI, T> repos,
-			Set<URI> failedRepositories, IProgressMonitor monitor) {
-		if (monitor.isCanceled()) {
-			throw new OperationCanceledException();
-		}
+	private <T, R extends IRepository<T>> void loadRepository(IRepositoryManager<T> manager, URI location,
+			Map<URI, R> repos, Set<URI> failedRepositories,
+			IProgressMonitor monitor) {
+		SubMonitor subMonitor = SubMonitor.convert(monitor, 2);
 
-		if (repos.containsKey(location) || failedMetadataRepositories.contains(location)) {
+		if (failedMetadataRepositories.contains(location)) {
 			return;
 		}
-
-		var repository = repos.get(location);
-		if (repository == null) {
+		if (!repos.containsKey(location)) { // A previous attempt may have failed
 			try {
-				repository = manager.loadRepository(location, monitor);
+				@SuppressWarnings("unchecked")
+				R repository = (R) manager.loadRepository(location, subMonitor.split(1));
 				repos.put(location, repository);
-				loadComposites(manager, repository, repos, failedRepositories, monitor);
+				loadComposites(manager, repository, repos, failedRepositories, subMonitor.split(1));
 			} catch (ProvisionException e) {
 				failedMetadataRepositories.add(location);
-				return;
 			}
 		}
 	}
 
-	private static Comparator<IArtifactKey> ARTIFACT_KEY_COMPARATOR = (o1, o2) -> {
-		var cmp = o1.getId().compareTo(o2.getId());
-		if (cmp == 0)
-			cmp = o1.getVersion().compareTo(o2.getVersion());
-		return cmp;
-	};
+	private static final Comparator<IArtifactKey> ARTIFACT_KEY_COMPARATOR = Comparator //
+			.comparing(IArtifactKey::getId) //
+			.thenComparing(IArtifactKey::getVersion);
 
 	/**
 	 * Returns a map from simple artifact repository location to a subset of the
