@@ -44,7 +44,7 @@ public abstract class RepositoryTracker {
 	/**
 	 * List<URI> of repositories that have already been reported to the user as not found.
 	 */
-	private final List<URI> reposNotFound = Collections.synchronizedList(new ArrayList<>());
+	private final Set<URI> reposNotFound = Collections.synchronizedSet(new LinkedHashSet<>());
 
 	/**
 	 * Return an array of repository locations known for the specified provisioning session.
@@ -189,7 +189,6 @@ public abstract class RepositoryTracker {
 	 * a repository manager
 	 * 
 	 * @return the repository flags
-	 * 
 	 */
 	public int getArtifactRepositoryFlags() {
 		return artifactRepositoryFlags;
@@ -200,7 +199,6 @@ public abstract class RepositoryTracker {
 	 * a repository manager
 	 * 
 	 * @param flags the repository flags
-	 * 
 	 */
 	public void setArtifactRepositoryFlags(int flags) {
 		artifactRepositoryFlags = flags;
@@ -211,7 +209,6 @@ public abstract class RepositoryTracker {
 	 * a repository manager
 	 * 
 	 * @return the repository flags
-	 * 
 	 */
 	public int getMetadataRepositoryFlags() {
 		return metadataRepositoryFlags;
@@ -222,7 +219,6 @@ public abstract class RepositoryTracker {
 	 * a repository manager
 	 * 
 	 * @param flags the repository flags
-	 * 
 	 */
 
 	public void setMetadataRepositoryFlags(int flags) {

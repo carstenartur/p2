@@ -51,7 +51,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
  * @noextend This class is not intended to be subclassed by clients.
  * @noinstantiate This class is not intended to be instantiated by clients.
  * @since 2.0
- *
  */
 public class InstalledSoftwarePage extends InstallationPage implements ICopyable {
 
@@ -153,8 +152,9 @@ public class InstalledSoftwarePage extends InstallationPage implements ICopyable
 			@Override
 			public void run() {
 				super.run();
-				if (getReturnCode() == Window.OK)
-					getPageContainer().closeModalContainers();
+				if (getReturnCode() == Window.OK) {
+					closeModalContainers();
+				}
 			}
 		};
 		updateAction.setSkipSelectionPage(true);
@@ -165,8 +165,9 @@ public class InstalledSoftwarePage extends InstallationPage implements ICopyable
 			@Override
 			public void run() {
 				super.run();
-				if (getReturnCode() == Window.OK)
-					getPageContainer().closeModalContainers();
+				if (getReturnCode() == Window.OK) {
+					closeModalContainers();
+				}
 			}
 		};
 		uninstallButton = createButton(parent, UNINSTALL_ID, uninstallAction.getText());
@@ -189,6 +190,10 @@ public class InstalledSoftwarePage extends InstallationPage implements ICopyable
 		installedIUGroup.getStructuredViewer().addFilter(searchFilter);
 
 		updateEnablement();
+	}
+
+	private void closeModalContainers() {
+		getPageContainer().closeModalContainers();
 	}
 
 	void updateDetailsArea() {

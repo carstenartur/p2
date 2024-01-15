@@ -68,7 +68,7 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 	static IProvisioningAgent agent = null;
 	protected Button updateToLatest;
 
-	public static final String REMIND_ME_LATER = "remindMeToMigrateLater";
+	public static final String REMIND_ME_LATER = "remindMeToMigrateLater"; //$NON-NLS-1$
 
 	IProfile profile = null;
 
@@ -90,7 +90,6 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 	 * runClearPlaceholderJob and DelayedFilterCheckboxTree.doCreateRefreshJob().new
 	 * JobChangeAdapter() {...}.done(IJobChangeEvent) has timing issue, I can't find
 	 * a way to guarantee the first job is executed firstly
-	 *
 	 */
 	final class ImportExportFilteredTree extends FilteredTree {
 		ArrayList<Object> checkState = new ArrayList<>();
@@ -945,7 +944,7 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		IScopeContext[] contexts = new IScopeContext[] { InstanceScope.INSTANCE, DefaultScope.INSTANCE,
 				BundleDefaultsScope.INSTANCE, ConfigurationScope.INSTANCE };
 		boolean updateToLatest = Platform.getPreferencesService().getBoolean(AutomaticUpdatePlugin.PLUGIN_ID,
-				"updateToLatest", false, contexts);
+				"updateToLatest", false, contexts); //$NON-NLS-1$
 		return updateToLatest;
 	}
 

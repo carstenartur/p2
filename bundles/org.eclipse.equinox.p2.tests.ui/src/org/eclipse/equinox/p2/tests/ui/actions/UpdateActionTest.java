@@ -20,12 +20,13 @@ import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 
 /**
  * @since 3.5
- *
  */
 public class UpdateActionTest extends ProfileModificationActionTest {
 	class TestUpdateAction extends UpdateAction {
+		@SuppressWarnings("synthetic-access")
 		TestUpdateAction(Object[] sel) {
-			super(UpdateActionTest.this.getProvisioningUI(), UpdateActionTest.this.getSelectionProvider(sel), profile.getProfileId(), true);
+			super(UpdateActionTest.this.getProvisioningUI(), UpdateActionTest.this.getSelectionProvider(sel),
+					profile.getProfileId(), true);
 		}
 
 		@Override

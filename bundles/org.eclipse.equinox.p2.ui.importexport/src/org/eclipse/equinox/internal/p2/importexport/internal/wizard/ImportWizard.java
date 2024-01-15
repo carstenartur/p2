@@ -88,16 +88,14 @@ public class ImportWizard extends InstallWizard implements IImportWizard {
 	 * Recompute the provisioning plan based on the items in the IUElementListRoot
 	 * and the given provisioning context. Report progress using the specified
 	 * runnable context. This method may be called before the page is created.
-	 *
-	 * @param runnableContext
 	 */
 	@Override
 	public void recomputePlan(IRunnableContext runnableContext, final boolean withRemediation) {
 		if (((ImportPage) mainPage).hasUnloadedRepo()) {
 			try {
 				runnableContext.run(true, true, monitor -> {
-					final SubMonitor sub = SubMonitor.convert(monitor, 1000);
-					((ImportPage) mainPage).recompute(sub.newChild(800));
+					final SubMonitor sub = SubMonitor.convert(monitor, withRemediation ? 15 : 10);
+					((ImportPage) mainPage).recompute(sub.newChild(8));
 					if (sub.isCanceled())
 						throw new InterruptedException();
 					Display.getDefault().syncExec(() -> {
@@ -127,12 +125,12 @@ public class ImportWizard extends InstallWizard implements IImportWizard {
 					});
 					if (sub.isCanceled())
 						throw new InterruptedException();
-					if (operation.resolveModal(sub.newChild(200)).getSeverity() == IStatus.CANCEL)
+					if (operation.resolveModal(sub.newChild(2)).getSeverity() == IStatus.CANCEL)
 						throw new InterruptedException();
 					if (withRemediation) {
 						IStatus status = operation.getResolutionResult();
 						if (remediationPage != null && shouldRemediate(status)) {
-							computeRemediationOperation(operation, ui, monitor);
+							computeRemediationOperation(operation, ui, sub.newChild(5));
 						}
 					}
 					Display.getDefault().asyncExec(this::planChanged);

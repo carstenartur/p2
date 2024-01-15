@@ -19,8 +19,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.PrintStream;
-import java.net.MalformedURLException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -29,12 +29,19 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.equinox.internal.p2.director.app.DirectorApplication;
 import org.eclipse.equinox.internal.simpleconfigurator.utils.URIUtil;
 import org.eclipse.equinox.p2.core.ProvisionException;
-import org.eclipse.equinox.p2.core.UIServices;
 import org.eclipse.equinox.p2.core.UIServices.TrustInfo;
+import org.eclipse.equinox.p2.metadata.IArtifactKey;
 import org.eclipse.equinox.p2.repository.IRepositoryManager;
 import org.eclipse.equinox.p2.repository.artifact.IArtifactRepositoryManager;
 import org.eclipse.equinox.p2.repository.metadata.IMetadataRepositoryManager;
@@ -42,17 +49,17 @@ import org.eclipse.equinox.p2.tests.AbstractProvisioningTest;
 import org.eclipse.equinox.p2.tests.StringBufferStream;
 
 /**
- * Various automated tests of the {@link IDirector} API.
+ * Various automated tests of the {@link DirectorApplication} API.
  */
 public class DirectorApplicationTest extends AbstractProvisioningTest {
 
 	/**
 	 * runs default director app.
 	 */
-	private StringBuffer runDirectorApp(String message, final String[] args) throws Exception {
+	private StringBuilder runDirectorApp(String message, final String[] args) throws Exception {
 		PrintStream out = System.out;
 		PrintStream err = System.err;
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		try {
 			PrintStream newStream = new PrintStream(new StringBufferStream(buffer));
 			System.setOut(newStream);
@@ -70,13 +77,8 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	 * creates the director app arguments based on the arguments submitted with bug 248045
 	 */
 	private String[] getSingleRepoUninstallArgs(String message, File srcRepo, File destinationRepo, String installIU) {
-		String[] args = new String[0];
-		try {
-			args = new String[] {"-repository", srcRepo.toURL().toExternalForm(), "-uninstallIU", installIU, "-destination", destinationRepo.toURL().toExternalForm(), "-profile", "PlatformSDKProfile"};
-		} catch (MalformedURLException e) {
-			fail(message, e);
-		}
-		return args;
+		return new String[] { "-repository", srcRepo.toURI().toString(), "-uninstallIU", installIU, "-destination",
+				destinationRepo.toURI().toString(), "-profile", "PlatformSDKProfile" };
 	}
 
 	/**
@@ -104,13 +106,12 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	 * creates the director app arguments based on the arguments submitted with bug 248045 but with multiple repositories for both  metadata and artifacts
 	 */
 	private String[] getMultipleRepoArgs(String message, File metadataRepo1, File metadataRepo2, File artifactRepo1, File artifactRepo2, File destinationRepo, String installIU) {
-		String[] args = new String[0];
-		try {
-			args = new String[] {"-metadataRepository", metadataRepo1.toURL().toExternalForm() + "," + metadataRepo2.toURL().toExternalForm(), "-artifactRepository", artifactRepo1.toURL().toExternalForm() + "," + artifactRepo2.toURL().toExternalForm(), "-installIU", installIU, "-destination", destinationRepo.toURL().toExternalForm(), "-profile", "PlatformSDKProfile", "-profileProperties", "org.eclipse.update.install.features=true", "-bundlepool", destinationRepo.getAbsolutePath(), "-roaming"};
-		} catch (MalformedURLException e) {
-			fail(message, e);
-		}
-		return args;
+		return new String[] { "-metadataRepository",
+				metadataRepo1.toURI().toString() + "," + metadataRepo2.toURI().toString(), "-artifactRepository",
+				artifactRepo1.toURI().toString() + "," + artifactRepo2.toURI().toString(), "-installIU", installIU,
+				"-destination", destinationRepo.toURI().toString(), "-profile", "PlatformSDKProfile",
+				"-profileProperties", "org.eclipse.update.install.features=true", "-bundlepool",
+				destinationRepo.getAbsolutePath(), "-roaming" };
 	}
 
 	/**
@@ -131,7 +132,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: use default arguments
 		String[] args = getSingleRepoArgs("1.0", metadataRepo, artifactRepo, destinationRepo, installIU);
 
-		StringBuffer outputBuffer = null;
+		StringBuilder outputBuffer = null;
 		try {
 			outputBuffer = runDirectorApp("1.1", args);
 		} catch (ProvisionException e) {
@@ -177,7 +178,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: use default arguments
 		String[] args = getSingleRepoArgs("2.1", metadataRepo, artifactRepo, destinationRepo, installIU);
 
-		StringBuffer outputBuffer = null;
+		StringBuilder outputBuffer = null;
 		try {
 			outputBuffer = runDirectorApp("2.2", args);
 		} catch (ProvisionException e) {
@@ -220,7 +221,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 
 		//Setup: use default arguments
 		String[] args = getSingleRepoArgs("3.1", metadataRepo, artifactRepo, destinationRepo, installIU);
-		StringBuffer outputBuffer = null;
+		StringBuilder outputBuffer = null;
 		try {
 			outputBuffer = runDirectorApp("3.2", args);
 		} catch (ProvisionException e) {
@@ -329,11 +330,11 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		destinationRepo.delete();
 
 		//ensures that repositories have not been mistakenly created
-		assertFalse("5.6", metadataRepo1.exists());
-		assertFalse("5.7", metadataRepo2.exists());
-		assertTrue("5.8", artifactRepo1.exists());
-		assertTrue("5.9", artifactRepo2.exists());
-		assertFalse("5.10", destinationRepo.exists());
+		assertFalse(metadataRepo1.exists());
+		assertFalse(metadataRepo2.exists());
+		assertTrue(artifactRepo1.exists());
+		assertTrue(artifactRepo2.exists());
+		assertFalse(destinationRepo.exists());
 
 		//Cleanup: delete the folders
 		delete(metadataRepo1);
@@ -345,7 +346,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	 * Test the application's behaviour given multiple metadata and artifact repositories where only one metadata repo is invalid
 	 * Note: this test should end with "The installable unit invalidIU has not been found."
 	 */
-	public void testMultipleRepoCreationOneMetadataInvalid() {
+	public void testMultipleRepoCreationOneMetadataInvalid() throws Exception {
 		//Setup: Create the folders
 		File metadataRepo1 = new File(getTempFolder(), "DirectorApp Metadata1");
 		//Valid repositories
@@ -362,13 +363,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getMultipleRepoArgs("6.3", metadataRepo1, metadataRepo2, artifactRepo1, artifactRepo2, destinationRepo, installIU);
 
-		try {
-			runDirectorApp("6.4", args);
-		} catch (ProvisionException e) {
-			fail("6.5", e);
-		} catch (Exception e) {
-			fail("6.6", e);
-		}
+		runDirectorApp("6.4", args);
 		//remove the agent data produced by the director
 		delete(new File(destinationRepo, "p2"));
 		//this will only succeed if the destination is empty, which is what we expect because the install failed
@@ -436,7 +431,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	 * Test the application's behaviour given multiple metadata and artifact repositories where only one artifact repo is invalid
 	 * Note: this test should end with "The installable unit invalidIU has not been found."
 	 */
-	public void testMultipleRepoCreationOneArtifactInvalid() {
+	public void testMultipleRepoCreationOneArtifactInvalid() throws Exception {
 		//Setup: Create the folders
 		File artifactRepo1 = new File(getTempFolder(), "DirectorApp Artifact1");
 		//Valid repositories
@@ -453,13 +448,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getMultipleRepoArgs("8.3", metadataRepo1, metadataRepo2, artifactRepo1, artifactRepo2, destinationRepo, installIU);
 
-		try {
-			runDirectorApp("8.4", args);
-		} catch (ProvisionException e) {
-			fail("8.5", e);
-		} catch (Exception e) {
-			fail("8.6", e);
-		}
+		runDirectorApp("8.4", args);
 		//remove the agent data produced by the director
 		delete(new File(destinationRepo, "p2"));
 		//this will only succeed if the destination is empty, which is what we expect because the install failed
@@ -470,11 +459,11 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		destinationRepo.delete();
 
 		//ensures that repositories have not been mistakenly created
-		assertTrue("8.7", metadataRepo1.exists());
-		assertTrue("8.8", metadataRepo2.exists());
-		assertFalse("8.9", artifactRepo1.exists());
-		assertTrue("8.10", artifactRepo2.exists());
-		assertFalse("8.11", destinationRepo.exists());
+		assertTrue(metadataRepo1.exists());
+		assertTrue(metadataRepo2.exists());
+		assertFalse(artifactRepo1.exists());
+		assertTrue(artifactRepo2.exists());
+		assertFalse(destinationRepo.exists());
 
 		//Cleanup: delete the folders
 		delete(artifactRepo1);
@@ -485,7 +474,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	 * Test the application's behaviour given multiple metadata and artifact repositories where only one artifact repo and only one metadata repo are invalid
 	 * Note: this test should end with "The installable unit invalidIU has not been found."
 	 */
-	public void testMultipleRepoCreationOneArtifactOneMetadataInvalid() {
+	public void testMultipleRepoCreationOneArtifactOneMetadataInvalid() throws Exception {
 		//Setup: Create the folders
 		File artifactRepo1 = new File(getTempFolder(), "DirectorApp Artifact1");
 		File metadataRepo1 = new File(getTempFolder(), "DirectorApp Metadata1");
@@ -502,24 +491,18 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getMultipleRepoArgs("9.2", metadataRepo1, metadataRepo2, artifactRepo1, artifactRepo2, destinationRepo, installIU);
 
-		try {
-			runDirectorApp("9.3", args);
-		} catch (ProvisionException e) {
-			fail("9.4", e);
-		} catch (Exception e) {
-			fail("9.5", e);
-		}
+		runDirectorApp("9.3", args);
 		//remove the agent data produced by the director
 		delete(new File(destinationRepo, "p2"));
 		//this will only succeed if the destination is empty, which is what we expect because the install failed
 		destinationRepo.delete();
 
 		//ensures that repositories have not been mistakenly created
-		assertFalse("9.6", metadataRepo1.exists());
-		assertTrue("9.7", metadataRepo2.exists());
-		assertFalse("9.8", artifactRepo1.exists());
-		assertTrue("9.9", artifactRepo2.exists());
-		assertFalse("9.10", destinationRepo.exists());
+		assertFalse(metadataRepo1.exists());
+		assertTrue(metadataRepo2.exists());
+		assertFalse(artifactRepo1.exists());
+		assertTrue(artifactRepo2.exists());
+		assertFalse(destinationRepo.exists());
 
 		//Cleanup: delete the folders
 		delete(artifactRepo1);
@@ -531,7 +514,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	 * Test the application's behaviour given a single metadata and a single artifact repository where all are valid
 	 * Note: this test should end with "The installable unit invalidIU has not been found."
 	 */
-	public void testSingleRepoCreationNoneInvalid() {
+	public void testSingleRepoCreationNoneInvalid() throws Exception {
 		//Setup: get repositories
 		File artifactRepo = getTestData("10.0", "/testData/mirror/mirrorSourceRepo1 with space");
 		File metadataRepo = getTestData("10.1", "/testData/mirror/mirrorSourceRepo1 with space");
@@ -544,22 +527,16 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getSingleRepoArgs("10.2", metadataRepo, artifactRepo, destinationRepo, installIU);
 
-		try {
-			runDirectorApp("10.3", args);
-		} catch (ProvisionException e) {
-			fail("10.4", e);
-		} catch (Exception e) {
-			fail("10.5", e);
-		}
+		runDirectorApp("10.3", args);
 		//remove the agent data produced by the director
 		delete(new File(destinationRepo, "p2"));
 		//this will only succeed if the destination is empty, which is what we expect because the install failed
 		destinationRepo.delete();
 
 		//ensures that repositories have not been mistakenly created
-		assertTrue("10.6", metadataRepo.exists());
-		assertTrue("10.7", artifactRepo.exists());
-		assertFalse("10.8", destinationRepo.exists());
+		assertTrue(metadataRepo.exists());
+		assertTrue(artifactRepo.exists());
+		assertFalse(destinationRepo.exists());
 
 		//Cleanup: delete the folders
 		delete(destinationRepo);
@@ -635,7 +612,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 
 		destinationRepo.mkdirs();
 
-		StringBuffer buffer = runDirectorApp("12.5", args);
+		StringBuilder buffer = runDirectorApp("12.5", args);
 		assertTrue(buffer.toString().contains("The installable unit yetanotherplugin has not been found."));
 
 		final URI[] afterArtifactRepos = artifactManager.getKnownRepositories(IRepositoryManager.REPOSITORIES_ALL);
@@ -651,7 +628,6 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	/**
 	 * Test the ProvisioningContext only uses the passed in repos and not all known repos.
 	 * Expect to install helloworld_1.0.0 not helloworld_1.0.1
-	 * @throws Exception
 	 */
 	public void testPassedInRepos_ProvisioningContext() throws Exception {
 		File artifactRepo1 = getTestData("13.0", "/testData/mirror/mirrorSourceRepo4");
@@ -672,7 +648,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		String[] args = getSingleRepoArgs("13.4", metadataRepo2, artifactRepo2, destinationRepo, "helloworld");
 
 		destinationRepo.mkdirs();
-		StringBuffer buffer = runDirectorApp("13.5", args);
+		StringBuilder buffer = runDirectorApp("13.5", args);
 		assertTrue(buffer.toString().contains("Installing helloworld 1.0.0."));
 
 		artifactManager.removeRepository(artifactRepo1.toURI());
@@ -694,7 +670,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		String[] args = getSingleRepoArgs("testDownloadOnly", metadataRepo, artifactRepo, destinationRepo, installIU, "-downloadOnly");
 
 		try {
-			StringBuffer buffer = runDirectorApp("testDownloadOnly", args);
+			StringBuilder buffer = runDirectorApp("testDownloadOnly", args);
 			assertTrue(buffer.toString().contains("Installing fff.feature.group 1.0.0."));
 		} catch (Exception e) {
 			fail("fail", e);
@@ -722,7 +698,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getSingleRepoArgsForListing("testListFormatMissingListArgument", metadataRepo, artifactRepo, "", "", "-listFormat", "%i=%v,%d");
 
-		StringBuffer buffer = runDirectorApp("testListFormatMissingListArgument", args);
+		StringBuilder buffer = runDirectorApp("testListFormatMissingListArgument", args);
 		assertThat(buffer.toString(), containsString("-listFormat requires"));
 	}
 
@@ -734,7 +710,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getSingleRepoArgsForListing("testListFormat", metadataRepo, artifactRepo, "-list", "", "-listFormat", "${id}_${version},${id},${org.eclipse.equinox.p2.name}");
 
-		StringBuffer buffer = runDirectorApp("testListFormat", args);
+		StringBuilder buffer = runDirectorApp("testListFormat", args);
 		assertThat(buffer.toString(), containsString("org.eclipse.ui.examples.job_3.0.0,org.eclipse.ui.examples.job,Progress Examples Plug-in"));
 	}
 
@@ -746,14 +722,13 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		//Setup: create the args
 		String[] args = getSingleRepoArgsForListing("testListNoExplicitFormat", metadataRepo, artifactRepo, "-list", "", "", "");
 
-		StringBuffer buffer = runDirectorApp("testListNoExplicitFormat", args);
+		StringBuilder buffer = runDirectorApp("testListNoExplicitFormat", args);
 		assertThat(buffer.toString(), containsString("org.eclipse.ui.examples.job=3.0.0"));
 	}
 
 	/**
 	 * Test the ProvisioningContext only uses the passed in repos and not all known repos.
 	 * Expect to install helloworld_1.0.0 not helloworld_1.0.1
-	 * @throws Exception
 	 */
 	public void testUninstallIgnoresPassedInRepos() throws Exception {
 		File srcRepo = getTestData("14.0", "/testData/mirror/mirrorSourceRepo4");
@@ -768,7 +743,7 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 
 		destinationRepo.mkdirs();
 
-		StringBuffer buffer = runDirectorApp("14.2", args);
+		StringBuilder buffer = runDirectorApp("14.2", args);
 		assertTrue(buffer.toString().contains("The installable unit helloworld has not been found."));
 
 		artifactManager.removeRepository(srcRepo.toURI());
@@ -777,23 +752,28 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	}
 
 	private final class DummyCertificate extends Certificate {
-		DummyCertificate(String type) {
-			super(type);
+		private final String identity;
+
+		DummyCertificate(String identity) {
+			super("");
+			this.identity = identity;
 		}
 
 		@Override
-		public void verify(PublicKey key, String sigProvider) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+		public void verify(PublicKey key, String sigProvider) throws CertificateException, NoSuchAlgorithmException,
+				InvalidKeyException, NoSuchProviderException, SignatureException {
 			//
 		}
 
 		@Override
-		public void verify(PublicKey key) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException, NoSuchProviderException, SignatureException {
+		public void verify(PublicKey key) throws CertificateException, NoSuchAlgorithmException, InvalidKeyException,
+				NoSuchProviderException, SignatureException {
 			//
 		}
 
 		@Override
 		public String toString() {
-			return null;
+			return "[ " + identity + " ]";
 		}
 
 		@Override
@@ -803,19 +783,21 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 
 		@Override
 		public byte[] getEncoded() throws CertificateEncodingException {
-			return null;
+			return identity.getBytes(StandardCharsets.UTF_8);
 		}
 	}
 
 	public void testAvoidTrustPromptServiceNoUntrustedCertificates() {
 		final TrustInfo trustInfo = getTrustInfoFor(null);
 		assertNotNull(trustInfo);
-		assertNull(trustInfo.getTrustedCertificates());
+		Certificate[] trustedCertificates = trustInfo.getTrustedCertificates();
+		assertNotNull(trustedCertificates);
+		assertEquals(0, trustedCertificates.length);
 	}
 
 	public void testAvoidTrustPromptServiceTrustsOneCertificate() {
-		final Certificate certificate = new DummyCertificate(""); //$NON-NLS-1$
-		final TrustInfo trustInfo = getTrustInfoFor(new Certificate[][] {{certificate}});
+		final Certificate certificate = new DummyCertificate("certificate"); //$NON-NLS-1$
+		final TrustInfo trustInfo = getTrustInfoFor(Map.of(List.of(certificate), Set.of()));
 		assertNotNull(trustInfo);
 		final Certificate[] trustedCertificates = trustInfo.getTrustedCertificates();
 		assertEquals(1, trustedCertificates.length);
@@ -823,19 +805,47 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 	}
 
 	public void testAvoidTrustPromptServiceTrustsManyCertificates() {
-		final Certificate certificate1 = new DummyCertificate(""); //$NON-NLS-1$
-		final Certificate certificate2 = new DummyCertificate(""); //$NON-NLS-1$
-		final TrustInfo trustInfo = getTrustInfoFor(new Certificate[][] {{certificate1}, {certificate2}});
+		final Certificate certificate1 = new DummyCertificate("certificate1"); //$NON-NLS-1$
+		final Certificate certificate2 = new DummyCertificate("certificate2"); //$NON-NLS-1$
+		final TrustInfo trustInfo = getTrustInfoFor(
+				Map.of(List.of(certificate1), Set.of(), List.of(certificate2), Set.of()));
 		assertNotNull(trustInfo);
 		final Certificate[] trustedCertificates = trustInfo.getTrustedCertificates();
 		assertEquals(2, trustedCertificates.length);
-		assertSame(certificate1, trustedCertificates[0]);
-		assertSame(certificate2, trustedCertificates[1]);
+		Set<Certificate> keys = Collections.newSetFromMap(new IdentityHashMap<>());
+		keys.addAll(Arrays.asList(trustedCertificates));
+		assertTrue(keys.contains(certificate1));
+		assertTrue(keys.contains(certificate2));
 	}
 
-	private TrustInfo getTrustInfoFor(final Certificate[][] untrustedChain) {
-		UIServices avoidTrustPromptService = new DirectorApplication.AvoidTrustPromptService();
-		return avoidTrustPromptService.getTrustInfo(untrustedChain, null);
+	private TrustInfo getTrustInfoFor(Map<List<Certificate>, Set<IArtifactKey>> untrustedChains) {
+		DirectorApplication.AvoidTrustPromptService avoidTrustPromptService = new DirectorApplication.AvoidTrustPromptService();
+		return avoidTrustPromptService.getTrustInfo(untrustedChains, Map.of(), Set.of(), Map.of());
+	}
+
+	private TrustInfo getTrustInfoFor(Map<List<Certificate>, Set<IArtifactKey>> untrustedChains,
+			Set<String> trustedCertificates) {
+		DirectorApplication.AvoidTrustPromptService avoidTrustPromptService = new DirectorApplication.AvoidTrustPromptService(
+				false, true, null, null, trustedCertificates);
+		return avoidTrustPromptService.getTrustInfo(untrustedChains, Map.of(), Set.of(), Map.of());
+	}
+
+	public void testTrustPromptServiceTrustsOneCertificateReject() {
+		final Certificate certificate = new DummyCertificate("certificate"); //$NON-NLS-1$
+		final TrustInfo trustInfo = getTrustInfoFor(Map.of(List.of(certificate), Set.of()), Set.of());
+		assertNotNull(trustInfo);
+		final Certificate[] trustedCertificates = trustInfo.getTrustedCertificates();
+		assertEquals(0, trustedCertificates.length);
+	}
+
+	public void testTrustPromptServiceTrustsOneCertificateSpecificallyAccepted() {
+		final Certificate certificate = new DummyCertificate("certificate"); //$NON-NLS-1$
+		final TrustInfo trustInfo = getTrustInfoFor(Map.of(List.of(certificate), Set.of()),
+				Set.of("03d66dd08835c1ca3f128cceacd1f31ac94163096b20f445ae84285bc0832d72"));
+		assertNotNull(trustInfo);
+		final Certificate[] trustedCertificates = trustInfo.getTrustedCertificates();
+		assertEquals(1, trustedCertificates.length);
+		assertSame(certificate, trustedCertificates[0]);
 	}
 
 	public void testPGPSignedArtifact() throws Exception {
@@ -851,7 +861,55 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 
 		destinationRepo.mkdirs();
 
-		StringBuffer buffer = runDirectorApp(null, args);
+		StringBuilder buffer = runDirectorApp(null, args);
+		assertFalse(buffer.toString(), buffer.toString().contains("failed"));
+
+		artifactManager.removeRepository(srcRepo.toURI());
+		metadataManager.removeRepository(srcRepo.toURI());
+		delete(destinationRepo);
+	}
+
+	public void testRejectedPGPSignedArtifact() throws Exception {
+		File srcRepo = getTestData(null, "/testData/pgp/repoPGPOK");
+
+		IArtifactRepositoryManager artifactManager = getAgent().getService(IArtifactRepositoryManager.class);
+		IMetadataRepositoryManager metadataManager = getAgent().getService(IMetadataRepositoryManager.class);
+		assertNotNull(artifactManager);
+		assertNotNull(metadataManager);
+
+		File destinationRepo = new File(getTempFolder(), "DirectorApp Destination");
+		List<String> args = new ArrayList<>(
+				Arrays.asList(getSingleRepoArgs(null, srcRepo, srcRepo, destinationRepo, "blah")));
+		args.add("-tk");
+
+		destinationRepo.mkdirs();
+
+		StringBuilder buffer = runDirectorApp(null, args.toArray(String[]::new));
+		assertTrue(buffer.toString(), buffer.toString().contains("One or more PGP keys are not trusted."));
+
+		artifactManager.removeRepository(srcRepo.toURI());
+		metadataManager.removeRepository(srcRepo.toURI());
+		delete(destinationRepo);
+	}
+
+	public void testSpecificallyAcceptedGPSignedArtifact() throws Exception {
+		File srcRepo = getTestData(null, "/testData/pgp/repoPGPOK");
+
+		IArtifactRepositoryManager artifactManager = getAgent().getService(IArtifactRepositoryManager.class);
+		IMetadataRepositoryManager metadataManager = getAgent().getService(IMetadataRepositoryManager.class);
+		assertNotNull(artifactManager);
+		assertNotNull(metadataManager);
+
+		File destinationRepo = new File(getTempFolder(), "DirectorApp Destination");
+		List<String> args = new ArrayList<>(
+				Arrays.asList(getSingleRepoArgs(null, srcRepo, srcRepo, destinationRepo, "blah")));
+		args.add("-tk");
+		args.add("e996c670aa7f65409bf5db56139e38d90ded11f0");
+		args.add("-verboseTrust");
+
+		destinationRepo.mkdirs();
+
+		StringBuilder buffer = runDirectorApp(null, args.toArray(String[]::new));
 		assertFalse(buffer.toString(), buffer.toString().contains("failed"));
 
 		artifactManager.removeRepository(srcRepo.toURI());
@@ -859,3 +917,4 @@ public class DirectorApplicationTest extends AbstractProvisioningTest {
 		delete(destinationRepo);
 	}
 }
+

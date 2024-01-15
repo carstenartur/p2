@@ -97,7 +97,7 @@ public class MetadataRepositoryManagerTest extends AbstractProvisioningTest {
 	}
 
 	/**
-	 * Tests for {@link IRepositoryManager#contains(URI).
+	 * Tests for {@link IRepositoryManager#contains(URI)}.
 	 */
 	public void testContains() {
 		File site = getTestData("Repositoy", "/testData/metadataRepo/good/");
@@ -134,8 +134,6 @@ public class MetadataRepositoryManagerTest extends AbstractProvisioningTest {
 	/**
 	 * Adds a repository that has a non-standard (non ECF) scheme.  This should
 	 * return REPOSITORY_NOT_FOUND, since any other status code gets logged.
-	 *
-	 * @throws URISyntaxException
 	 */
 	public void testFailedConnection() throws URISyntaxException {
 		URI location = new URI("invalid://example");

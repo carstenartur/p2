@@ -58,7 +58,6 @@ public class SimpleConfiguratorManipulatorImpl implements SimpleConfiguratorMani
 	 * Return the ConfiguratorConfigFile which is determined by the parameters set
 	 * in Manipulator.
 	 *
-	 * @param manipulator
 	 * @return File
 	 */
 	private static File getConfigFile(Manipulator manipulator) throws IllegalStateException {
@@ -565,7 +564,7 @@ public class SimpleConfiguratorManipulatorImpl implements SimpleConfiguratorMani
 		Properties properties = new Properties();
 		String[] jvmArgs = manipulator.getLauncherData().getJvmArgs();
 		for (String jvmArg : jvmArgs) {
-			if (jvmArg.startsWith("-D")) {
+			if (jvmArg.startsWith("-D")) { //$NON-NLS-1$
 				// $NON-NLS-1$
 				int index = jvmArg.indexOf("="); //$NON-NLS-1$
 				if (index > 0 && jvmArg.length() > 2) {

@@ -15,6 +15,7 @@
 package org.eclipse.equinox.internal.p2.publisher.eclipse;
 
 import java.io.*;
+import java.nio.file.Files;
 import javax.xml.transform.TransformerException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -24,9 +25,6 @@ import org.eclipse.pde.internal.publishing.Activator;
 import org.eclipse.pde.internal.publishing.Utils;
 import org.eclipse.pde.internal.swt.tools.IconExe;
 
-/**
- *
- */
 public class BrandingIron {
 	private static final String XDOC_ICON = "-Xdock:icon=../Resources/Eclipse.icns"; //$NON-NLS-1$
 	private static final String XDOC_ICON_PREFIX = "-Xdock:icon=../Resources/"; //$NON-NLS-1$
@@ -254,11 +252,6 @@ public class BrandingIron {
 	/**
 	 * Brand the splash.app Info.plist and link or copy the mac launcher. It is
 	 * assumed that the mac launcher has been branded already.
-	 * 
-	 * @param descriptor
-	 * @param initialRoot
-	 * @param target
-	 * @param iconName
 	 */
 	private void brandMacSplash(ExecutablesDescriptor descriptor, File initialRoot, File target, String iconName) {
 		String splashContents = "Resources/Splash.app/Contents"; //$NON-NLS-1$
@@ -504,7 +497,7 @@ public class BrandingIron {
 
 		StringBuffer buffer;
 		try {
-			buffer = readFile(ini);
+			buffer = new StringBuffer(Files.readString(ini.toPath()));
 		} catch (IOException e) {
 			LogHelper.log(new Status(IStatus.ERROR, Activator.ID, "Impossible to brand ini file", e)); //$NON-NLS-1$
 			return;
@@ -519,7 +512,7 @@ public class BrandingIron {
 		}
 
 		try {
-			transferStreams(new ByteArrayInputStream(buffer.toString().getBytes()), new FileOutputStream(targetFile));
+			Files.writeString(targetFile.toPath(), buffer.toString());
 			if (!ini.equals(targetFile)) {
 				ini.delete();
 				descriptor.replace(ini, targetFile);
@@ -603,52 +596,6 @@ public class BrandingIron {
 			}
 		}
 		return -1;
-	}
-
-	private StringBuffer readFile(File targetName) throws IOException {
-		InputStreamReader reader = new InputStreamReader(new BufferedInputStream(new FileInputStream(targetName)));
-		StringBuffer result = new StringBuffer();
-		char[] buf = new char[4096];
-		int count;
-		try {
-			count = reader.read(buf, 0, buf.length);
-			while (count != -1) {
-				result.append(buf, 0, count);
-				count = reader.read(buf, 0, buf.length);
-			}
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {
-				// ignore exceptions here
-			}
-		}
-		return result;
-	}
-
-	private void transferStreams(InputStream source, OutputStream destination) throws IOException {
-		source = new BufferedInputStream(source);
-		destination = new BufferedOutputStream(destination);
-		try {
-			byte[] buffer = new byte[8192];
-			while (true) {
-				int bytesRead = -1;
-				if ((bytesRead = source.read(buffer)) == -1)
-					break;
-				destination.write(buffer, 0, bytesRead);
-			}
-		} finally {
-			try {
-				source.close();
-			} catch (IOException e) {
-				// ignore
-			}
-			try {
-				destination.close();
-			} catch (IOException e) {
-				// ignore
-			}
-		}
 	}
 
 	public void setOS(String value) {

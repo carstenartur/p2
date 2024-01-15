@@ -63,28 +63,24 @@ public final class MetadataFactory {
 		/**
 		 * A property key (value <code>"org.eclipse.equinox.p2.type.patch"</code>) for a
 		 * boolean property indicating that an installable unit is a group.
-		 * 
 		 */
 		public static final String PROP_TYPE_GROUP = "org.eclipse.equinox.p2.type.group"; //$NON-NLS-1$
 
 		/**
 		 * A property key (value <code>"org.eclipse.equinox.p2.type.patch"</code>) for a
 		 * boolean property indicating that an installable unit is a patch.
-		 * 
 		 */
 		public static final String PROP_TYPE_PATCH = "org.eclipse.equinox.p2.type.patch"; //$NON-NLS-1$
 
 		/**
 		 * A property key (value <code>"org.eclipse.equinox.p2.type.fragment"</code>)
 		 * for a boolean property indicating that an installable unit is a fragment.
-		 * 
 		 */
 		public static final String PROP_TYPE_FRAGMENT = "org.eclipse.equinox.p2.type.fragment"; //$NON-NLS-1$
 
 		/**
 		 * A property key (value <code>"org.eclipse.equinox.p2.type.category"</code>)
 		 * for a boolean property indicating that an installable unit is a category.
-		 * 
 		 */
 		public static final String PROP_TYPE_CATEGORY = "org.eclipse.equinox.p2.type.category"; //$NON-NLS-1$
 
@@ -764,7 +760,7 @@ public final class MetadataFactory {
 			return unit;
 		Assert.isNotNull(unit);
 		Assert.isNotNull(fragments);
-		return new ResolvedInstallableUnit(unit, fragments);
+		return new ResolvedInstallableUnit(unit, Arrays.asList(fragments));
 
 	}
 

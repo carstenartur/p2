@@ -21,17 +21,14 @@ import org.eclipse.equinox.internal.p2.updatesite.CategoryPublisherApplication;
 import org.eclipse.equinox.p2.publisher.AbstractPublisherApplication;
 import org.eclipse.equinox.p2.tests.*;
 
-/**
- *
- */
 public class CategoryPublisherTest extends AbstractProvisioningTest {
 
 	/**
 	 * runs default director app.
 	 */
-	protected StringBuffer runPublisherApp(AbstractPublisherApplication application, final String[] args) throws Exception {
+	protected StringBuilder runPublisherApp(AbstractPublisherApplication application, final String[] args) throws Exception {
 		PrintStream out = System.out;
-		StringBuffer buffer = new StringBuffer();
+		StringBuilder buffer = new StringBuilder();
 		try {
 			System.setOut(new PrintStream(new StringBufferStream(buffer)));
 			application.run(args);

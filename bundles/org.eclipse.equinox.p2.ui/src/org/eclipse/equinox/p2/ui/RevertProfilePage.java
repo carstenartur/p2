@@ -55,7 +55,6 @@ import org.eclipse.ui.statushandlers.StatusManager;
  * @noextend This class is not intended to be subclassed by clients.
  * @noinstantiate This class is not intended to be instantiated by clients.
  * @since 2.0
- *
  */
 public class RevertProfilePage extends InstallationPage implements ICopyable {
 
@@ -284,13 +283,17 @@ public class RevertProfilePage extends InstallationPage implements ICopyable {
 				}
 				boolean finish = revert();
 				if (finish) {
-					getPageContainer().closeModalContainers();
+					closeModalContainers();
 				}
 
 			}
 		};
 		revertAction.setText(ProvUIMessages.RevertProfilePage_RevertLabel);
 		revertAction.setToolTipText(ProvUIMessages.RevertProfilePage_RevertTooltip);
+	}
+
+	private void closeModalContainers() {
+		getPageContainer().closeModalContainers();
 	}
 
 	private Object getInput() {

@@ -14,7 +14,6 @@
 package org.eclipse.equinox.internal.frameworkadmin.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import org.eclipse.equinox.frameworkadmin.BundleInfo;
@@ -32,9 +31,6 @@ public class SimpleBundlesState implements BundlesState {
 
 	/**
 	 * Check if the specified FrameworkAdmin is available.
-	 * 
-	 * @param fwAdmin
-	 * @throws FrameworkAdminRuntimeException
 	 */
 	public static void checkAvailability(FrameworkAdmin fwAdmin) throws FrameworkAdminRuntimeException {
 		if (!fwAdmin.isActive())
@@ -44,9 +40,7 @@ public class SimpleBundlesState implements BundlesState {
 
 	/**
 	 * 
-	 * @param launcherData
 	 * @return File of fwJar to be used.
-	 * @throws IOException
 	 */
 	static File getFwJar(LauncherData launcherData) {
 		if (launcherData.getFwJar() != null)
@@ -68,10 +62,6 @@ public class SimpleBundlesState implements BundlesState {
 	/**
 	 * If the manifest of the target fw implementation has
 	 * Constants.BUNDLE_SYMBOLICNAME header, this constructor should be used.
-	 * 
-	 * @param ManipulatorAdmin
-	 * @param Manipulator
-	 * @param systemBundleSymbolicName
 	 */
 	public SimpleBundlesState(FrameworkAdmin ManipulatorAdmin, Manipulator Manipulator,
 			String systemBundleSymbolicName) {
@@ -92,11 +82,6 @@ public class SimpleBundlesState implements BundlesState {
 	 * If the manifest of the target fw implementation has not
 	 * Constants.BUNDLE_SYMBOLICNAME header but , Constants.BUNDLE_NAME and
 	 * BUNDLE_VERSION, this constructor should be used.
-	 * 
-	 * @param ManipulatorAdmin
-	 * @param Manipulator
-	 * @param systemBundleName
-	 * @param systemBundleVender
 	 */
 	public SimpleBundlesState(FrameworkAdmin ManipulatorAdmin, Manipulator Manipulator, String systemBundleName,
 			String systemBundleVender) {

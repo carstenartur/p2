@@ -208,7 +208,7 @@ public abstract class Version implements Comparable<Version>, Serializable {
 
 	@Override
 	public String toString() {
-		StringBuffer buf = new StringBuffer(20);
+		StringBuilder buf = new StringBuilder(20);
 		toString(buf);
 		return buf.toString();
 	}
@@ -217,6 +217,21 @@ public abstract class Version implements Comparable<Version>, Serializable {
 	 * Appends the string representation of this version onto the
 	 * <code>sb</code> StringBuffer.
 	 * @param sb The buffer that will receive the version string
+	 * @deprecated use {@link #toString(StringBuilder)} instead
 	 */
-	public abstract void toString(StringBuffer sb);
+	@Deprecated(since = "2.9")
+	public void toString(StringBuffer sb) {
+		StringBuilder builder = new StringBuilder();
+		toString(builder);
+		sb.append(builder);
+	}
+
+	/**
+	 * Appends the string representation of this version onto the <code>sb</code>
+	 * StringBuilder.
+	 * 
+	 * @param sb The builder that will receive the version string
+	 * @since 2.9
+	 */
+	public abstract void toString(StringBuilder sb);
 }

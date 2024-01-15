@@ -473,7 +473,10 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 
 		Set<String> skipChecksums = ARTIFACT_MD5_CHECKSUM_ENABLED ? Collections.emptySet() : Collections.singleton(ChecksumHelper.MD5);
 		addChecksumVerifiers(descriptor, steps, skipChecksums, IArtifactDescriptor.ARTIFACT_CHECKSUM);
-		addPGPSignatureVerifier(descriptor, steps);
+
+		if (!isFolderBased(descriptor)) {
+			addPGPSignatureVerifier(descriptor, steps);
+		}
 
 		if (steps.isEmpty())
 			return destination;
@@ -614,7 +617,7 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 	}
 
 	protected IStatus downloadArtifact(IArtifactDescriptor descriptor, OutputStream destination, IProgressMonitor monitor) {
-		monitor = IProgressMonitor.nullSafe(monitor);
+		SubMonitor subMon = SubMonitor.convert(monitor, 2);
 		if (isFolderBased(descriptor)) {
 			File artifactFolder = getArtifactFile(descriptor);
 			if (artifactFolder == null) {
@@ -652,8 +655,8 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 		URI baseLocation = getLocation(descriptor);
 		if (baseLocation == null)
 			return new Status(IStatus.ERROR, Activator.ID, NLS.bind(Messages.no_location, descriptor));
-		URI mirrorLocation = getMirror(baseLocation, monitor);
-		IStatus status = downloadArtifact(mirrorLocation, destination, monitor);
+		URI mirrorLocation = getMirror(baseLocation, subMon.split(1));
+		IStatus status = downloadArtifact(descriptor, mirrorLocation, destination, subMon.split(1));
 		IStatus result = reportStatus(descriptor, destination, status);
 		// if the original download went reasonably but the reportStatus found some issues
 		// (e..g, in the processing steps/validators) then mark the mirror as bad and return
@@ -724,14 +727,15 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 		return status;
 	}
 
-	private IStatus downloadArtifact(URI mirrorLocation, OutputStream destination, IProgressMonitor monitor) {
+	private IStatus downloadArtifact(IArtifactDescriptor descriptor, URI mirrorLocation, OutputStream destination,
+			IProgressMonitor monitor) {
 		monitor = IProgressMonitor.nullSafe(monitor);
 		//Bug 340352: transport has performance overhead of 100ms and more, bypass it for local copies
 		IStatus result = Status.OK_STATUS;
 		if (SimpleArtifactRepositoryFactory.PROTOCOL_FILE.equals(mirrorLocation.getScheme()))
 			result = copyFileToStream(new File(mirrorLocation), destination, monitor);
 		else
-			result = getTransport().download(mirrorLocation, destination, monitor);
+			result = getTransport().downloadArtifact(mirrorLocation, destination, descriptor, monitor);
 		if (mirrors != null)
 			mirrors.reportResult(mirrorLocation.toString(), result);
 		if (result.isOK() || result.getSeverity() == IStatus.CANCEL)
@@ -1410,6 +1414,7 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 
 		boolean lockAcquired = false;
 		synchronized (this) {
+			boolean disableSaveState = disableSave;
 			try {
 				if (canLock()) {
 					lockAcquired = lockAndLoad(false, monitor);
@@ -1424,9 +1429,11 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 			} catch (Throwable e) {
 				result = new Status(IStatus.ERROR, Activator.ID, e.getMessage(), e);
 			} finally {
-				disableSave = false;
+				disableSave = disableSaveState;
 				try {
-					save();
+					if (!disableSaveState) {
+						save();
+					}
 				} catch (Exception e) {
 					if (result != null)
 						result = new MultiStatus(Activator.ID, IStatus.ERROR, new IStatus[] {result}, e.getMessage(), e);
@@ -1578,8 +1585,6 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 	 * Loads the repository from disk. This method will do nothing
 	 * if this instance of SimpleArtifactRepository holds the lock
 	 * because it will have loaded the repo when it acquired the lock.
-	 *
-	 * @param monitor
 	 */
 	private void load(IProgressMonitor monitor) {
 		monitor = IProgressMonitor.nullSafe(monitor);
@@ -1607,8 +1612,6 @@ public class SimpleArtifactRepository extends AbstractArtifactRepository impleme
 	 * Loads the repository from disk. If the last modified timestamp on the file <=
 	 * to our cache, then this method does nothing.  Otherwise the artifact repository
 	 * on disk is loaded, and reconciled with this instance of the artifact repository.
-	 *
-	 * @param monitor
 	 */
 	private void doLoad(IProgressMonitor monitor) {
 		monitor = IProgressMonitor.nullSafe(monitor);

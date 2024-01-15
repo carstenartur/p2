@@ -40,6 +40,7 @@ import org.eclipse.osgi.framework.console.CommandProvider;
  * An OSGi console command provider that adds various commands for interacting
  * with the provisioning system.
  */
+@SuppressWarnings("nls")
 public class ProvCommandProvider implements CommandProvider {
 	private static final String WILDCARD_ANY = "*"; //$NON-NLS-1$
 	public static final String NEW_LINE = "\r\n"; //$NON-NLS-1$
@@ -244,8 +245,6 @@ public class ProvCommandProvider implements CommandProvider {
 
 	/**
 	 * Lists the installable units that match the given URL, id, and/or version.
-	 *
-	 * @param interpreter
 	 */
 	public void _provliu(CommandInterpreter interpreter) {
 		String urlString = processArgument(interpreter.nextArgument());
@@ -266,8 +265,6 @@ public class ProvCommandProvider implements CommandProvider {
 	 * boolean argument can be provided where <code>true</code> means &quot;full
 	 * query&quot; and <code>false</code> means &quote;match query&quote;. The
 	 * default is <code>false</code>.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlquery(CommandInterpreter interpreter) {
 		String urlString = processArgument(interpreter.nextArgument());
@@ -297,8 +294,6 @@ public class ProvCommandProvider implements CommandProvider {
 	/**
 	 * Lists the known metadata repositories, or the contents of a given metadata
 	 * repository.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlr(CommandInterpreter interpreter) {
 		String urlString = processArgument(interpreter.nextArgument());
@@ -323,8 +318,6 @@ public class ProvCommandProvider implements CommandProvider {
 	/**
 	 * Lists the group IUs in all known metadata repositories, or in the given
 	 * metadata repository.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlg(CommandInterpreter interpreter) {
 		String urlString = processArgument(interpreter.nextArgument());
@@ -350,8 +343,6 @@ public class ProvCommandProvider implements CommandProvider {
 	/**
 	 * Lists the known artifact repositories, or the contents of a given artifact
 	 * repository.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlar(CommandInterpreter interpreter) {
 		String urlString = processArgument(interpreter.nextArgument());
@@ -411,8 +402,6 @@ public class ProvCommandProvider implements CommandProvider {
 
 	/**
 	 * Lists the known profiles, or the contents of a given profile.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlp(CommandInterpreter interpreter) {
 		String profileId = processArgument(interpreter.nextArgument());
@@ -453,8 +442,6 @@ public class ProvCommandProvider implements CommandProvider {
 	/**
 	 * Lists the profile timestamps for a given profile id, if no profile id, the
 	 * default profile is used.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlpts(CommandInterpreter interpreter) {
 		String profileId = processArgument(interpreter.nextArgument());
@@ -561,8 +548,6 @@ public class ProvCommandProvider implements CommandProvider {
 	 * can be provided where <code>true</code> means &quot;full query&quot; and
 	 * <code>false</code> means &quote;match query&quote;. The default is
 	 * <code>false</code>.
-	 *
-	 * @param interpreter
 	 */
 	public void _provlpquery(CommandInterpreter interpreter) {
 		String profileId = processArgument(interpreter.nextArgument());
@@ -641,7 +626,6 @@ public class ProvCommandProvider implements CommandProvider {
 	/**
 	 * Handles the help command
 	 *
-	 * @param intp
 	 * @return description for a particular command or false if there is no command
 	 *         with the specified name
 	 */
