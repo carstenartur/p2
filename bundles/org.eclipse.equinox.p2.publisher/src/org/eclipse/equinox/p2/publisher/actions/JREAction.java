@@ -16,57 +16,36 @@
  ******************************************************************************/
 package org.eclipse.equinox.p2.publisher.actions;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.module.ModuleDescriptor;
 import java.lang.module.ModuleDescriptor.Exports;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.Status;
+import java.util.*;
+import org.eclipse.core.runtime.*;
 import org.eclipse.equinox.internal.p2.core.helpers.CollectionUtils;
 import org.eclipse.equinox.internal.p2.metadata.ArtifactKey;
 import org.eclipse.equinox.internal.p2.publisher.Activator;
 import org.eclipse.equinox.internal.p2.publisher.Messages;
-import org.eclipse.equinox.p2.metadata.IArtifactKey;
-import org.eclipse.equinox.p2.metadata.IInstallableUnit;
-import org.eclipse.equinox.p2.metadata.IProvidedCapability;
-import org.eclipse.equinox.p2.metadata.MetadataFactory;
+import org.eclipse.equinox.p2.metadata.*;
 import org.eclipse.equinox.p2.metadata.MetadataFactory.InstallableUnitDescription;
 import org.eclipse.equinox.p2.metadata.MetadataFactory.InstallableUnitFragmentDescription;
 import org.eclipse.equinox.p2.metadata.Version;
 import org.eclipse.equinox.p2.metadata.VersionRange;
-import org.eclipse.equinox.p2.publisher.AbstractPublisherAction;
-import org.eclipse.equinox.p2.publisher.IPublisherInfo;
-import org.eclipse.equinox.p2.publisher.IPublisherResult;
+import org.eclipse.equinox.p2.publisher.*;
 import org.eclipse.equinox.p2.repository.artifact.IArtifactDescriptor;
 import org.eclipse.equinox.spi.p2.publisher.PublisherHelper;
 import org.eclipse.osgi.util.ManifestElement;
 import org.eclipse.osgi.util.NLS;
-import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.*;
 
 public class JREAction extends AbstractPublisherAction {
+
+	private static final int RUNTIME_VERSION = Runtime.version().feature();
+
 	private static final String DEFAULT_JRE_NAME = "a.jre"; //$NON-NLS-1$
-	private static final Version DEFAULT_JRE_VERSION = Version.parseVersion("17.0"); //$NON-NLS-1$
-	private static final String DEFAULT_PROFILE = "JavaSE-17"; //$NON-NLS-1$
+	private static final Version DEFAULT_JRE_VERSION = Version.parseVersion(RUNTIME_VERSION + ".0"); //$NON-NLS-1$
+	private static final String DEFAULT_PROFILE = "JavaSE-" + RUNTIME_VERSION; //$NON-NLS-1$
 	private static final String PROFILE_LOCATION = "jre.action.profile.location"; //$NON-NLS-1$
 	private static final String PROFILE_NAME = "osgi.java.profile.name"; //$NON-NLS-1$
 	private static final String PROFILE_TARGET_VERSION = "org.eclipse.jdt.core.compiler.codegen.targetPlatform"; //$NON-NLS-1$
@@ -91,8 +70,7 @@ public class JREAction extends AbstractPublisherAction {
 	@Override public IStatus perform(IPublisherInfo publisherInfo, IPublisherResult results, IProgressMonitor monitor) {
 		String problemMessage = NLS.bind(Messages.message_problemsWhilePublishingEE, jreLocation != null ? jreLocation : environment);
 		resultStatus = new MultiStatus(Activator.ID, 0, problemMessage, null);
-
-		initialize(publisherInfo);
+		this.info = publisherInfo;
 		IArtifactDescriptor artifact = createJREData(results);
 		if (artifact != null)
 			publishArtifact(artifact, new File[] {jreLocation}, null, publisherInfo, createRootPrefixComputer(jreLocation));
@@ -116,13 +94,7 @@ public class JREAction extends AbstractPublisherAction {
 	 * If the jreLocation is <code>null</code>, default information is generated.
 	 */
 	protected IArtifactDescriptor createJREData(IPublisherResult results) {
-		InstallableUnitDescription iu = new MetadataFactory.InstallableUnitDescription();
-		iu.setSingleton(false);
-		iu.setId(DEFAULT_JRE_NAME);
-		iu.setVersion(DEFAULT_JRE_VERSION);
-		iu.setTouchpointType(PublisherHelper.TOUCHPOINT_NATIVE);
-
-		generateJREIUData(iu);
+		InstallableUnitDescription iu = generateJREIUDesc();
 
 		InstallableUnitFragmentDescription cu = new InstallableUnitFragmentDescription();
 		String configId = "config." + iu.getId();//$NON-NLS-1$
@@ -248,11 +220,8 @@ public class JREAction extends AbstractPublisherAction {
 				Version parsedVersion = Version.parseVersion(rawVersion);
 
 				// complete record -> store
-				Map<String, Object> capAttrs = new HashMap<>();
-				capAttrs.put(NAMESPACE_OSGI_EE, eeName);
-				capAttrs.put(VERSION_OSGI_EE, parsedVersion);
-
-				parsingResult.add(MetadataFactory.createProvidedCapability(NAMESPACE_OSGI_EE, capAttrs));
+				parsingResult.add(MetadataFactory.createProvidedCapability(NAMESPACE_OSGI_EE,
+						Map.of(NAMESPACE_OSGI_EE, eeName, VERSION_OSGI_EE, parsedVersion)));
 
 			} catch (IllegalArgumentException e) {
 				parsingStatus.add(newErrorStatus(NLS.bind(Messages.message_eeInvalidVersionAttribute, rawVersion), e));
@@ -280,9 +249,15 @@ public class JREAction extends AbstractPublisherAction {
 		}
 	}
 
-	private void generateJREIUData(InstallableUnitDescription iu) {
+	private InstallableUnitDescription generateJREIUDesc() {
+		InstallableUnitDescription iu = new MetadataFactory.InstallableUnitDescription();
+		iu.setSingleton(false);
+		iu.setId(DEFAULT_JRE_NAME);
+		iu.setVersion(DEFAULT_JRE_VERSION);
+		iu.setTouchpointType(PublisherHelper.TOUCHPOINT_NATIVE);
+		initialize();
 		if (profileProperties == null || profileProperties.size() == 0)
-			return; //got nothing
+			return iu;
 
 		String profileLocation = profileProperties.get(PROFILE_LOCATION);
 
@@ -320,11 +295,11 @@ public class JREAction extends AbstractPublisherAction {
 
 		List<IProvidedCapability> capabilities = generateJRECapability(iu.getId(), iu.getVersion());
 		iu.addProvidedCapabilities(capabilities);
+		return iu;
 	}
 
-	private void initialize(IPublisherInfo publisherInfo) {
+	private void initialize() {
 		File runtimeProfile = null;
-		this.info = publisherInfo;
 		if (jreLocation == null && environment == null) {
 			// create a runtime profile
 			StringBuilder buffer = createDefaultProfileFromRunningJvm();
@@ -533,5 +508,14 @@ public class JREAction extends AbstractPublisherAction {
 			}
 		}
 		return null;
+	}
+
+	public static IInstallableUnit createJREIU() {
+		JREAction jreAction =  new JREAction((File) null);
+		return jreAction.createJREInstallableUnit();
+	}
+
+	private IInstallableUnit createJREInstallableUnit() {
+		return MetadataFactory.createInstallableUnit(generateJREIUDesc());
 	}
 }

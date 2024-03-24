@@ -45,7 +45,7 @@ import org.eclipse.equinox.p2.repository.artifact.IArtifactDescriptor;
 import org.eclipse.equinox.p2.repository.artifact.IArtifactRepository;
 import org.eclipse.equinox.spi.p2.publisher.LocalizationHelper;
 import org.eclipse.equinox.spi.p2.publisher.PublisherHelper;
-import org.eclipse.osgi.framework.util.Headers;
+import org.eclipse.osgi.framework.util.CaseInsensitiveDictionaryMap;
 import org.eclipse.osgi.service.resolver.*;
 import org.eclipse.osgi.util.ManifestElement;
 import org.eclipse.osgi.util.NLS;
@@ -61,7 +61,7 @@ import org.osgi.resource.Namespace;
  * bundles or folders of bundles.
  *
  * This action consults the following types of advice:
- * </ul>
+ * <ul>
  * <li>{@link IAdditionalInstallableUnitAdvice }</li>
  * <li>{@link IBundleShapeAdvice}</li>
  * <li>{@link ICapabilityAdvice}</li>
@@ -71,6 +71,15 @@ import org.osgi.resource.Namespace;
  */
 @SuppressWarnings("restriction")
 public class BundlesAction extends AbstractPublisherAction {
+
+	public static final String FILTER_PROPERTY_INSTALL_SOURCE = "org.eclipse.update.install.sources"; //$NON-NLS-1$
+
+	public static final String INSTALL_SOURCE_FILTER = String.format("(%s=true)", FILTER_PROPERTY_INSTALL_SOURCE); //$NON-NLS-1$
+
+	/**
+	 * A suffix used to match a bundle IU to its source
+	 */
+	public static final String SOURCE_SUFFIX = ".source"; //$NON-NLS-1$
 
 	/**
 	 * A capability name in the {@link PublisherHelper#NAMESPACE_ECLIPSE_TYPE}
@@ -182,7 +191,7 @@ public class BundlesAction extends AbstractPublisherAction {
 		return new BundlesAction(new BundleDescription[] { bd }).doCreateBundleIU(bd, key, info);
 	}
 
-	protected IInstallableUnit doCreateBundleIU(BundleDescription bd, IArtifactKey key, IPublisherInfo info) {
+	protected IInstallableUnit doCreateBundleIU(BundleDescription bd, IArtifactKey key, IPublisherInfo publisherInfo) {
 		@SuppressWarnings("unchecked")
 		Map<String, String> manifest = (Map<String, String>) bd.getUserObject();
 
@@ -235,8 +244,6 @@ public class BundlesAction extends AbstractPublisherAction {
 			addRequirement(requirements, requiredCap, rawRequireCapHeader, bd);
 		}
 
-		iu.setRequirements(requirements.toArray(new IRequirement[requirements.size()]));
-
 		// Create set of provided capabilities
 		List<IProvidedCapability> providedCapabilities = new ArrayList<>();
 
@@ -276,6 +283,12 @@ public class BundlesAction extends AbstractPublisherAction {
 			providedCapabilities.add(SOURCE_BUNDLE_CAPABILITY);
 		} else {
 			providedCapabilities.add(BUNDLE_CAPABILITY);
+			// add an optional greedy disabled by default requirement to the source so a
+			// product or install agent can choose to include sources from a bundle
+			VersionRange strictRange = new VersionRange(iu.getVersion(), true, iu.getVersion(), true);
+			String sourceIu = iu.getId() + SOURCE_SUFFIX;
+			requirements.add(MetadataFactory.createRequirement(IInstallableUnit.NAMESPACE_IU_ID, sourceIu, strictRange,
+					INSTALL_SOURCE_FILTER, true, false, true));
 		}
 
 		// If needed add an additional capability to identify this as an OSGi fragment
@@ -294,12 +307,12 @@ public class BundlesAction extends AbstractPublisherAction {
 				providedCapabilities.add(PublisherHelper.makeTranslationCapability(bd.getSymbolicName(), locale));
 			}
 		}
-
+		iu.setRequirements(requirements.toArray(new IRequirement[requirements.size()]));
 		iu.setCapabilities(providedCapabilities.toArray(new IProvidedCapability[providedCapabilities.size()]));
 
 		// Process advice
-		processUpdateDescriptorAdvice(iu, info);
-		processCapabilityAdvice(iu, info);
+		processUpdateDescriptorAdvice(iu, publisherInfo);
+		processCapabilityAdvice(iu, publisherInfo);
 
 		// Set certain properties from the manifest header attributes as IU properties.
 		// The values of these attributes may be localized (strings starting with '%')
@@ -322,13 +335,13 @@ public class BundlesAction extends AbstractPublisherAction {
 		// that this is something that will not impact the configuration.
 		Map<String, String> touchpointData = new HashMap<>();
 		touchpointData.put("manifest", toManifestString(manifest)); //$NON-NLS-1$
-		if (isDir(bd, info)) {
+		if (isDir(bd, publisherInfo)) {
 			touchpointData.put("zipped", "true"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
 		// Process more advice
-		processTouchpointAdvice(iu, touchpointData, info);
-		processInstallableUnitPropertiesAdvice(iu, info);
+		processTouchpointAdvice(iu, touchpointData, publisherInfo);
+		processInstallableUnitPropertiesAdvice(iu, publisherInfo);
 
 		return MetadataFactory.createInstallableUnit(iu);
 	}
@@ -840,10 +853,9 @@ public class BundlesAction extends AbstractPublisherAction {
 				manifestStream = new BufferedInputStream(new FileInputStream(manifestFile));
 			}
 		}
-		Dictionary<String, String> manifest = null;
 		try {
 			if (manifestStream != null) {
-				manifest = parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(manifestStream);
+				return parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(manifestStream);
 			}
 		} finally {
 			try {
@@ -854,18 +866,15 @@ public class BundlesAction extends AbstractPublisherAction {
 			}
 		}
 
-		return manifest;
+		return null;
 
 	}
 
-	/**
-	 * @return the same result as {@link Headers#parseManifest(InputStream)}, but
-	 *         with a modifiable {@link Headers} instance
-	 */
-	private static Headers<String, String> parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(
+	private static Dictionary<String, String> parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(
 			InputStream manifestStream) throws IOException, BundleException {
-		return (Headers<String, String>) ManifestElement.parseBundleManifest(manifestStream,
-				new Headers<>(10));
+		CaseInsensitiveDictionaryMap<String, String> map = new CaseInsensitiveDictionaryMap<>(10);
+		ManifestElement.parseBundleManifest(manifestStream, map);
+		return map;
 	}
 
 	private static ManifestElement[] parseManifestHeader(String header, Map<String, String> manifest,
@@ -995,12 +1004,12 @@ public class BundlesAction extends AbstractPublisherAction {
 	 * 
 	 * @param bundleDescriptions Equinox framework descriptions of the bundles to
 	 *                           publish.
-	 * @param info               Configuration and publication advice information.
+	 * @param publisherInfo               Configuration and publication advice information.
 	 * @param result             Used to attach status for the publication
 	 *                           operation.
 	 * @param monitor            Used to fire progress events.
 	 */
-	protected void generateBundleIUs(BundleDescription[] bundleDescriptions, IPublisherInfo info,
+	protected void generateBundleIUs(BundleDescription[] bundleDescriptions, IPublisherInfo publisherInfo,
 			IPublisherResult result, IProgressMonitor monitor) {
 		// This assumes that hosts are processed before fragments because for each
 		// fragment the host
@@ -1019,20 +1028,20 @@ public class BundlesAction extends AbstractPublisherAction {
 					PublisherHelper.fromOSGiVersion(bd.getVersion()));
 			IArtifactKey bundleArtKey = createBundleArtifactKey(bd.getSymbolicName(), bd.getVersion().toString());
 			if (bundleIU == null) {
-				createAdviceFileAdvice(bd, info);
+				createAdviceFileAdvice(bd, publisherInfo);
 				// Create the bundle IU according to any shape advice we have
-				bundleIU = doCreateBundleIU(bd, bundleArtKey, info);
+				bundleIU = doCreateBundleIU(bd, bundleArtKey, publisherInfo);
 			}
 
 			File bundleLocation = new File(bd.getLocation());
-			IArtifactDescriptor ad = PublisherHelper.createArtifactDescriptor(info, bundleArtKey, bundleLocation);
-			processArtifactPropertiesAdvice(bundleIU, ad, info);
+			IArtifactDescriptor ad = PublisherHelper.createArtifactDescriptor(publisherInfo, bundleArtKey, bundleLocation);
+			processArtifactPropertiesAdvice(bundleIU, ad, publisherInfo);
 
 			// Publish according to the shape on disk
 			if (bundleLocation.isDirectory()) {
-				publishArtifact(ad, bundleLocation, bundleLocation.listFiles(), info);
+				publishArtifact(ad, bundleLocation, bundleLocation.listFiles(), publisherInfo);
 			} else {
-				publishArtifact(ad, bundleLocation, info);
+				publishArtifact(ad, bundleLocation, publisherInfo);
 			}
 
 			IInstallableUnit fragment = null;
@@ -1057,7 +1066,7 @@ public class BundlesAction extends AbstractPublisherAction {
 				result.addIU(fragment, IPublisherResult.NON_ROOT);
 			}
 
-			InstallableUnitDescription[] others = processAdditionalInstallableUnitsAdvice(bundleIU, info);
+			InstallableUnitDescription[] others = processAdditionalInstallableUnitsAdvice(bundleIU, publisherInfo);
 			for (int iuIndex = 0; others != null && iuIndex < others.length; iuIndex++) {
 				result.addIU(MetadataFactory.createInstallableUnit(others[iuIndex]), IPublisherResult.ROOT);
 			}

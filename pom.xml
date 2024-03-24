@@ -15,18 +15,18 @@
   <parent>
     <groupId>org.eclipse</groupId>
     <artifactId>eclipse-platform-parent</artifactId>
-    <version>4.31.0-SNAPSHOT</version>
+    <version>4.32.0-SNAPSHOT</version>
     <relativePath>../eclipse-platform-parent</relativePath>
   </parent>
 
-  <groupId>org.eclipse.equinox.p2</groupId>
+  <groupId>org.eclipse.platform</groupId>
   <artifactId>rt.equinox.p2</artifactId>
   <packaging>pom</packaging>
   <version>${releaseVersion}${qualifier}</version>
 
   <properties>
     <tycho.scmUrl>scm:git:https://github.com/eclipse-equinox/p2.git</tycho.scmUrl>
-    <releaseVersion>4.31.0</releaseVersion>
+    <releaseVersion>4.32.0</releaseVersion>
     <!-- Defines the default Qualifier if no format is given-->
     <!-- can be overriden with -Dtycho.buildqualifier.format=yyyyMMddHHmm for a dynamic qualifier or -Dqualifier=abcd for a static value -->
     <qualifier>-SNAPSHOT</qualifier>
@@ -125,6 +125,18 @@
             <goals>
               <goal>p2-metadata</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-packaging-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-update-consumer-pom</id>
+            <configuration>
+				<skipPomGeneration>false</skipPomGeneration>
+			</configuration>
           </execution>
         </executions>
       </plugin>

@@ -13,6 +13,8 @@
  *******************************************************************************/
 package org.eclipse.equinox.p2.tests.engine;
 
+import static org.junit.Assert.assertThrows;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -20,7 +22,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.equinox.internal.p2.engine.ISurrogateProfileHandler;
 import org.eclipse.equinox.internal.p2.engine.Profile;
@@ -57,21 +61,11 @@ public class ProfileTest extends AbstractProvisioningTest {
 	}
 
 	public void testNullProfile() {
-		try {
-			createProfile(null);
-		} catch (IllegalArgumentException expected) {
-			return;
-		}
-		fail();
+		assertThrows(IllegalArgumentException.class, () -> createProfile(null));
 	}
 
 	public void testEmptyProfile() {
-		try {
-			createProfile("");
-		} catch (IllegalArgumentException expected) {
-			return;
-		}
-		fail();
+		assertThrows(IllegalArgumentException.class, () -> createProfile(""));
 	}
 
 	public void testAddRemoveProperty() throws ProvisionException {
@@ -151,12 +145,13 @@ public class ProfileTest extends AbstractProvisioningTest {
 			}
 
 			@Override
-			public boolean isSurrogate(IProfile profile) {
+			public boolean isSurrogate(IProfile p) {
 				return false;
 			}
 
 			@Override
-			public IQueryResult<IInstallableUnit> queryProfile(IProfile profile, IQuery<IInstallableUnit> query, IProgressMonitor monitor) {
+			public IQueryResult<IInstallableUnit> queryProfile(IProfile p, IQuery<IInstallableUnit> query,
+					IProgressMonitor monitor) {
 				return new Collector<>();
 			}
 
@@ -214,7 +209,7 @@ public class ProfileTest extends AbstractProvisioningTest {
 				reader.setContentHandler(new ProfileDocHandler(PROFILE_TEST_ELEMENT, testHandler));
 				reader.parse(new InputSource(new StringReader(profileString)));
 				if (isValidXML()) {
-					profiles = testHandler.profiles;
+					profiles = testHandler.handledProfiles;
 				}
 			} catch (SAXException e) {
 				throw new IOException(e.getMessage());
@@ -243,10 +238,11 @@ public class ProfileTest extends AbstractProvisioningTest {
 		final class TestHandler extends RootHandler {
 
 			private ProfilesHandler profilesHandler;
-			IProfile[] profiles;
+			IProfile[] handledProfiles;
 
 			@Override
 			protected void handleRootAttributes(Attributes attributes) {
+				//
 			}
 
 			@Override
@@ -266,7 +262,7 @@ public class ProfileTest extends AbstractProvisioningTest {
 			protected void finished() {
 				if (isValidXML()) {
 					if (profilesHandler != null) {
-						profiles = profilesHandler.getProfiles();
+						handledProfiles = profilesHandler.getProfiles();
 					}
 				}
 			}

@@ -24,6 +24,7 @@ import org.eclipse.equinox.internal.simpleconfigurator.utils.BundleInfo;
 import org.eclipse.equinox.internal.simpleconfigurator.utils.SimpleConfiguratorUtils;
 import org.eclipse.equinox.p2.tests.AbstractProvisioningTest;
 
+@SuppressWarnings("deprecation") // java.io.File.toURL()
 public class SimpleConfiguratorUtilsTest extends AbstractProvisioningTest {
 
 	private static final boolean WINDOWS = java.io.File.separatorChar == '\\';
@@ -202,20 +203,16 @@ public class SimpleConfiguratorUtilsTest extends AbstractProvisioningTest {
 		fail("improper version error not caught");
 	}
 
-	public void testReadMissingBundleInfo() {
+	public void testReadMissingBundleInfo() throws MalformedURLException, IOException {
 
 		File bundleInfoFile = new File(getTempFolder(), "bundle.info");
 		assertFalse(bundleInfoFile.exists());
-		try {
-			if (Activator.EXTENSIONS == null) {
-				// base bundles only
-				assertEquals(0, SimpleConfiguratorUtils.readConfiguration(bundleInfoFile.toURL(), null).size());
-			} else {
-				// including bundles from configured extensions
-				assertEquals(4, SimpleConfiguratorUtils.readConfiguration(bundleInfoFile.toURL(), null).size());
-			}
-		} catch (IOException e) {
-			fail();
+		if (Activator.EXTENSIONS == null) {
+			// base bundles only
+			assertEquals(0, SimpleConfiguratorUtils.readConfiguration(bundleInfoFile.toURL(), null).size());
+		} else {
+			// including bundles from configured extensions
+			assertEquals(4, SimpleConfiguratorUtils.readConfiguration(bundleInfoFile.toURL(), null).size());
 		}
 	}
 }
