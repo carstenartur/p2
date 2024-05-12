@@ -32,7 +32,7 @@ import org.eclipse.osgi.util.NLS;
  * The goal of the collect phase is to ask the touchpoints if the artifacts associated with an IU need to be downloaded.
  */
 public class Collect extends InstallableUnitPhase {
-	public static final String PARM_ARTIFACT_REQUESTS = "artifactRequests"; //$NON-NLS-1$
+
 	public static final String NO_ARTIFACT_REPOSITORIES_AVAILABLE = "noArtifactRepositoriesAvailable"; //$NON-NLS-1$
 	private static final String PARM_IUS = "ius"; //$NON-NLS-1$
 	private IProvisioningAgent agent = null;
@@ -89,9 +89,9 @@ public class Collect extends InstallableUnitPhase {
 			agent = (IProvisioningAgent) parameters.get(PARM_AGENT);
 		}
 
+		@SuppressWarnings("unchecked")
+		Set<IInstallableUnit> ius = (Set<IInstallableUnit>) parameters.get(PARM_IUS);
 		if (Boolean.parseBoolean(context.getProperty(ProvisioningContext.CHECK_AUTHORITIES))) {
-			@SuppressWarnings("unchecked")
-			Set<IInstallableUnit> ius = (Set<IInstallableUnit>) parameters.get(PARM_IUS);
 			IStatus authorityStatus = new AuthorityChecker(agent, context, ius, artifactRequests.stream()
 						.flatMap(Arrays::stream).map(IArtifactRequest::getArtifactKey).collect(Collectors.toList()),
 						profile).start(monitor);
@@ -111,7 +111,7 @@ public class Collect extends InstallableUnitPhase {
 		}
 
 		List<IArtifactRequest> totalArtifactRequests = new ArrayList<>(artifactRequests.size());
-		DownloadManager dm = new DownloadManager(context, agent);
+		DownloadManager dm = new DownloadManager(context, ius, agent);
 		for (IArtifactRequest[] requests : artifactRequests) {
 			for (IArtifactRequest request : requests) {
 				dm.add(request);
