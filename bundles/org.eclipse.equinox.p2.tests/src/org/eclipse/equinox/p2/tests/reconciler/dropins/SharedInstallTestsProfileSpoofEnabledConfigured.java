@@ -98,18 +98,18 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 		try {
 			File userBundlesInfo = new File(userBase, "configuration/org.eclipse.equinox.simpleconfigurator/bundles.info");
 			File userConfigIni = new File(userBase, "configuration/config.ini");
-			assertFalse("0.1", userBundlesInfo.exists());
-			assertFalse("0.2", userConfigIni.exists());
-			reconcileReadOnly("0.21", extensions);
-			assertFalse("0.3", userBundlesInfo.exists());
-			assertTrue("0.4", userConfigIni.exists());
+			assertFalse(userBundlesInfo.exists());
+			assertFalse(userConfigIni.exists());
+			reconcileReadOnly("", extensions);
+			assertFalse(userBundlesInfo.exists());
+			assertTrue(userConfigIni.exists());
 
 			Properties props = new Properties();
 			try (InputStream is = new BufferedInputStream(new FileInputStream(userConfigIni))) {
 				props.load(is);
 			}
-			assertTrue("0.5", props.containsKey("osgi.sharedConfiguration.area"));
-			assertTrue("0.6", props.size() == 1);
+			assertTrue(props.containsKey("osgi.sharedConfiguration.area"));
+			assertEquals(1, props.size());
 		} finally {
 			cleanupReadOnlyInstall();
 		}
@@ -117,7 +117,7 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 
 	@Override
 	public void testReadOnlyDropinsStartup() throws IOException {
-		if (Platform.getOS().equals(Platform.OS_MACOSX))
+		if (Platform.OS.isMac())
 			return;
 
 		assertInitialized();
@@ -128,13 +128,13 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 		try {
 			File userBundlesInfo = new File(userBase, "configuration/org.eclipse.equinox.simpleconfigurator/bundles.info");
 			File userConfigIni = new File(userBase, "configuration/config.ini");
-			assertFalse("0.1", userBundlesInfo.exists());
-			assertFalse("0.2", userConfigIni.exists());
+			assertFalse(userBundlesInfo.exists());
+			assertFalse(userConfigIni.exists());
 
 			reconcileReadOnly("0.21", extensions);
 
-			assertTrue("0.3", userBundlesInfo.exists());
-			assertTrue("0.4", userConfigIni.exists());
+			assertTrue(userBundlesInfo.exists());
+			assertTrue(userConfigIni.exists());
 
 			assertTrue(isInBundlesInfo(userBundlesInfo, "myBundle", null));
 			assertTrue(isInBundlesInfo(userBundlesInfo, "zzz", null));
@@ -142,7 +142,7 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 			// remove the bundle from the dropins and reconcile
 			setReadOnly(readOnlyBase, false);
 			AbstractSharedInstallTest.removeReallyReadOnly(readOnlyBase);
-			assertTrue("0.7", readOnlyBase.canWrite());
+			assertTrue(readOnlyBase.canWrite());
 			remove("1.0", "dropins", "myBundle_1.0.0.jar");
 			setReadOnly(readOnlyBase, true);
 			AbstractSharedInstallTest.reallyReadOnly(readOnlyBase);
@@ -164,7 +164,7 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 			// new, up-to-date bundles.info
 			setReadOnly(readOnlyBase, false);
 			AbstractSharedInstallTest.removeReallyReadOnly(readOnlyBase);
-			assertTrue("0.7", readOnlyBase.canWrite());
+			assertTrue(readOnlyBase.canWrite());
 			add("0.211", "dropins", jar);
 			setReadOnly(readOnlyBase, true);
 			AbstractSharedInstallTest.reallyReadOnly(readOnlyBase);
@@ -183,7 +183,7 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 
 	@Override
 	public void testUserDropinsStartup() throws IOException {
-		if (Platform.getOS().equals(Platform.OS_MACOSX))
+		if (Platform.OS.isMac())
 			return;
 
 		assertInitialized();
@@ -198,13 +198,13 @@ public class SharedInstallTestsProfileSpoofEnabledConfigured extends SharedInsta
 
 			File userBundlesInfo = new File(userBase, "configuration/org.eclipse.equinox.simpleconfigurator/bundles.info");
 			File userConfigIni = new File(userBase, "configuration/config.ini");
-			assertFalse("0.1", userBundlesInfo.exists());
-			assertFalse("0.2", userConfigIni.exists());
+			assertFalse(userBundlesInfo.exists());
+			assertFalse(userConfigIni.exists());
 
 			reconcileReadOnly("0.21", extensions);
 
-			assertTrue("0.3", userBundlesInfo.exists());
-			assertTrue("0.4", userConfigIni.exists());
+			assertTrue(userBundlesInfo.exists());
+			assertTrue(userConfigIni.exists());
 
 			assertTrue(isInBundlesInfo(userBundlesInfo, "myBundle", null));
 			assertTrue(isInBundlesInfo(userBundlesInfo, "zzz", null));
