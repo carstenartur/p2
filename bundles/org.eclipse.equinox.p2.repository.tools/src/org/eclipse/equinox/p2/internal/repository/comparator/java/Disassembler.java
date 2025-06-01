@@ -54,8 +54,9 @@ public class Disassembler {
 	}
 
 	private void decodeModifiers(StringBuffer buffer, int accessFlags, boolean printDefault, boolean asBridge, int[] checkBits) {
-		if (checkBits == null)
+		if (checkBits == null) {
 			return;
+		}
 		boolean firstModifier = true;
 		for (int checkBit : checkBits) {
 			switch (checkBit) {
@@ -103,8 +104,9 @@ public class Disassembler {
 			}
 		}
 		if (!firstModifier) {
-			if (!printDefault)
+			if (!printDefault) {
 				buffer.append(Messages.disassembler_space);
+			}
 		} else if (printDefault) {
 			// no modifier: package default visibility
 			buffer.append("default"); //$NON-NLS-1$
@@ -499,8 +501,9 @@ public class Disassembler {
 	 * @return the disassembled string of the ClassFileReader according to the mode
 	 */
 	private String disassemble(ClassFileReader classFileReader, String lineSeparator, int mode) {
-		if (classFileReader == null)
+		if (classFileReader == null) {
 			return Utility.EMPTY_STRING;
+		}
 		char[] className = classFileReader.getClassName();
 		if (className == null) {
 			// incomplete initialization. We cannot go further.
@@ -538,8 +541,7 @@ public class Disassembler {
 			} else if (minorVersion == 0 && majorVersion == 51) {
 				versionNumber = IModifierConstants.VERSION_1_7;
 			}
-			buffer.append(NLS.bind(Messages.classfileformat_versiondetails, new String[] {versionNumber, Integer.toString(majorVersion), Integer.toString(minorVersion), ((accessFlags & IModifierConstants.ACC_SUPER) != 0 ? Messages.classfileformat_superflagisset : Messages.classfileformat_superflagisnotset) + (isDeprecated(classFileReader) ? ", deprecated" : Utility.EMPTY_STRING)//$NON-NLS-1$
-			}));
+			buffer.append(NLS.bind(Messages.classfileformat_versiondetails, versionNumber, Integer.toString(majorVersion), Integer.toString(minorVersion), ((accessFlags & IModifierConstants.ACC_SUPER) != 0 ? Messages.classfileformat_superflagisset : Messages.classfileformat_superflagisnotset) + (isDeprecated(classFileReader) ? ", deprecated" : Utility.EMPTY_STRING)));
 			writeNewLine(buffer, lineSeparator, 0);
 			if (signatureAttribute != null) {
 				buffer.append(NLS.bind(Messages.disassembler_signatureattributeheader, new String(signatureAttribute.getSignature())));
@@ -673,8 +675,9 @@ public class Disassembler {
 
 	private boolean isVarArgs(MethodInfo methodInfo) {
 		int accessFlags = methodInfo.getAccessFlags();
-		if ((accessFlags & IModifierConstants.ACC_VARARGS) != 0)
+		if ((accessFlags & IModifierConstants.ACC_VARARGS) != 0) {
 			return true;
+		}
 		// check the presence of the unspecified Varargs attribute
 		return Utility.getAttribute(methodInfo, AttributeNamesConstants.VAR_ARGS) != null;
 	}
@@ -709,7 +712,7 @@ public class Disassembler {
 				} else {
 					catchType = ANY_EXCEPTION;
 				}
-				buffer.append(NLS.bind(Messages.classfileformat_exceptiontableentry, new String[] {Integer.toString(exceptionTableEntry.getStartPC()), Integer.toString(exceptionTableEntry.getEndPC()), Integer.toString(exceptionTableEntry.getHandlerPC()), new String(catchType),}));
+				buffer.append(NLS.bind(Messages.classfileformat_exceptiontableentry, Integer.toString(exceptionTableEntry.getStartPC()), Integer.toString(exceptionTableEntry.getEndPC()), Integer.toString(exceptionTableEntry.getHandlerPC()), new String(catchType)));
 			}
 		}
 	}

@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  ******************************************************************************/
@@ -28,7 +28,7 @@ public class PublisherInfo implements IPublisherInfo {
 	private IMetadataRepository contextMetadataRepository;
 	private IArtifactRepository contextArtifactRepository;
 	private String[] configurations = new String[0];
-	private List<IPublisherAdvice> adviceList = new ArrayList<>(11);
+	private final List<IPublisherAdvice> adviceList = new ArrayList<>(11);
 
 	@Override
 	public void addAdvice(IPublisherAdvice advice) {
@@ -44,9 +44,10 @@ public class PublisherInfo implements IPublisherInfo {
 	public <T extends IPublisherAdvice> Collection<T> getAdvice(String configSpec, boolean includeDefault, String id, Version version, Class<T> type) {
 		ArrayList<T> result = new ArrayList<>();
 		for (IPublisherAdvice advice : adviceList) {
-			if (type.isInstance(advice) && advice.isApplicable(configSpec, includeDefault, id, version))
+			if (type.isInstance(advice) && advice.isApplicable(configSpec, includeDefault, id, version)) {
 				// Ideally, we would use Class.cast here but it was introduced in Java 1.5
 				result.add((T) advice);
+			}
 		}
 		return result;
 	}

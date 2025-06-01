@@ -52,11 +52,11 @@ public final class PGPSignatureVerifier extends ProcessingStep {
 
 	private IArtifactDescriptor sourceDescriptor;
 
-	private Map<PGPSignature, List<PGPContentVerifier>> signaturesToVerify = new LinkedHashMap<>();
+	private final Map<PGPSignature, List<PGPContentVerifier>> signaturesToVerify = new LinkedHashMap<>();
 
-	private Map<PGPContentVerifier, PGPPublicKey> verifierKeys = new LinkedHashMap<>();
+	private final Map<PGPContentVerifier, PGPPublicKey> verifierKeys = new LinkedHashMap<>();
 
-	private List<OutputStream> signatureVerifiers = new ArrayList<>();
+	private final List<OutputStream> signatureVerifiers = new ArrayList<>();
 
 	public PGPSignatureVerifier() {
 		super();
@@ -75,8 +75,7 @@ public final class PGPSignatureVerifier extends ProcessingStep {
 			PGPObjectFactory pgpFactory = new BcPGPObjectFactory(in);
 			Object o = pgpFactory.nextObject();
 			PGPSignatureList signatureList = new PGPSignatureList(new PGPSignature[0]);
-			if (o instanceof PGPCompressedData) {
-				PGPCompressedData pgpCompressData = (PGPCompressedData) o;
+			if (o instanceof PGPCompressedData pgpCompressData) {
 				pgpFactory = new BcPGPObjectFactory(pgpCompressData.getDataStream());
 				signatureList = (PGPSignatureList) pgpFactory.nextObject();
 			} else if (o instanceof PGPSignatureList) {

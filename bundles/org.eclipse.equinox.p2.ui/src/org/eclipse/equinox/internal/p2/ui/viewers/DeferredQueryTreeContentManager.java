@@ -53,7 +53,7 @@ public class DeferredQueryTreeContentManager extends DeferredTreeContentManager 
 
 	Object elementRequested;
 	ListenerList<IDeferredQueryTreeListener> listeners;
-	private AbstractTreeViewer treeViewer;
+	private final AbstractTreeViewer treeViewer;
 
 	public DeferredQueryTreeContentManager(AbstractTreeViewer viewer) {
 		super(viewer);
@@ -92,15 +92,15 @@ public class DeferredQueryTreeContentManager extends DeferredTreeContentManager 
 	@Override
 	protected void startFetchingDeferredChildren(final Object parent, final IDeferredWorkbenchAdapter adapter,
 			final PendingUpdateAdapter placeholder) {
-		if (placeholder instanceof ElementPendingUpdateAdapter)
+		if (placeholder instanceof ElementPendingUpdateAdapter) {
 			notifyListener(true, (ElementPendingUpdateAdapter) placeholder);
+		}
 		super.startFetchingDeferredChildren(parent, adapter, placeholder);
 	}
 
 	@Override
 	protected void runClearPlaceholderJob(final PendingUpdateAdapter placeholder) {
-		if (placeholder instanceof ElementPendingUpdateAdapter) {
-			ElementPendingUpdateAdapter pendingUpdate = (ElementPendingUpdateAdapter) placeholder;
+		if (placeholder instanceof ElementPendingUpdateAdapter pendingUpdate) {
 			if (pendingUpdate.isRemoved()) {
 				return;
 			}
@@ -139,8 +139,9 @@ public class DeferredQueryTreeContentManager extends DeferredTreeContentManager 
 	}
 
 	private void notifyListener(boolean starting, ElementPendingUpdateAdapter placeholder) {
-		if (listeners == null || listeners.isEmpty())
+		if (listeners == null || listeners.isEmpty()) {
 			return;
+		}
 		if (starting) {
 			for (IDeferredQueryTreeListener deferredQueryTreeListener : listeners) {
 				deferredQueryTreeListener.fetchingDeferredChildren(placeholder.element, placeholder);

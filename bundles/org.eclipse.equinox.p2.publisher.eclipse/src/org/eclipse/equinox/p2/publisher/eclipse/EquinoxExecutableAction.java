@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  *   Pascal Rapicault - Support for bundled macosx http://bugs.eclipse.org/57349
@@ -72,18 +72,20 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		setPublisherInfo(publisherinfo);
 		ExecutablesDescriptor brandedExecutables = brandExecutables(executables);
 		try {
-			if (publishExecutableIU(brandedExecutables, result))
+			if (publishExecutableIU(brandedExecutables, result)) {
 				publishExecutableCU(brandedExecutables, result);
+			}
 			publishExecutableSetter(brandedExecutables, result);
 		} finally {
-			if (brandedExecutables.isTemporary())
+			if (brandedExecutables.isTemporary()) {
 				FileUtils.deleteAll(brandedExecutables.getLocation());
+			}
 		}
 		return Status.OK_STATUS;
 	}
 
 	/**
-	 * Publishes the IUs that cause the executable to be actually set as the launcher for 
+	 * Publishes the IUs that cause the executable to be actually set as the launcher for
 	 * the profile
 	 */
 	private void publishExecutableSetter(ExecutablesDescriptor brandedExecutables, IPublisherResult result) {
@@ -136,8 +138,9 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 			iu.setArtifacts(new IArtifactKey[] {key});
 			IArtifactDescriptor descriptor = PublisherHelper.createArtifactDescriptor(info, key, null);
 			publishArtifact(descriptor, execDescriptor.getFiles(), null, info, createRootPrefixComputer(execDescriptor.getLocation()));
-			if (execDescriptor.isTemporary())
+			if (execDescriptor.isTemporary()) {
 				FileUtils.deleteAll(execDescriptor.getLocation());
+			}
 		}
 		// setup a requirement between the executable and the launcher fragment that has the shared library
 		if (config.length > 0 && !CONFIG_ANY.equalsIgnoreCase(config[0])) {
@@ -174,7 +177,7 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		cu.setVersion(version);
 		cu.setFilter(createFilterSpec(configSpec));
 		String executableId = getExecutableId();
-		cu.setHost(new IRequirement[] {MetadataFactory.createRequirement(IInstallableUnit.NAMESPACE_IU_ID, executableId, new VersionRange(version, true, version, true), null, false, false)});
+		cu.setHost(MetadataFactory.createRequirement(IInstallableUnit.NAMESPACE_IU_ID, executableId, new VersionRange(version, true, version, true), null, false, false));
 		cu.setProperty(InstallableUnitDescription.PROP_TYPE_FRAGMENT, Boolean.TRUE.toString());
 		//TODO bug 218890, would like the fragment to provide the launcher capability as well, but can't right now.
 		cu.setCapabilities(new IProvidedCapability[] {PublisherHelper.createSelfCapability(id, version)});
@@ -183,8 +186,9 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 	}
 
 	private Map<String, String> computeInstallActions(ExecutablesDescriptor execDescriptor, String os) {
-		if (Constants.OS_MACOSX.equals(os))
+		if (Constants.OS_MACOSX.equals(os)) {
 			return computeMacInstallActions(execDescriptor);
+		}
 
 		Map<String, String> touchpointData = new HashMap<>();
 		String configurationData = "unzip(source:@artifact, target:${installFolder});"; //$NON-NLS-1$
@@ -216,18 +220,19 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		// magic moved here from BrandingIron.brandMac for bug 342550; PDE build requires appName == execName
 		// TODO the application name for Mac really should be a parameter of the product configuration
 		String appName = execName;
-		if (appName.equals("eclipse")) //$NON-NLS-1$
+		if (appName.equals("eclipse")) { //$NON-NLS-1$
 			appName = "Eclipse"; //$NON-NLS-1$
-		else if (appName.equals("launcher")) //$NON-NLS-1$
+		} else if (appName.equals("launcher")) { //$NON-NLS-1$
 			appName = "Launcher"; //$NON-NLS-1$
+		}
 		return appName;
 	}
 
 	/**
-	 * Brands a copy of the given executable descriptor with the information in the 
+	 * Brands a copy of the given executable descriptor with the information in the
 	 * current product definition.  The files described in the descriptor are also copied
 	 * to a temporary location to avoid destructive modification.
-	 * 
+	 *
 	 * @param descriptor the executable descriptor to brand.
 	 * @return the new descriptor
 	 */
@@ -235,18 +240,20 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		ExecutablesDescriptor result = new ExecutablesDescriptor(descriptor);
 		result.makeTemporaryCopy();
 		IBrandingAdvice advice = getBrandingAdvice();
-		if (advice == null)
+		if (advice == null) {
 			partialBrandExecutables(result);
-		else
+		} else {
 			fullBrandExecutables(result, advice);
+		}
 		return result;
 	}
 
 	private IBrandingAdvice getBrandingAdvice() {
 		// there is expected to only be one branding advice for a given configspec so
 		// just return the first one we find.
-		for (IBrandingAdvice advice : info.getAdvice(configSpec, true, null, null, IBrandingAdvice.class))
+		for (IBrandingAdvice advice : info.getAdvice(configSpec, true, null, null, IBrandingAdvice.class)) {
 			return advice;
+		}
 		return null;
 	}
 
@@ -257,8 +264,9 @@ public class EquinoxExecutableAction extends AbstractPublisherAction {
 		iron.setIcons(advice.getIcons());
 		iron.setMacOsBundleUrlTypes(advice.getMacOsBundleUrlTypes());
 		String name = advice.getExecutableName();
-		if (name == null)
+		if (name == null) {
 			name = "eclipse"; //$NON-NLS-1$
+		}
 		iron.setName(name);
 		iron.setApplicationName(guessMacAppName(name));
 		iron.setOS(advice.getOS());

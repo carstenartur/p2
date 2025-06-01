@@ -7,7 +7,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     Cloudsmith Inc - initial API and implementation.
  *******************************************************************************/
@@ -35,7 +35,7 @@ import org.eclipse.equinox.internal.p2.metadata.*;
  *
  * The Omni version addresses a lot of other issues as well, such as reordering of the elements
  * or treating some parts of a version as irrelevant when comparing.
- * 
+ *
  * The class is signature compatible with {@link org.osgi.framework.Version} but attempts
  * to use it as such might render a {@link UnsupportedOperationException} in case the
  * raw vector holds incompatible values. The method {@link #isOSGiCompatible()} can be used
@@ -76,9 +76,9 @@ public abstract class Version implements Comparable<Version>, Serializable {
 	 * Note that this method performs a non thread-safe object pooling. Instances are
 	 * stored in a weak cache, i.e. for multiple calls with the same input it is likely
 	 * but not guaranteed that the same instance is retrieved. Same holds for concurrent
-	 * access on this method. Clients must not assume to get the same instance for 
+	 * access on this method. Clients must not assume to get the same instance for
 	 * subsequent calls.
-	 * 
+	 *
 	 * @param version String representation of the version identifier. Leading
 	 *        and trailing whitespace will be ignored.
 	 * @return A <code>Version</code> object representing the version identifier
@@ -104,10 +104,10 @@ public abstract class Version implements Comparable<Version>, Serializable {
 
 	/**
 	 * Creates an OSGi version identifier from the specified numerical components.
-	 * 
+	 *
 	 * <p>
 	 * The qualifier is set to the empty string.
-	 * 
+	 *
 	 * @param major Major component of the version identifier.
 	 * @param minor Minor component of the version identifier.
 	 * @param micro Micro component of the version identifier.
@@ -120,7 +120,7 @@ public abstract class Version implements Comparable<Version>, Serializable {
 
 	/**
 	 * Creates an OSGi version identifier from the specified components.
-	 * 
+	 *
 	 * @param major Major component of the version identifier.
 	 * @param minor Minor component of the version identifier.
 	 * @param micro Micro component of the version identifier.
@@ -133,13 +133,15 @@ public abstract class Version implements Comparable<Version>, Serializable {
 	public static Version createOSGi(int major, int minor, int micro, String qualifier) {
 		Comparable<?> logicQualifier;
 		if (qualifier == null || qualifier.length() == 0) {
-			if (major == 0 && minor == 0 && micro == 0)
+			if (major == 0 && minor == 0 && micro == 0) {
 				return emptyVersion;
+			}
 			logicQualifier = VersionVector.MINS_VALUE; // So that we can do identity compare
-		} else if (qualifier.equals(IVersionFormat.DEFAULT_MAX_STRING_TRANSLATION))
+		} else if (qualifier.equals(IVersionFormat.DEFAULT_MAX_STRING_TRANSLATION)) {
 			logicQualifier = VersionVector.MAXS_VALUE;
-		else
+		} else {
 			logicQualifier = qualifier;
+		}
 		return new OSGiVersion(major, minor, micro, logicQualifier);
 	}
 
@@ -147,7 +149,7 @@ public abstract class Version implements Comparable<Version>, Serializable {
 	 * Parses a version identifier from the specified string. This method is for backward
 	 * compatibility with OSGi and will return the OSGi &quot;0.0.0&quot; version when
 	 * the provided string is empty or <code>null</code>.
-	 * 
+	 *
 	 * @param version String representation of the version identifier. Leading
 	 *        and trailing whitespace will be ignored.
 	 * @return A <code>Version</code> object representing the version
@@ -159,8 +161,9 @@ public abstract class Version implements Comparable<Version>, Serializable {
 	 * @see #create(String)
 	 */
 	public static Version parseVersion(String version) {
-		if (version == null || version.length() == 0)
+		if (version == null || version.length() == 0) {
 			return Version.emptyVersion;
+		}
 		Version v = create(version);
 		return v == null ? Version.emptyVersion : v;
 	}
@@ -229,7 +232,7 @@ public abstract class Version implements Comparable<Version>, Serializable {
 	/**
 	 * Appends the string representation of this version onto the <code>sb</code>
 	 * StringBuilder.
-	 * 
+	 *
 	 * @param sb The builder that will receive the version string
 	 * @since 2.9
 	 */

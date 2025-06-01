@@ -41,8 +41,9 @@ public abstract class Binary extends Expression {
 		if (cmp == 0) {
 			Binary be = (Binary) e;
 			cmp = lhs.compareTo(be.lhs);
-			if (cmp == 0)
+			if (cmp == 0) {
 				cmp = rhs.compareTo(be.rhs);
+			}
 		}
 		return cmp;
 	}
@@ -78,13 +79,12 @@ public abstract class Binary extends Expression {
 
 	/**
 	 * Appends the LDAP filter attribute name from the lhs expression if
-	 * possible. 
+	 * possible.
 	 * @throws UnsupportedOperationException when this expression does not conform to an
 	 * LDAP filter binary expression
 	 */
 	void appendLDAPAttribute(StringBuilder buf) {
-		if (lhs instanceof DynamicMember) {
-			DynamicMember attr = (DynamicMember) lhs;
+		if (lhs instanceof DynamicMember attr) {
 			if (attr.operand instanceof Variable) {
 				buf.append(attr.getName());
 				return;
@@ -120,14 +120,15 @@ public abstract class Binary extends Expression {
 				bld.append('\\');
 				bld.append(hexChar((cs & 0x00f0) >> 4));
 				bld.append(hexChar(cs & 0x000f));
-			} else
+			} else {
 				bld.append(c);
+			}
 		}
 	}
 
 	/**
 	 * Appends the LDAP filter value from the rhs expression if
-	 * possible. 
+	 * possible.
 	 * @throws UnsupportedOperationException when this expression does not conform to an
 	 * LDAP filter binary expression
 	 */

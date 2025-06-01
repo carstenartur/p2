@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Genuitec, LLC - added license support
@@ -40,9 +40,7 @@ public class EclipsePublisherHelper {
 	}
 
 	private static void addExtraProperties(IInstallableUnit iiu, Map<String, String> extraProperties) {
-		if (iiu instanceof InstallableUnit) {
-			InstallableUnit iu = (InstallableUnit) iiu;
-
+		if (iiu instanceof InstallableUnit iu) {
 			for (Entry<String, String> entry : extraProperties.entrySet()) {
 				iu.setProperty(entry.getKey(), entry.getValue());
 			}

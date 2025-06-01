@@ -20,16 +20,17 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.equinox.p2.engine.spi.*;
 
 public class ParameterizedProvisioningAction extends ProvisioningAction {
-	private ProvisioningAction action;
-	private Map<String, String> actionParameters;
+	private final ProvisioningAction action;
+	private final Map<String, String> actionParameters;
 	//ActualParameter is used to keep values to which variables have been resolved.
-	//This is especially useful when undoing in the presence of variables that change (e.g. lastResult) 
-	private Map<String, Object> actualParameters;
-	private String actionText;
+	//This is especially useful when undoing in the presence of variables that change (e.g. lastResult)
+	private final Map<String, Object> actualParameters;
+	private final String actionText;
 
 	public ParameterizedProvisioningAction(ProvisioningAction action, Map<String, String> actionParameters, String actionText) {
-		if (action == null || actionParameters == null)
+		if (action == null || actionParameters == null) {
 			throw new IllegalArgumentException(Messages.ParameterizedProvisioningAction_action_or_parameters_null);
+		}
 		this.action = action;
 		this.actionParameters = actionParameters;
 		this.actualParameters = new HashMap<>(actionParameters.size());
@@ -58,15 +59,17 @@ public class ParameterizedProvisioningAction extends ProvisioningAction {
 		return Collections.unmodifiableMap(result);
 	}
 
-	//allowInfixReplacement triggers the replacement of the variables found in the middle of a string (e.g. abc${var}def) 
+	//allowInfixReplacement triggers the replacement of the variables found in the middle of a string (e.g. abc${var}def)
 	private Object processVariables(String parameterValue, Map<String, Object> parameters, boolean allowInfixReplacement) {
 		int variableBeginIndex = parameterValue.indexOf("${"); //$NON-NLS-1$
-		if (variableBeginIndex == -1)
+		if (variableBeginIndex == -1) {
 			return parameterValue;
+		}
 
 		int variableEndIndex = parameterValue.indexOf('}', variableBeginIndex + 2);
-		if (variableEndIndex == -1)
+		if (variableEndIndex == -1) {
 			return parameterValue;
+		}
 
 		String preVariable = parameterValue.substring(0, variableBeginIndex);
 		String variableName = parameterValue.substring(variableBeginIndex + 2, variableEndIndex);
@@ -87,16 +90,18 @@ public class ParameterizedProvisioningAction extends ProvisioningAction {
 			Value<?> result = (Value<?>) value;
 			if (result.getClazz() == String.class) {
 				value = result.getValue();
-			} else
+			} else {
 				throw new RuntimeException("The type of the variable is expected to be a String"); //$NON-NLS-1$
+			}
 		}
 
 		// try to replace this parameter with a character
 		if (value == null && variableName.charAt(0) == '#') {
 			try {
 				int code = Integer.parseInt(variableName.substring(1));
-				if (code >= 0 && code < 65536)
+				if (code >= 0 && code < 65536) {
 					value = Character.toString((char) code);
+				}
 			} catch (Throwable t) {
 				// ignore and leave value as null
 			}

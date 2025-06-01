@@ -306,8 +306,9 @@ public class BundlesActionTest extends ActionTest {
 		boolean found = false;
 		for (ITouchpointData td : data) {
 			ITouchpointInstruction configure = td.getInstruction("configure");
-			if (configure == null)
+			if (configure == null) {
 				continue;
+			}
 			String body = configure.getBody();
 			if (body != null && body.indexOf("download.eclipse.org/releases/ganymede") > 0) {
 				found = true;
@@ -455,25 +456,28 @@ public class BundlesActionTest extends ActionTest {
 
 	private void expectUpdateDescriptorAdviceQuery(String bundleName, Version bundleVersion,
 			Collection<IUpdateDescriptorAdvice> answer) {
-		if (answer == null)
+		if (answer == null) {
 			answer = Collections.emptyList();
+		}
 		when(publisherInfo.getAdvice(null, false, bundleName, bundleVersion, IUpdateDescriptorAdvice.class))
 				.thenReturn(answer);
 	}
 
 	private void expectTouchpointAdviceQuery(String bundleName, Version bundleVersion, List<ITouchpointAdvice> answer) {
-		if (answer == null)
+		if (answer == null) {
 			answer = Collections.emptyList();
+		}
 		when(publisherInfo.getAdvice(null, false, bundleName, bundleVersion, ITouchpointAdvice.class))
 				.thenReturn(answer);
 	}
 
 	private void expectPropertyAdviceQuery(String bundleName, Version bundleVersion, Map<String, String> answer) {
 		List<IPropertyAdvice> propertyAdvices;
-		if (answer != null)
+		if (answer != null) {
 			propertyAdvices = Collections.singletonList(createPropertyAdvice(answer));
-		else
+		} else {
 			propertyAdvices = Collections.emptyList();
+		}
 		when(publisherInfo.getAdvice(null, false, bundleName, bundleVersion, IPropertyAdvice.class))
 				.thenReturn(propertyAdvices);
 	}
@@ -514,6 +518,27 @@ public class BundlesActionTest extends ActionTest {
 		Collection<IInstallableUnit> ius = publisherResult.getIUs("org.eclipse.p2.test.validManifest",
 				IPublisherResult.ROOT);
 		assertThat(ius.size(), is(1));
+	}
+
+	public void testPackageAttributes() throws Exception {
+		File testData = new File(TestActivator.getTestDataFolder(), "pkgAttributes");
+		IInstallableUnit iu = BundlesAction.createBundleIU(BundlesAction.createBundleDescription(testData), null,
+				new PublisherInfo());
+		IProvidedCapability capability = iu.getProvidedCapabilities().stream()
+				.filter(provided -> provided.getNamespace().equals(PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE))
+				.findFirst().orElseThrow(() -> new AssertionError("no package found!"));
+		Map<String, Object> properties = capability.getProperties();
+		assertEquals(String.valueOf(properties), "org.eclipse.core.runtime",
+				properties.get(PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE));
+		assertEquals(String.valueOf(properties), "split",
+				properties.get(BundlesAction.PACKAGE_ATTRIBUTE_PROPERTY_PREFIX + "common"));
+		Object object = properties.get(BundlesAction.PACKAGE_DIRECTIVE_PROPERTY_PREFIX + "mandatory");
+		if (object instanceof List<?> list) {
+			assertTrue(list.contains("common"));
+		} else {
+			fail("Not a list: " + object);
+		}
+
 	}
 
 	public void testMultiRequired() throws Exception {

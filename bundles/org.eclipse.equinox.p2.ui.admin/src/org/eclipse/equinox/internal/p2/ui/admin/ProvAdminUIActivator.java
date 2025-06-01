@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Red Hat Inc. - Bug 460967
@@ -50,7 +50,7 @@ public class ProvAdminUIActivator extends AbstractUIPlugin {
 
 	/**
 	 * Returns the singleton plugin instance
-	 * 
+	 *
 	 * @return the instance
 	 */
 	public static ProvAdminUIActivator getDefault() {
@@ -60,7 +60,7 @@ public class ProvAdminUIActivator extends AbstractUIPlugin {
 	/**
 	 * Returns an image descriptor for the image file at the given plug-in relative
 	 * path
-	 * 
+	 *
 	 * @param path the path
 	 * @return the image descriptor
 	 */
@@ -98,14 +98,16 @@ public class ProvAdminUIActivator extends AbstractUIPlugin {
 
 	void updateForPreferences() {
 
-		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_SHOW_GROUPS_ONLY))
+		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_SHOW_GROUPS_ONLY)) {
 			policy.setVisibleAvailableIUQuery(QueryUtil.createIUGroupQuery());
-		else
+		} else {
 			policy.setVisibleAvailableIUQuery(QueryUtil.createIUAnyQuery());
-		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_SHOW_INSTALL_ROOTS_ONLY))
+		}
+		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_SHOW_INSTALL_ROOTS_ONLY)) {
 			policy.setVisibleInstalledIUQuery(new UserVisibleRootQuery());
-		else
+		} else {
 			policy.setVisibleInstalledIUQuery(QueryUtil.createIUAnyQuery());
+		}
 
 		RepositoryTracker tracker = getRepositoryTracker();
 		if (getPreferenceStore().getBoolean(PreferenceConstants.PREF_HIDE_SYSTEM_REPOS)) {

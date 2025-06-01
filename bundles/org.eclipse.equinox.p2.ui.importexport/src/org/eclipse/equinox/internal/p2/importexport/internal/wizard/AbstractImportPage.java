@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2018 WindRiver Corporation and others.
  *
- * This program and the accompanying materials 
+ * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     WindRiver Corporation - initial API and implementation
  *     Ericsson AB (Pascal Rapicault) - Bug 395210
@@ -83,13 +83,15 @@ public abstract class AbstractImportPage extends AbstractPage {
 				if (compareValue > 0) {
 					hasHigherVersion = true;
 					break;
-				} else if (compareValue == 0)
+				} else if (compareValue == 0) {
 					hasEqualVersion = true;
+				}
 			}
-			if (hasHigherVersion)
+			if (hasHigherVersion) {
 				return NLS.bind(Messages.AbstractImportPage_HigherVersionInstalled, text);
-			else if (hasEqualVersion)
+			} else if (hasEqualVersion) {
 				return NLS.bind(Messages.AbstractImportPage_SameVersionInstalled, text);
+			}
 		}
 		return text;
 	}

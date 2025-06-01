@@ -15,12 +15,7 @@
  *******************************************************************************/
 package org.eclipse.equinox.internal.p2.publisher.eclipse;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -43,23 +38,22 @@ public class FeatureParser {
 	private final FeatureManifestParser parser = new FeatureManifestParser();
 
 	/**
-	 * Parses the specified location and constructs a feature. The given location 
+	 * Parses the specified location and constructs a feature. The given location
 	 * should be either the location of the feature JAR or the directory containing
 	 * the feature.
-	 * 
-	 * @param location the location of the feature to parse.  
+	 *
+	 * @param location the location of the feature to parse.
 	 */
 	public Feature parse(File location) {
-		if (!location.exists())
+		if (!location.exists()) {
 			return null;
+		}
 
 		Feature feature = null;
 		if (location.isDirectory()) {
 			//skip directories that don't contain a feature.xml file
 			File file = new File(location, "feature.xml"); //$NON-NLS-1$
-			InputStream input = null;
-			try {
-				input = new BufferedInputStream(new FileInputStream(file));
+			try (InputStream input = new BufferedInputStream(new FileInputStream(file));) {
 				feature = parser.parse(input, toURL(location));
 				if (feature != null) {
 					List<String> messageKeys = parser.getMessageKeys();
@@ -72,21 +66,13 @@ public class FeatureParser {
 				logWarning(location, e);
 			} catch (IOException e) {
 				logWarning(location, e);
-			} finally {
-				if (input != null)
-					try {
-						input.close();
-					} catch (IOException e) {
-						//
-					}
 			}
 		} else if (location.getName().endsWith(".jar")) { //$NON-NLS-1$
-			JarFile jar = null;
-			try {
-				jar = new JarFile(location);
+			try (JarFile jar = new JarFile(location);) {
 				JarEntry entry = jar.getJarEntry("feature.xml"); //$NON-NLS-1$
-				if (entry == null)
+				if (entry == null) {
 					return null;
+				}
 
 				InputStream input = new BufferedInputStream(jar.getInputStream(entry));
 				feature = parser.parse(input, toURL(location));
@@ -101,13 +87,6 @@ public class FeatureParser {
 				logWarning(location, e);
 			} catch (SecurityException e) {
 				logWarning(location, e);
-			} finally {
-				try {
-					if (jar != null)
-						jar.close();
-				} catch (IOException e) {
-					//
-				}
 			}
 		}
 		return feature;

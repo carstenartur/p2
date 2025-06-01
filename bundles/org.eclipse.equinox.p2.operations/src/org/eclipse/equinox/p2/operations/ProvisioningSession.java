@@ -44,7 +44,7 @@ import org.osgi.framework.FrameworkUtil;
  * @noextend This class is not intended to be subclassed by clients.
  */
 public class ProvisioningSession {
-	private IProvisioningAgent agent;
+	private final IProvisioningAgent agent;
 
 	Set<Job> scheduledJobs = Collections.synchronizedSet(new HashSet<>());
 
@@ -179,9 +179,11 @@ public class ProvisioningSession {
 
 	private boolean doesPhaseSetIncludeDownload(IPhaseSet set) {
 		String[] phaseIds = set.getPhaseIds();
-		for (String phaseId : phaseIds)
-			if (phaseId.equals(PhaseSetFactory.PHASE_COLLECT))
+		for (String phaseId : phaseIds) {
+			if (phaseId.equals(PhaseSetFactory.PHASE_COLLECT)) {
 				return true;
+			}
+		}
 		return false;
 	}
 
@@ -199,8 +201,9 @@ public class ProvisioningSession {
 		for (Job job : jobs) {
 			if (job instanceof IProfileChangeJob) {
 				String id = ((IProfileChangeJob) job).getProfileId();
-				if (profileId.equals(id))
+				if (profileId.equals(id)) {
 					return true;
+				}
 			}
 		}
 		return false;

@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2017 IBM Corporation and others.
  *
- * This program and the accompanying materials 
+ * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Red Hat Inc. - Bug 460967
@@ -82,7 +82,7 @@ public abstract class AbstractRepositoryTask extends Task {
 	 * argument to specify both the artifact and metadata repositories.
 	 */
 	public void setDestination(String location) {
-		// TODO depreciate 
+		// TODO depreciate
 		DestinationRepository dest = new DestinationRepository();
 		dest.setLocation(location);
 		destinations.add(dest);
@@ -90,7 +90,7 @@ public abstract class AbstractRepositoryTask extends Task {
 	}
 
 	public DestinationRepository createDestination() {
-		// TODO depreciate 
+		// TODO depreciate
 		DestinationRepository destination = new DestinationRepository();
 		destinations.add(destination);
 		application.addDestination(destination.getDescriptor());
@@ -112,8 +112,9 @@ public abstract class AbstractRepositoryTask extends Task {
 	 */
 	public static IProvisioningAgent getAgent() throws BuildException {
 		IProvisioningAgent agent = ServiceHelper.getService(Activator.getContext(), IProvisioningAgent.class);
-		if (agent == null)
+		if (agent == null) {
 			throw new BuildException(Messages.no_provisioning_agent);
+		}
 		return agent;
 	}
 
@@ -136,17 +137,20 @@ public abstract class AbstractRepositoryTask extends Task {
 	 * then add them to the transformer for consideration.
 	 */
 	protected void prepareSourceRepos() {
-		if (sourceRepos == null || sourceRepos.isEmpty())
+		if (sourceRepos == null || sourceRepos.isEmpty()) {
 			return;
+		}
 		for (Iterator<FileSet> iter = sourceRepos.iterator(); iter.hasNext();) {
 			RepositoryFileSet fileset = (RepositoryFileSet) iter.next();
 
 			if (fileset.getRepoLocation() != null) {
 				if (!fileset.getRepoLocation().startsWith(ANT_PREFIX)) {
-					if (fileset.isArtifact())
+					if (fileset.isArtifact()) {
 						addArtifactSourceRepository(fileset.getRepoLocationURI(), fileset.isOptional());
-					if (fileset.isMetadata())
+					}
+					if (fileset.isMetadata()) {
 						addMetadataSourceRepository(fileset.getRepoLocationURI(), fileset.isOptional());
+					}
 				}
 			} else if (fileset.getDir() != null) {
 				DirectoryScanner scanner = fileset.getDirectoryScanner(getProject());
@@ -161,12 +165,13 @@ public abstract class AbstractRepositoryTask extends Task {
 						if (fileset.isBoth()) {
 							addArtifactSourceRepository(uri, fileset.isOptional());
 							addMetadataSourceRepository(uri, fileset.isOptional());
-						} else if (fileset.isArtifact())
+						} else if (fileset.isArtifact()) {
 							addArtifactSourceRepository(uri, fileset.isOptional());
-						else if (fileset.isMetadata())
+						} else if (fileset.isMetadata()) {
 							addMetadataSourceRepository(uri, fileset.isOptional());
-						else
+						} else {
 							throw new BuildException(NLS.bind(Messages.unknown_repository_type, uri));
+						}
 					}
 				}
 			}
@@ -175,8 +180,9 @@ public abstract class AbstractRepositoryTask extends Task {
 	}
 
 	protected List<IInstallableUnit> prepareIUs() {
-		if (iuTasks == null || iuTasks.isEmpty())
+		if (iuTasks == null || iuTasks.isEmpty()) {
 			return null;
+		}
 
 		IMetadataRepository repository = application.getCompositeMetadataRepository();
 		List<IInstallableUnit> result = new ArrayList<>();
@@ -185,10 +191,12 @@ public abstract class AbstractRepositoryTask extends Task {
 
 			Iterator<IInstallableUnit> queryResult = repository.query(iuQuery, null).iterator();
 
-			if (iu.isRequired() && !queryResult.hasNext())
+			if (iu.isRequired() && !queryResult.hasNext()) {
 				throw new BuildException(NLS.bind(Messages.AbstractRepositoryTask_unableToFind, iu.toString()));
-			while (queryResult.hasNext())
+			}
+			while (queryResult.hasNext()) {
 				result.add(queryResult.next());
+			}
 		}
 		return result;
 	}

@@ -26,7 +26,7 @@ public class CollectEvent extends EventObject {
 	 */
 	public static final int TYPE_OVERALL_START = 1;
 	/**
-	 * It means the overall collecting requests are finished. 
+	 * It means the overall collecting requests are finished.
 	 */
 	public static final int TYPE_OVERALL_END = 2;
 	/**
@@ -36,16 +36,16 @@ public class CollectEvent extends EventObject {
 	public static final int TYPE_REPOSITORY_START = 3;
 	/**
 	 * It means the collecting requests related to a special repository are end.
-	 * See {@link CollectEvent#getRepository()} 
+	 * See {@link CollectEvent#getRepository()}
 	 */
 	public static final int TYPE_REPOSITORY_END = 4;
 
-	private IArtifactRepository artifactRepo;
-	private IArtifactRequest[] requests;
+	private final IArtifactRepository artifactRepo;
+	private final IArtifactRequest[] requests;
 
-	private ProvisioningContext context;
+	private final ProvisioningContext context;
 
-	private int type;
+	private final int type;
 
 	public CollectEvent(int type, IArtifactRepository artifactRepo, ProvisioningContext context, IArtifactRequest[] requests) {
 		super(requests);

@@ -49,8 +49,9 @@ public class ChecksumUtilities {
 		IConfigurationElement[] checksumVerifierConfigurations = getChecksumComparatorConfigurations();
 
 		for (Entry<String, String> checksumEntry : checksums.entrySet()) {
-			if (checksumsToSkip.contains(checksumEntry.getKey()))
+			if (checksumsToSkip.contains(checksumEntry.getKey())) {
 				continue;
+			}
 
 			for (IConfigurationElement checksumVerifierConfiguration : checksumVerifierConfigurations) {
 				String checksumId = checksumVerifierConfiguration.getAttribute("id"); //$NON-NLS-1$
@@ -112,9 +113,10 @@ public class ChecksumUtilities {
 		for (IConfigurationElement checksumVerifierConfiguration : ChecksumUtilities
 				.getChecksumComparatorConfigurations()) {
 			String id = checksumVerifierConfiguration.getAttribute("id"); //$NON-NLS-1$
-			if (checksumsToSkip.contains(id) || !shouldPublish(checksumVerifierConfiguration))
+			if (checksumsToSkip.contains(id) || !shouldPublish(checksumVerifierConfiguration)) {
 				// don't calculate checksum if algo is disabled
 				continue;
+			}
 			String algorithm = checksumVerifierConfiguration.getAttribute("algorithm"); //$NON-NLS-1$
 			String providerName = checksumVerifierConfiguration.getAttribute("providerName"); //$NON-NLS-1$
 			try {
@@ -122,7 +124,7 @@ public class ChecksumUtilities {
 				digestMap.put(producer, producer.getMessageDigest());
 			} catch (GeneralSecurityException e) {
 				String message = NLS.bind(Messages.calculateChecksum_providerError,
-						new Object[] { id, algorithm, providerName });
+						id, algorithm, providerName);
 				status.add(new Status(IStatus.ERROR, Activator.ID, message, e));
 			}
 		}
@@ -147,7 +149,7 @@ public class ChecksumUtilities {
 				String checksum = ChecksumHelper.toHexString(entry.getValue().digest());
 				String id = producer.getId();
 				String message = NLS.bind(Messages.calculateChecksum_ok,
-						new Object[] { id, producer.getAlgorithm(), producer.getProviderName(), checksum });
+						id, producer.getAlgorithm(), producer.getProviderName(), checksum);
 				status.add(new Status(IStatus.OK, Activator.ID, message));
 				checksums.put(id, checksum);
 			}
@@ -183,10 +185,12 @@ public class ChecksumUtilities {
 	private static void putLegacyMd5Property(String propertyNamespace, Map<String, String> checksums, HashMap<String, String> result) {
 		String md5 = checksums.get(ChecksumHelper.MD5);
 		if (md5 != null) {
-			if (IArtifactDescriptor.ARTIFACT_CHECKSUM.equals(propertyNamespace))
+			if (IArtifactDescriptor.ARTIFACT_CHECKSUM.equals(propertyNamespace)) {
 				result.put(IArtifactDescriptor.ARTIFACT_MD5, md5);
-			if (IArtifactDescriptor.DOWNLOAD_CHECKSUM.equals(propertyNamespace))
+			}
+			if (IArtifactDescriptor.DOWNLOAD_CHECKSUM.equals(propertyNamespace)) {
 				result.put(IArtifactDescriptor.DOWNLOAD_MD5, md5);
+			}
 		}
 	}
 }

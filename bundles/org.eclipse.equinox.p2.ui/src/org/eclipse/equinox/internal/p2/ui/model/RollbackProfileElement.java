@@ -29,8 +29,8 @@ import org.eclipse.equinox.p2.query.IQueryable;
  */
 public class RollbackProfileElement extends RemoteQueriedElement {
 
-	private String profileId;
-	private long timestamp;
+	private final String profileId;
+	private final long timestamp;
 	private IProfile snapshot;
 	private boolean isCurrent = false;
 	private String profileTag;
@@ -53,16 +53,18 @@ public class RollbackProfileElement extends RemoteQueriedElement {
 
 	@Override
 	public String getLabel(Object o) {
-		if (isCurrent)
+		if (isCurrent) {
 			return ProvUIMessages.RollbackProfileElement_CurrentInstallation;
+		}
 		return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.LONG).format(new Date(timestamp));
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getAdapter(Class<T> adapter) {
-		if (adapter == IProfile.class)
+		if (adapter == IProfile.class) {
 			return (T) getProfileSnapshot(new NullProgressMonitor());
+		}
 		return super.getAdapter(adapter);
 	}
 

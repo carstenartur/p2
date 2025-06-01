@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     EclipseSource - ongoing development
@@ -35,7 +35,7 @@ public class TouchpointData implements ITouchpointData {
 	 * of keys supported is up to the touchpoint that will process these
 	 * instructions. This map is never null.
 	 */
-	private Map<String, ITouchpointInstruction> instructions;
+	private final Map<String, ITouchpointInstruction> instructions;
 
 	@Override
 	public int hashCode() {
@@ -44,18 +44,22 @@ public class TouchpointData implements ITouchpointData {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (!(obj instanceof ITouchpointData))
+		}
+		if (!(obj instanceof final ITouchpointData other)) {
 			return false;
-		final ITouchpointData other = (ITouchpointData) obj;
+		}
 		if (instructions == null) {
-			if (other.getInstructions() != null)
+			if (other.getInstructions() != null) {
 				return false;
-		} else if (!instructions.equals(other.getInstructions()))
+			}
+		} else if (!instructions.equals(other.getInstructions())) {
 			return false;
+		}
 		return true;
 	}
 

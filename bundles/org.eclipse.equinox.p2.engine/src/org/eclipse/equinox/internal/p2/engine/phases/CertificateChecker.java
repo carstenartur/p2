@@ -76,7 +76,7 @@ public class CertificateChecker {
 	private final PGPPublicKeyService keyService;
 
 	// Lazily loading
-	private Supplier<PGPPublicKeyStore> trustedKeys = new Supplier<>() {
+	private final Supplier<PGPPublicKeyStore> trustedKeys = new Supplier<>() {
 		private PGPPublicKeyStore cache = null;
 
 		public PGPPublicKeyStore get() {
@@ -90,7 +90,7 @@ public class CertificateChecker {
 
 	// Lazily loading in case we ever add an extension point for registering
 	// certificates.
-	private Supplier<Collection<? extends Certificate>> additionalTrustedCertificates = new Supplier<>() {
+	private final Supplier<Collection<? extends Certificate>> additionalTrustedCertificates = new Supplier<>() {
 		private Collection<? extends Certificate> cache = null;
 
 		public Collection<? extends Certificate> get() {
@@ -146,8 +146,8 @@ public class CertificateChecker {
 			return Status.OK_STATUS;
 		}
 
-		IArtifactUIServices artifactServiceUI = serviceUI instanceof IArtifactUIServices
-				? (IArtifactUIServices) serviceUI
+		IArtifactUIServices artifactServiceUI = serviceUI instanceof IArtifactUIServices i
+				? i
 				: (untrustedCertificateChains, untrustedPGPKeys, unsignedArtifacts,
 						artifactFiles) -> IArtifactUIServices.getTrustInfo(serviceUI, untrustedCertificateChains,
 								untrustedPGPKeys, unsignedArtifacts, artifactFiles);
@@ -419,14 +419,16 @@ public class CertificateChecker {
 		trustEngineTracker.open();
 		Object[] trustEngines = trustEngineTracker.getServices();
 		try {
-			if (trustEngines == null)
+			if (trustEngines == null) {
 				return null;
+			}
 			for (Iterator<? extends Certificate> it = unsavedTrustedCertificates.iterator(); it.hasNext();) {
 				Certificate trustedCertificate = it.next();
 				for (Object engine : trustEngines) {
 					TrustEngine trustEngine = (TrustEngine) engine;
-					if (trustEngine.isReadOnly())
+					if (trustEngine.isReadOnly()) {
 						continue;
+					}
 					try {
 						trustEngine.addTrustAnchor(trustedCertificate, trustedCertificate.toString());
 						// this should mean we added an anchor successfully; continue to next
@@ -491,8 +493,9 @@ public class CertificateChecker {
 	 */
 	private String getUnsignedContentPolicy() {
 		String policy = EngineActivator.getProperty(EngineActivator.PROP_UNSIGNED_POLICY, agent);
-		if (policy == null)
+		if (policy == null) {
 			policy = EngineActivator.UNSIGNED_PROMPT;
+		}
 		return policy;
 
 	}

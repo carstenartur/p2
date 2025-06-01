@@ -44,11 +44,11 @@ import org.eclipse.equinox.p2.query.QueryUtil;
 import org.eclipse.osgi.service.localization.LocaleProvider;
 
 /**
- * TranslationSupport provides string translations for properties of an 
+ * TranslationSupport provides string translations for properties of an
  * IInstallableUnit.  Clients can specify an {@link IQueryable} that should be used
  * to obtain the translation fragment IU's, as well as the locale that
  * should be used for translations.
- * 
+ *
  * @since 2.0
  */
 public class TranslationSupport {
@@ -73,8 +73,9 @@ public class TranslationSupport {
 	private boolean loggedMissingSource = false;
 
 	public synchronized static TranslationSupport getInstance() {
-		if (instance == null)
+		if (instance == null) {
 			instance = new TranslationSupport();
+		}
 		return instance;
 	}
 
@@ -82,7 +83,7 @@ public class TranslationSupport {
 	 * Create an instance of TranslationSupport for the current locale.
 	 * Unless otherwise specified, the currently running profile will serve
 	 * as the source of the translation fragments.
-	 * 
+	 *
 	 * @since 2.0
 	 */
 	public TranslationSupport() {
@@ -92,7 +93,7 @@ public class TranslationSupport {
 	/**
 	 * Create an instance of TranslationSupport for the current locale.
 	 * using the <code>fragmentSource</code> as the source of the translation fragments.
-	 * 
+	 *
 	 * @since 2.0
 	 */
 	public TranslationSupport(IQueryable<IInstallableUnit> fragmentSource) {
@@ -105,8 +106,9 @@ public class TranslationSupport {
 		while (true) {
 			result.add(locale);
 			lastSeparator = locale.lastIndexOf('_');
-			if (lastSeparator == -1)
+			if (lastSeparator == -1) {
 				break;
+			}
 			locale = locale.substring(0, lastSeparator);
 		}
 		// Add the default locale (most general)
@@ -121,40 +123,44 @@ public class TranslationSupport {
 	 * so we aren't required to reach around the API here.
 	 */
 	private String cacheResult(IInstallableUnit iu, String localizedKey, String localizedValue) {
-		if (iu instanceof InstallableUnit)
+		if (iu instanceof InstallableUnit) {
 			((InstallableUnit) iu).setLocalizedProperty(localizedKey, localizedValue);
+		}
 		return localizedValue;
 	}
 
 	/**
-	 * Return the copyright for the specified IInstallableUnit, 
+	 * Return the copyright for the specified IInstallableUnit,
 	 * localized for the receiver's locale.
-	 * 
+	 *
 	 * @param iu the IInstallableUnit in question
 	 * @return the localized copyright defined by the IInstallableUnit
 	 */
 	public ICopyright getCopyright(IInstallableUnit iu, String locale) {
-		if (locale == null)
+		if (locale == null) {
 			locale = getCurrentLocale();
+		}
 		ICopyright copyright = iu.getCopyright();
 		String body = (copyright != null ? copyright.getBody() : null);
-		if (body == null || body.length() <= 1 || body.charAt(0) != '%')
+		if (body == null || body.length() <= 1 || body.charAt(0) != '%') {
 			return copyright;
+		}
 		final String actualKey = body.substring(1); // Strip off the %
 		body = getLocalizedIUProperty(iu, actualKey, locale);
 		return MetadataFactory.createCopyright(copyright.getLocation(), body);
 	}
 
 	private String getCurrentLocale() {
-		if (localeProvider != null)
+		if (localeProvider != null) {
 			return localeProvider.getLocale().toString();
+		}
 		return Locale.getDefault().toString();
 	}
 
 	/**
 	 * Return the localized value for the specified IInstallableUnit
 	 * property.
-	 * 
+	 *
 	 * @param iu the IInstallableUnit in question
 	 * @param propertyKey the name of the property to be retrieved
 	 * @param locale The locale to return the property for
@@ -162,11 +168,13 @@ public class TranslationSupport {
 	 * such property is defined.
 	 */
 	public String getIUProperty(IInstallableUnit iu, String propertyKey, String locale) {
-		if (locale == null)
+		if (locale == null) {
 			locale = getCurrentLocale();
+		}
 		String value = iu.getProperty(propertyKey);
-		if (value == null || value.length() <= 1 || value.charAt(0) != '%')
+		if (value == null || value.length() <= 1 || value.charAt(0) != '%') {
 			return value;
+		}
 		// else have a localizable property
 		final String actualKey = value.substring(1); // Strip off the %
 		return getLocalizedIUProperty(iu, actualKey, locale);
@@ -175,7 +183,7 @@ public class TranslationSupport {
 	/**
 	 * Return the localized value for the specified IInstallableUnit
 	 * property using the locale specified in the <code>propertyKey</code>.
-	 * 
+	 *
 	 * @param iu the IInstallableUnit in question
 	 * @param propertyKey the name and locale of the property to be retrieved
 	 * @return the localized property value, or <code>null</code> if no
@@ -188,7 +196,7 @@ public class TranslationSupport {
 	/**
 	 * Return the localized value for the specified IInstallableUnit
 	 * property using the default locale.
-	 * 
+	 *
 	 * @param iu the IInstallableUnit in question
 	 * @param propertyKey the name of the property to be retrieved
 	 * @return the localized property value, or <code>null</code> if no
@@ -200,23 +208,25 @@ public class TranslationSupport {
 
 	private ILicense getLicense(IInstallableUnit iu, ILicense license, String locale) {
 		String body = (license != null ? license.getBody() : null);
-		if (body == null || body.length() <= 1 || body.charAt(0) != '%')
+		if (body == null || body.length() <= 1 || body.charAt(0) != '%') {
 			return license;
+		}
 		final String actualKey = body.substring(1); // Strip off the %
 		body = getLocalizedIUProperty(iu, actualKey, locale);
 		return MetadataFactory.createLicense(license.getLocation(), body);
 	}
 
 	/**
-	 * Return an array of licenses for the specified IInstallableUnit, 
+	 * Return an array of licenses for the specified IInstallableUnit,
 	 * localized for the receiver's locale.
-	 * 
+	 *
 	 * @param iu the IInstallableUnit in question
 	 * @return the localized licenses defined by the IInstallableUnit
 	 */
 	public ILicense[] getLicenses(IInstallableUnit iu, String locale) {
-		if (locale == null)
+		if (locale == null) {
 			locale = getCurrentLocale();
+		}
 		Collection<ILicense> licenses = iu.getLicenses();
 		ILicense[] translatedLicenses = new ILicense[licenses.size()];
 		int i = 0;
@@ -228,18 +238,20 @@ public class TranslationSupport {
 
 	/**
 	 * Return an update descriptor localized for the receiver's locale.
-	 * 
+	 *
 	 * @param iu the IInstallableUnit in question
 	 * @return the localized update descriptor defined by the IInstallableUnit
 	 */
 	public IUpdateDescriptor getUpdateDescriptor(IInstallableUnit iu, String locale) {
-		if (locale == null)
+		if (locale == null) {
 			locale = getCurrentLocale();
+		}
 
 		IUpdateDescriptor descriptor = iu.getUpdateDescriptor();
 		String body = (descriptor != null ? descriptor.getDescription() : null);
-		if (body == null || body.length() <= 1 || body.charAt(0) != '%')
+		if (body == null || body.length() <= 1 || body.charAt(0) != '%') {
 			return descriptor;
+		}
 		final String actualKey = body.substring(1); // Strip off the %
 		body = getLocalizedIUProperty(iu, actualKey, locale);
 		return MetadataFactory.createUpdateDescriptor(descriptor.getIUsBeingUpdated(), descriptor.getSeverity(), body, descriptor.getLocation());
@@ -260,8 +272,9 @@ public class TranslationSupport {
 		SoftReference<IQueryResult<IInstallableUnit>> queryResultReference = localeCollectorCache.get(locale);
 		if (queryResultReference != null) {
 			IQueryResult<IInstallableUnit> cached = queryResultReference.get();
-			if (cached != null)
+			if (cached != null) {
 				return cached;
+			}
 		}
 
 		IQuery<IInstallableUnit> iuQuery = QueryUtil.createMatchQuery(IInstallableUnitFragment.class, capabilityMatch, NAMESPACE_IU_LOCALIZATION, localeVariants);
@@ -275,13 +288,16 @@ public class TranslationSupport {
 		String localizedValue = null;
 
 		//first check for a cached localized value
-		if (iu instanceof InstallableUnit)
+		if (iu instanceof InstallableUnit) {
 			localizedValue = ((InstallableUnit) iu).getLocalizedProperty(localizedKey);
+		}
 		//next check if the localized value is stored in the same IU (common case)
-		if (localizedValue == null)
+		if (localizedValue == null) {
 			localizedValue = iu.getProperty(localizedKey);
-		if (localizedValue != null)
+		}
+		if (localizedValue != null) {
 			return localizedValue;
+		}
 
 		final List<String> locales = buildLocaleVariants(locale);
 		final IInstallableUnit theUnit = iu;
@@ -298,8 +314,9 @@ public class TranslationSupport {
 				for (String unitlocale : locales) {
 					String localeKey = makeLocalizedKey(actualKey, unitlocale);
 					translation = localizationIU.getProperty(localeKey);
-					if (translation != null)
+					if (translation != null) {
 						return cacheResult(iu, localizedKey, translation);
+					}
 				}
 			}
 		}
@@ -307,8 +324,9 @@ public class TranslationSupport {
 		for (String nextLocale : locales) {
 			String localeKey = makeLocalizedKey(actualKey, nextLocale);
 			String nextValue = iu.getProperty(localeKey);
-			if (nextValue != null)
+			if (nextValue != null) {
 				return cacheResult(iu, localizedKey, nextValue);
+			}
 		}
 
 		return cacheResult(iu, localizedKey, actualKey);
@@ -332,7 +350,7 @@ public class TranslationSupport {
 	/**
 	 * Set the {@link IQueryable} that should be used to obtain translation fragment
 	 * IUs. Returns the previous translation source.
-	 * 
+	 *
 	 * @param queryable an {@link IQueryable} that can supply the appropriate NLS
 	 * translation fragments
 	 */

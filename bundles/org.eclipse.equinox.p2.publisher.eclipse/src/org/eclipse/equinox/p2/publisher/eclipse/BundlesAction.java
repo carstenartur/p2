@@ -13,7 +13,7 @@
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  *   SAP AG - make optional dependencies non-greedy by default; allow setting greedy through directive (bug 247099)
- *   Red Hat Inc. - Bug 460967 
+ *   Red Hat Inc. - Bug 460967
  *   Christoph Läubrich - Bug 574952 p2 should distinguish between "product plugins" and "configuration plugins" (gently sponsored by Compart AG)
  ******************************************************************************/
 package org.eclipse.equinox.p2.publisher.eclipse;
@@ -31,8 +31,10 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.equinox.frameworkadmin.BundleInfo;
 import org.eclipse.equinox.internal.p2.core.helpers.LogHelper;
 import org.eclipse.equinox.internal.p2.metadata.ArtifactKey;
+import org.eclipse.equinox.internal.p2.metadata.ProvidedCapability;
 import org.eclipse.equinox.internal.p2.publisher.Messages;
 import org.eclipse.equinox.internal.p2.publisher.eclipse.GeneratorBundleInfo;
+import org.eclipse.equinox.internal.p2.publisher.eclipse.bundledescription.BundleDescriptionBuilder;
 import org.eclipse.equinox.p2.metadata.*;
 import org.eclipse.equinox.p2.metadata.MetadataFactory.InstallableUnitDescription;
 import org.eclipse.equinox.p2.metadata.MetadataFactory.InstallableUnitFragmentDescription;
@@ -84,7 +86,7 @@ public class BundlesAction extends AbstractPublisherAction {
 	/**
 	 * A capability name in the {@link PublisherHelper#NAMESPACE_ECLIPSE_TYPE}
 	 * namespace representing and OSGi bundle resource
-	 * 
+	 *
 	 * @see IProvidedCapability#getName()
 	 */
 	public static final String TYPE_ECLIPSE_BUNDLE = "bundle"; //$NON-NLS-1$
@@ -92,7 +94,7 @@ public class BundlesAction extends AbstractPublisherAction {
 	/**
 	 * A capability name in the {@link PublisherHelper#NAMESPACE_ECLIPSE_TYPE}
 	 * namespace representing a source bundle
-	 * 
+	 *
 	 * @see IProvidedCapability#getName()
 	 */
 	public static final String TYPE_ECLIPSE_SOURCE = "source"; //$NON-NLS-1$
@@ -120,9 +122,21 @@ public class BundlesAction extends AbstractPublisherAction {
 	public static final String BUNDLE_SHAPE = "Eclipse-BundleShape"; //$NON-NLS-1$
 
 	/**
+	 * Attribute used to store an attribute on an exported package
+	 */
+	public static final String PACKAGE_ATTRIBUTE_PROPERTY_PREFIX = PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE
+			+ ".attribute."; //$NON-NLS-1$
+
+	/**
+	 * Attribute used to store an directive on an exported package
+	 */
+	public static final String PACKAGE_DIRECTIVE_PROPERTY_PREFIX = PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE
+			+ ".directive."; //$NON-NLS-1$
+
+	/**
 	 * Manifest header directive for specifying how optional runtime requirements
 	 * shall be handled during installation.
-	 * 
+	 *
 	 * @see #INSTALLATION_GREEDY
 	 */
 	public static final String INSTALLATION_DIRECTIVE = "x-installation"; //$NON-NLS-1$
@@ -153,8 +167,9 @@ public class BundlesAction extends AbstractPublisherAction {
 	static IInstallableUnit createBundleConfigurationUnit(String hostId, Version cuVersion,
 			boolean isBundleFragment, GeneratorBundleInfo configInfo, String configurationFlavor,
 			IMatchExpression<IInstallableUnit> filter, boolean configOnly) {
-		if (configInfo == null)
+		if (configInfo == null) {
 			return null;
+		}
 
 		InstallableUnitFragmentDescription cu = new InstallableUnitFragmentDescription();
 		String configUnitId = configurationFlavor + hostId;
@@ -165,11 +180,9 @@ public class BundlesAction extends AbstractPublisherAction {
 		Version hostVersion = configOnly ? Version.emptyVersion : Version.parseVersion(configInfo.getVersion());
 		VersionRange range = hostVersion == Version.emptyVersion ? VersionRange.emptyRange
 				: new VersionRange(hostVersion, true, Version.MAX_VERSION, true);
-		cu.setHost(new IRequirement[] { //
-				MetadataFactory.createRequirement(CAPABILITY_NS_OSGI_BUNDLE, hostId, range, null, false, false, true), //
-				MetadataFactory.createRequirement(PublisherHelper.NAMESPACE_ECLIPSE_TYPE, TYPE_ECLIPSE_BUNDLE,
-						new VersionRange(Version.createOSGi(1, 0, 0), true, Version.createOSGi(2, 0, 0), false), null,
-						false, false, false) });
+		cu.setHost(MetadataFactory.createRequirement(CAPABILITY_NS_OSGI_BUNDLE, hostId, range, null, false, false, true), MetadataFactory.createRequirement(PublisherHelper.NAMESPACE_ECLIPSE_TYPE, TYPE_ECLIPSE_BUNDLE,
+				new VersionRange(Version.createOSGi(1, 0, 0), true, Version.createOSGi(2, 0, 0), false), null,
+				false, false, false));
 
 		// Adds capabilities for fragment, self, and describing the flavor supported
 		cu.setProperty(InstallableUnitDescription.PROP_TYPE_FRAGMENT, Boolean.TRUE.toString());
@@ -185,6 +198,30 @@ public class BundlesAction extends AbstractPublisherAction {
 		cu.addTouchpointData(MetadataFactory.createTouchpointData(touchpointData));
 		cu.setFilter(filter);
 		return MetadataFactory.createInstallableUnit(cu);
+	}
+
+	/**
+	 * Attempts to read the given file (or folder) as a bundle and creates an
+	 * {@link IInstallableUnit} describing it.
+	 *
+	 * @param file the file to read as a bundle
+	 * @return an {@link Optional} describing the result, if anything goes wrong an
+	 *         empty optional is returned
+	 */
+	public static Optional<IInstallableUnit> createBundleIU(File file) {
+		try {
+			BundleDescription bundleDescription = BundlesAction.createBundleDescription(file);
+			if (bundleDescription != null) {
+				IArtifactKey key = BundlesAction.createBundleArtifactKey(bundleDescription.getSymbolicName(),
+						bundleDescription.getVersion().toString());
+				PublisherInfo publisherInfo = new PublisherInfo();
+				publisherInfo.setArtifactOptions(IPublisherInfo.A_INDEX);
+				return Optional.ofNullable(BundlesAction.createBundleIU(bundleDescription, key, publisherInfo));
+			}
+		} catch (BundleException | IOException | RuntimeException e) {
+			return Optional.empty();
+		}
+		return Optional.empty();
 	}
 
 	public static IInstallableUnit createBundleIU(BundleDescription bd, IArtifactKey key, IPublisherInfo info) {
@@ -255,9 +292,15 @@ public class BundlesAction extends AbstractPublisherAction {
 
 		// Process exported packages
 		for (ExportPackageDescription packageExport : bd.getExportPackages()) {
-			providedCapabilities
-					.add(MetadataFactory.createProvidedCapability(PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE,
-							packageExport.getName(), PublisherHelper.fromOSGiVersion(packageExport.getVersion())));
+			Map<String, Object> map = new LinkedHashMap<>();
+			map.put(PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE, packageExport.getName());
+			map.put(IProvidedCapability.PROPERTY_VERSION, PublisherHelper.fromOSGiVersion(packageExport.getVersion()));
+			propagateProperties(packageExport.getAttributes(), map,
+					PACKAGE_ATTRIBUTE_PROPERTY_PREFIX);
+			propagateProperties(packageExport.getDirectives(), map, PACKAGE_DIRECTIVE_PROPERTY_PREFIX);
+			IProvidedCapability capability = MetadataFactory
+					.createProvidedCapability(PublisherHelper.CAPABILITY_NS_JAVA_PACKAGE, map);
+			providedCapabilities.add(capability);
 		}
 
 		// Process generic capabilities
@@ -492,8 +535,7 @@ public class BundlesAction extends AbstractPublisherAction {
 	}
 
 	private Object convertScalarAttribute(Object attr) {
-		if (attr instanceof org.osgi.framework.Version) {
-			org.osgi.framework.Version osgiVer = (org.osgi.framework.Version) attr;
+		if (attr instanceof org.osgi.framework.Version osgiVer) {
 			return Version.createOSGi(osgiVer.getMajor(), osgiVer.getMinor(), osgiVer.getMicro(),
 					osgiVer.getQualifier());
 		}
@@ -514,20 +556,21 @@ public class BundlesAction extends AbstractPublisherAction {
 			String hostId, String[] hostBundleManifestValues) {
 		Map<Locale, Map<String, String>> hostLocalizations = getHostLocalizations(new File(bd.getLocation()),
 				hostBundleManifestValues);
-		if (hostLocalizations == null || hostLocalizations.isEmpty())
+		if (hostLocalizations == null || hostLocalizations.isEmpty()) {
 			return null;
+		}
 		return createLocalizationFragmentOfHost(bd, hostId, hostBundleManifestValues, hostLocalizations);
 	}
 
 	/*
 	 * @param hostId
-	 * 
+	 *
 	 * @param bd
-	 * 
+	 *
 	 * @param locale
-	 * 
+	 *
 	 * @param localizedStrings
-	 * 
+	 *
 	 * @return installableUnitFragment
 	 */
 	private static IInstallableUnitFragment createLocalizationFragmentOfHost(BundleDescription bd, String hostId,
@@ -572,8 +615,9 @@ public class BundlesAction extends AbstractPublisherAction {
 	}
 
 	private static String createConfigScript(GeneratorBundleInfo configInfo, boolean isBundleFragment) {
-		if (configInfo == null)
+		if (configInfo == null) {
 			return ""; //$NON-NLS-1$
+		}
 
 		String configScript = "";//$NON-NLS-1$
 		if (!isBundleFragment && configInfo.getStartLevel() != BundleInfo.NO_LEVEL) {
@@ -630,8 +674,9 @@ public class BundlesAction extends AbstractPublisherAction {
 	}
 
 	private static String createUnconfigScript(GeneratorBundleInfo unconfigInfo, boolean isBundleFragment) {
-		if (unconfigInfo == null)
+		if (unconfigInfo == null) {
 			return ""; //$NON-NLS-1$
+		}
 		String unconfigScript = "";//$NON-NLS-1$
 		if (!isBundleFragment && unconfigInfo.getStartLevel() != BundleInfo.NO_LEVEL) {
 			unconfigScript += "setStartLevel(startLevel:" + BundleInfo.NO_LEVEL + ");"; //$NON-NLS-1$ //$NON-NLS-2$
@@ -657,8 +702,9 @@ public class BundlesAction extends AbstractPublisherAction {
 	}
 
 	private static String toManifestString(Map<String, String> p) {
-		if (p == null)
+		if (p == null) {
 			return null;
+		}
 		StringBuilder result = new StringBuilder();
 		// See https://bugs.eclipse.org/329386. We are trying to reduce the size of the
 		// manifest data in
@@ -671,8 +717,9 @@ public class BundlesAction extends AbstractPublisherAction {
 				Constants.FRAGMENT_HOST };
 		for (String key : interestingKeys) {
 			String value = p.get(key);
-			if (value != null)
+			if (value != null) {
 				result.append(key).append(": ").append(value).append('\n'); //$NON-NLS-1$
+			}
 		}
 		return result.length() == 0 ? null : result.toString();
 	}
@@ -710,10 +757,11 @@ public class BundlesAction extends AbstractPublisherAction {
 		for (int i = 1; i < BUNDLE_IU_PROPERTY_MAP.length - 1; i += 2) {
 			if (iu.getProperty(BUNDLE_IU_PROPERTY_MAP[i]) != null
 					&& iu.getProperty(BUNDLE_IU_PROPERTY_MAP[i]).length() > 0
-					&& iu.getProperty(BUNDLE_IU_PROPERTY_MAP[i]).charAt(0) == '%')
+					&& iu.getProperty(BUNDLE_IU_PROPERTY_MAP[i]).charAt(0) == '%') {
 				result[j++] = iu.getProperty(BUNDLE_IU_PROPERTY_MAP[i]).substring(1);
-			else
+			} else {
 				j++;
+			}
 		}
 		// The last string is the location
 		result[BUNDLE_LOCALIZATION_INDEX] = iu.getProperty(IInstallableUnit.PROP_BUNDLE_LOCALIZATION);
@@ -726,8 +774,9 @@ public class BundlesAction extends AbstractPublisherAction {
 		for (int j = 0; j < PublisherHelper.BUNDLE_LOCALIZED_PROPERTIES.length; j++) {
 			String value = manifest.get(PublisherHelper.BUNDLE_LOCALIZED_PROPERTIES[j]);
 			if (PublisherHelper.BUNDLE_LOCALIZED_PROPERTIES[j].equals(Constants.BUNDLE_LOCALIZATION)) {
-				if (value == null)
+				if (value == null) {
 					value = DEFAULT_BUNDLE_LOCALIZATION;
+				}
 				cachedValues[j] = value;
 			} else if (value != null && value.length() > 1 && value.charAt(0) == '%') {
 				cachedValues[j] = value.substring(1);
@@ -744,8 +793,9 @@ public class BundlesAction extends AbstractPublisherAction {
 		Map<Locale, Map<String, String>> localizations;
 		Locale defaultLocale = null; // = Locale.ENGLISH; // TODO: get this from GeneratorInfo
 		String hostBundleLocalization = hostBundleManifestValues[BUNDLE_LOCALIZATION_INDEX];
-		if (hostBundleLocalization == null)
+		if (hostBundleLocalization == null) {
 			return null;
+		}
 
 		if ("jar".equalsIgnoreCase(IPath.fromOSString(bundleLocation.getName()).getFileExtension()) && //$NON-NLS-1$
 				bundleLocation.isFile()) {
@@ -766,12 +816,8 @@ public class BundlesAction extends AbstractPublisherAction {
 	public static BundleDescription createBundleDescription(Dictionary<String, String> enhancedManifest,
 			File bundleLocation) {
 		try {
-			BundleDescription descriptor = StateObjectFactory.defaultFactory.createBundleDescription(null,
-					enhancedManifest, bundleLocation == null ? null : bundleLocation.getAbsolutePath(), 1); // TODO Do
-																											// we need
-																											// to have a
-																											// real
-																											// bundle id
+			BundleDescription descriptor = BundleDescriptionBuilder.createBundleDescription(enhancedManifest,
+					bundleLocation == null ? null : bundleLocation.getAbsolutePath());
 			descriptor.setUserObject(enhancedManifest);
 			return descriptor;
 		} catch (BundleException e) {
@@ -806,8 +852,9 @@ public class BundlesAction extends AbstractPublisherAction {
 
 	public static BundleDescription createBundleDescription(File bundleLocation) throws IOException, BundleException {
 		Dictionary<String, String> manifest = loadManifest(bundleLocation);
-		if (manifest == null)
+		if (manifest == null) {
 			return null;
+		}
 		return createBundleDescription(manifest, bundleLocation);
 	}
 
@@ -829,12 +876,14 @@ public class BundlesAction extends AbstractPublisherAction {
 
 	public static Dictionary<String, String> loadManifest(File bundleLocation) throws IOException, BundleException {
 		Dictionary<String, String> manifest = basicLoadManifest(bundleLocation);
-		if (manifest == null)
+		if (manifest == null) {
 			return null;
+		}
 		// if the bundle itself does not define its shape, infer the shape from the
 		// current form
-		if (manifest.get(BUNDLE_SHAPE) == null)
+		if (manifest.get(BUNDLE_SHAPE) == null) {
 			manifest.put(BUNDLE_SHAPE, bundleLocation.isDirectory() ? DIR : JAR);
+		}
 		return manifest;
 	}
 
@@ -856,35 +905,24 @@ public class BundlesAction extends AbstractPublisherAction {
 
 	public static Dictionary<String, String> basicLoadManifest(File bundleLocation)
 			throws IOException, BundleException {
-		InputStream manifestStream = null;
-		ZipFile jarFile = null;
-		if ("jar".equalsIgnoreCase(IPath.fromOSString(bundleLocation.getName()).getFileExtension()) && bundleLocation.isFile()) { //$NON-NLS-1$
-			jarFile = new ZipFile(bundleLocation, ZipFile.OPEN_READ);
-			ZipEntry manifestEntry = jarFile.getEntry(JarFile.MANIFEST_NAME);
-			if (manifestEntry != null) {
-				manifestStream = jarFile.getInputStream(manifestEntry);
+		if ("jar".equalsIgnoreCase(IPath.fromOSString(bundleLocation.getName()).getFileExtension()) //$NON-NLS-1$
+				&& bundleLocation.isFile()) {
+			try (ZipFile jarFile = new ZipFile(bundleLocation, ZipFile.OPEN_READ);) {
+				ZipEntry manifestEntry = jarFile.getEntry(JarFile.MANIFEST_NAME);
+				if (manifestEntry != null) {
+					InputStream manifestStream = jarFile.getInputStream(manifestEntry);
+					return parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(manifestStream);
+				}
 			}
 		} else {
 			File manifestFile = new File(bundleLocation, JarFile.MANIFEST_NAME);
 			if (manifestFile.exists()) {
-				manifestStream = new BufferedInputStream(new FileInputStream(manifestFile));
+				try (InputStream manifestStream = new FileInputStream(manifestFile);) {
+					return parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(manifestStream);
+				}
 			}
 		}
-		try {
-			if (manifestStream != null) {
-				return parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(manifestStream);
-			}
-		} finally {
-			try {
-				if (jarFile != null)
-					jarFile.close();
-			} catch (IOException e2) {
-				// Ignore
-			}
-		}
-
 		return null;
-
 	}
 
 	private static Dictionary<String, String> parseBundleManifestIntoModifyableDictionaryWithCaseInsensitiveKeys(
@@ -928,15 +966,17 @@ public class BundlesAction extends AbstractPublisherAction {
 
 	@Override
 	public IStatus perform(IPublisherInfo publisherInfo, IPublisherResult results, IProgressMonitor monitor) {
-		if (bundles == null && locations == null)
+		if (bundles == null && locations == null) {
 			throw new IllegalStateException(Messages.exception_noBundlesOrLocations);
+		}
 
 		setPublisherInfo(publisherInfo);
 		finalStatus = new MultiStatus(Activator.ID, IStatus.OK, Messages.message_bundlesPublisherMultistatus, null);
 
 		try {
-			if (bundles == null)
+			if (bundles == null) {
 				bundles = getBundleDescriptions(expandLocations(locations), monitor);
+			}
 			generateBundleIUs(bundles, publisherInfo, results, monitor);
 			bundles = null;
 		} catch (OperationCanceledException e) {
@@ -951,8 +991,9 @@ public class BundlesAction extends AbstractPublisherAction {
 	protected void publishArtifact(IArtifactDescriptor descriptor, File base, File[] inclusions,
 			IPublisherInfo publisherInfo) {
 		IArtifactRepository destination = publisherInfo.getArtifactRepository();
-		if (descriptor == null || destination == null)
+		if (descriptor == null || destination == null) {
 			return;
+		}
 
 		// publish the given files
 		publishArtifact(descriptor, inclusions, null, publisherInfo, createRootPrefixComputer(base));
@@ -961,13 +1002,15 @@ public class BundlesAction extends AbstractPublisherAction {
 	@Override
 	protected void publishArtifact(IArtifactDescriptor descriptor, File jarFile, IPublisherInfo publisherInfo) {
 		// no files to publish so this is done.
-		if (jarFile == null || publisherInfo == null)
+		if (jarFile == null || publisherInfo == null) {
 			return;
+		}
 
 		// if the destination already contains the descriptor, there is nothing to do.
 		IArtifactRepository destination = publisherInfo.getArtifactRepository();
-		if (destination == null || destination.contains(descriptor))
+		if (destination == null || destination.contains(descriptor)) {
 			return;
+		}
 
 		super.publishArtifact(descriptor, jarFile, publisherInfo);
 
@@ -980,17 +1023,19 @@ public class BundlesAction extends AbstractPublisherAction {
 	}
 
 	private void expandLocations(File[] list, ArrayList<File> result) {
-		if (list == null)
+		if (list == null) {
 			return;
+		}
 		for (File location : list) {
 			if (location.isDirectory()) {
 				// if the location is itself a bundle, just add it. Otherwise r down
-				if (new File(location, JarFile.MANIFEST_NAME).exists())
+				if (new File(location, JarFile.MANIFEST_NAME).exists()) {
 					result.add(location);
-				else if (new File(location, "plugin.xml").exists() || new File(location, "fragment.xml").exists()) //$NON-NLS-1$ //$NON-NLS-2$
+				} else if (new File(location, "plugin.xml").exists() || new File(location, "fragment.xml").exists()) { //$NON-NLS-1$ //$NON-NLS-2$
 					result.add(location); // old style bundle without manifest
-				else
+				} else {
 					expandLocations(location.listFiles(), result);
+				}
 			} else {
 				result.add(location);
 			}
@@ -999,13 +1044,13 @@ public class BundlesAction extends AbstractPublisherAction {
 
 	/**
 	 * Publishes bundle IUs to the p2 metadata and artifact repositories.
-	 * 
+	 *
 	 * @param bundleDescriptions Equinox framework descriptions of the bundles to
 	 *                           publish.
 	 * @param result             Used to attach status for the publication
 	 *                           operation.
 	 * @param monitor            Used to fire progress events.
-	 * 
+	 *
 	 * @deprecated Use
 	 *             {@link #generateBundleIUs(BundleDescription[] bundleDescriptions, IPublisherInfo info, IPublisherResult result, IProgressMonitor monitor)}
 	 *             with {@link IPublisherInfo} set to <code>null</code>
@@ -1018,7 +1063,7 @@ public class BundlesAction extends AbstractPublisherAction {
 
 	/**
 	 * Publishes bundle IUs to the p2 metadata and artifact repositories.
-	 * 
+	 *
 	 * @param bundleDescriptions Equinox framework descriptions of the bundles to
 	 *                           publish.
 	 * @param publisherInfo               Configuration and publication advice information.
@@ -1095,14 +1140,16 @@ public class BundlesAction extends AbstractPublisherAction {
 	 */
 	protected void createAdviceFileAdvice(BundleDescription bundleDescription, IPublisherInfo publisherInfo) {
 		String location = bundleDescription.getLocation();
-		if (location == null)
+		if (location == null) {
 			return;
+		}
 
 		AdviceFileAdvice advice = new AdviceFileAdvice(bundleDescription.getSymbolicName(),
 				PublisherHelper.fromOSGiVersion(bundleDescription.getVersion()), IPath.fromOSString(location),
 				AdviceFileAdvice.BUNDLE_ADVICE_FILE);
-		if (advice.containsAdvice())
+		if (advice.containsAdvice()) {
 			publisherInfo.addAdvice(advice);
+		}
 
 	}
 
@@ -1113,8 +1160,9 @@ public class BundlesAction extends AbstractPublisherAction {
 		if (advice != null && !advice.isEmpty()) {
 			// we know there is some advice but if there is more than one, take the first.
 			String shape = advice.iterator().next().getShape();
-			if (shape != null)
+			if (shape != null) {
 				return shape.equals(IBundleShapeAdvice.DIR);
+			}
 		}
 		// otherwise go with whatever we figured out from the manifest or the shape on
 		// disk
@@ -1129,12 +1177,14 @@ public class BundlesAction extends AbstractPublisherAction {
 	}
 
 	protected BundleDescription[] getBundleDescriptions(File[] bundleLocations, IProgressMonitor monitor) {
-		if (bundleLocations == null)
+		if (bundleLocations == null) {
 			return new BundleDescription[0];
+		}
 		List<BundleDescription> result = new ArrayList<>(bundleLocations.length);
 		for (File bundleLocation : bundleLocations) {
-			if (monitor.isCanceled())
+			if (monitor.isCanceled()) {
 				throw new OperationCanceledException();
+			}
 			BundleDescription description = null;
 			try {
 				description = createBundleDescription(bundleLocation);
@@ -1154,4 +1204,29 @@ public class BundlesAction extends AbstractPublisherAction {
 		finalStatus.add(new Status(IStatus.ERROR, Activator.ID,
 				NLS.bind(Messages.exception_errorPublishingBundle, bundleLocation, t.getMessage()), t));
 	}
+
+	private void propagateProperties(Map<String, Object> source, Map<String, Object> target, String prefix) {
+		if (source == null) {
+			return;
+		}
+		for (Entry<String, Object> entry : source.entrySet()) {
+			String key = entry.getKey();
+			if (key.startsWith("x-")) { //$NON-NLS-1$
+				// not a standard directive / attribute if we want those we should only allow
+				// special known ones!
+				continue;
+			}
+			String prop = prefix + key;
+			Object value = entry.getValue();
+			if (value instanceof Object[] array) {
+				List<Object> list = List.of(array);
+				if (ProvidedCapability.isValidValueType(list)) {
+					target.put(prop, list);
+				}
+			} else if (ProvidedCapability.isValidValueType(value)) {
+				target.put(prop, value);
+			}
+		}
+	}
+
 }

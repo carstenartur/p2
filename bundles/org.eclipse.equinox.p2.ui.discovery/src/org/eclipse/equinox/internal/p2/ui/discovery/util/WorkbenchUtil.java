@@ -10,8 +10,8 @@
  *
  * Contributors:
  *     Tasktop Technologies - initial API and implementation
- *     IBM Corporation - helper methods from 
- *       org.eclipse.wst.common.frameworks.internal.ui.WTPActivityHelper 
+ *     IBM Corporation - helper methods from
+ *       org.eclipse.wst.common.frameworks.internal.ui.WTPActivityHelper
  *******************************************************************************/
 
 package org.eclipse.equinox.internal.p2.ui.discovery.util;
@@ -49,7 +49,7 @@ public class WorkbenchUtil {
 	 * Return the modal shell that is currently open. If there isn't one then return null.
 	 * <p>
 	 * <b>Note: Applied from patch on bug 99472.</b>
-	 * 
+	 *
 	 * @return Shell.
 	 */
 	private static Optional<Shell> getModalShell() {
@@ -65,7 +65,7 @@ public class WorkbenchUtil {
 	 * return null.
 	 * <p>
 	 * <b>Note: Applied from patch on bug 99472.</b>
-	 * 
+	 *
 	 * @return Shell or <code>null</code>
 	 */
 	public static Shell getShell() {
@@ -79,7 +79,7 @@ public class WorkbenchUtil {
 	 * Get the active non modal shell. If there isn't one return null.
 	 * <p>
 	 * <b>Note: Applied from patch on bug 99472.</b>
-	 * 
+	 *
 	 * @return Shell
 	 */
 	private static Optional<Shell> getNonModalShell() {
@@ -107,8 +107,7 @@ public class WorkbenchUtil {
 		if (!isFiltering()) {
 			return true;
 		}
-		if (object instanceof IPluginContribution) {
-			IPluginContribution contribution = (IPluginContribution) object;
+		if (object instanceof IPluginContribution contribution) {
 			if (contribution.getPluginId() != null) {
 				IWorkbenchActivitySupport workbenchActivitySupport = PlatformUI.getWorkbench().getActivitySupport();
 				IIdentifier identifier = workbenchActivitySupport.getActivityManager().getIdentifier(createUnifiedId(contribution));
@@ -132,7 +131,7 @@ public class WorkbenchUtil {
 
 	/**
 	 * Opens <code>location</code> in a web-browser according to the Eclipse workbench preferences.
-	 * 
+	 *
 	 * @param location
 	 *            the url to open
 	 * @see #openUrl(String, int)
@@ -143,7 +142,7 @@ public class WorkbenchUtil {
 
 	/**
 	 * Opens <code>location</code> in a web-browser according to the Eclipse workbench preferences.
-	 * 
+	 *
 	 * @param location
 	 *            the url to open
 	 * @param customFlags

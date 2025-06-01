@@ -21,11 +21,11 @@ import org.eclipse.osgi.util.NLS;
  */
 public enum ProductContentType {
 
-	BUNDLES("bundles"), // only bundles are accepted in the product //$NON-NLS-1$ 
+	BUNDLES("bundles"), // only bundles are accepted in the product //$NON-NLS-1$
 	FEATURES("features"), // only features are accepted in the product //$NON-NLS-1$
 	MIXED("mixed"); // all kinds of installable units are accepted in the product //$NON-NLS-1$
 
-	private String contentTypeString;
+	private final String contentTypeString;
 	private static Map<String, ProductContentType> mappings = new HashMap<>();
 
 	static {
@@ -51,8 +51,9 @@ public enum ProductContentType {
 	 */
 	public static ProductContentType toProductContentType(String typeAsString) throws IllegalArgumentException {
 		ProductContentType result = mappings.get(typeAsString.toLowerCase(Locale.ENGLISH));
-		if (result == null)
+		if (result == null) {
 			throw new IllegalArgumentException(NLS.bind(Messages.exception_invalidProductContentType, typeAsString, getAllowedSetOfValues()));
+		}
 		return result;
 	}
 

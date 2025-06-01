@@ -111,8 +111,7 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 	 */
 	protected void doCheckStateChanged(Object element) {
 		Widget item = findItem(element);
-		if (item instanceof TreeItem) {
-			TreeItem treeItem = (TreeItem) item;
+		if (item instanceof TreeItem treeItem) {
 			treeItem.setGrayed(false);
 			// BEGIN MODIFICATION OF COPIED CLASS
 			if (element instanceof QueriedElement && treeItem.getChecked()) {
@@ -149,8 +148,9 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 	private void updateChildrenItems(TreeItem parent) {
 		// We are in the middle of preserving selections, don't
 		// update any children according to parent
-		if (!rippleCheckMarks)
+		if (!rippleCheckMarks) {
 			return;
+		}
 		Item[] children = getChildren(parent);
 		boolean state = parent.getChecked();
 		for (Item element : children) {
@@ -169,8 +169,9 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 	private void updateParentItems(TreeItem item) {
 		// We are in the middle of preserving selections, don't
 		// update any parents according to children
-		if (!rippleCheckMarks)
+		if (!rippleCheckMarks) {
 			return;
+		}
 		if (item != null) {
 			Item[] children = getChildren(item);
 			boolean containsChecked = false;
@@ -271,9 +272,11 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 	private void saveCheckedState() {
 		Object[] checked = getCheckedElements();
 		savedCheckState = new ArrayList<>(checked.length);
-		for (Object element : checked)
-			if (!isExpandable(element) && !getGrayed(element))
+		for (Object element : checked) {
+			if (!isExpandable(element) && !getGrayed(element)) {
 				savedCheckState.add(element);
+			}
+		}
 	}
 
 	// Now we restore checked state.
@@ -286,8 +289,9 @@ public class ContainerCheckedTreeViewer extends CheckboxTreeViewer {
 			setChecked(element, true);
 		}
 		// Listeners need to know something changed.
-		if (element != null)
+		if (element != null) {
 			fireCheckStateChanged(element, true);
+		}
 	}
 
 	// This method is public so that the DeferredFetchFilteredTree can also

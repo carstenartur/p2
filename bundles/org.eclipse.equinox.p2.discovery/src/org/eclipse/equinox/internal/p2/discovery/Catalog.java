@@ -7,7 +7,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     Tasktop Technologies - initial API and implementation
  *******************************************************************************/
@@ -23,7 +23,7 @@ import org.osgi.framework.*;
 
 /**
  * A means of discovering connectors.
- * 
+ *
  * @author David Green
  */
 public class Catalog {
@@ -108,7 +108,7 @@ public class Catalog {
 
 	/**
 	 * get the top-level categories
-	 * 
+	 *
 	 * @return the categories, or an empty list if there are none.
 	 */
 	public List<CatalogCategory> getCategories() {
@@ -117,7 +117,7 @@ public class Catalog {
 
 	/**
 	 * get the connectors that were discovered and not filtered
-	 * 
+	 *
 	 * @return the connectors, or an empty list if there are none.
 	 */
 	public List<CatalogItem> getItems() {
@@ -130,7 +130,7 @@ public class Catalog {
 
 	/**
 	 * get the connectors that were discovered but filtered
-	 * 
+	 *
 	 * @return the filtered connectors, or an empty list if there were none.
 	 */
 	public List<CatalogItem> getFilteredItems() {
@@ -139,7 +139,7 @@ public class Catalog {
 
 	/**
 	 * get a list of known certifications
-	 * 
+	 *
 	 * @return the certifications, or an empty list if there are none.
 	 */
 	public List<Certification> getCertifications() {
@@ -167,7 +167,7 @@ public class Catalog {
 
 	/**
 	 * indicate if update site availability should be verified. The default is false.
-	 * 
+	 *
 	 * @see CatalogItem#getAvailable()
 	 * @see #setVerifyUpdateSiteAvailability(boolean)
 	 */
@@ -177,7 +177,7 @@ public class Catalog {
 
 	/**
 	 * indicate if update site availability should be verified. The default is false.
-	 * 
+	 *
 	 * @see CatalogItem#getAvailable()
 	 * @see #isVerifyUpdateSiteAvailability()
 	 */
@@ -207,7 +207,7 @@ public class Catalog {
 			Certification previous = idToCertification.put(certification.getId(), certification);
 			if (previous != null) {
 				LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind("Duplicate certification id ''{0}'': declaring sources: {1}, {2}", //$NON-NLS-1$
-						new Object[] {certification.getId(), certification.getSource().getId(), previous.getSource().getId()})));
+						certification.getId(), certification.getSource().getId(), previous.getSource().getId())));
 			}
 		}
 
@@ -217,8 +217,7 @@ public class Catalog {
 				if (certification != null) {
 					connector.setCertification(certification);
 				} else {
-					LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind("Unknown category ''{0}'' referenced by connector ''{1}'' declared in {2}", new Object[] { //$NON-NLS-1$
-							connector.getCertificationId(), connector.getId(), connector.getSource().getId()})));
+					LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind("Unknown category ''{0}'' referenced by connector ''{1}'' declared in {2}", connector.getCertificationId(), connector.getId(), connector.getSource().getId())));
 				}
 			}
 		}
@@ -229,7 +228,7 @@ public class Catalog {
 		for (CatalogCategory category : categories) {
 			CatalogCategory previous = idToCategory.put(category.getId(), category);
 			if (previous != null) {
-				LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.Catalog_duplicate_category_id, new Object[] {category.getId(), category.getSource().getId(), previous.getSource().getId()})));
+				LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.Catalog_duplicate_category_id, category.getId(), category.getSource().getId(), previous.getSource().getId())));
 			}
 		}
 
@@ -239,7 +238,7 @@ public class Catalog {
 				category.getItems().add(connector);
 				connector.setCategory(category);
 			} else {
-				LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.Catalog_bundle_references_unknown_category, new Object[] {connector.getCategoryId(), connector.getId(), connector.getSource().getId()})));
+				LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.Catalog_bundle_references_unknown_category, connector.getCategoryId(), connector.getId(), connector.getSource().getId())));
 			}
 		}
 	}
@@ -258,7 +257,7 @@ public class Catalog {
 					// but the filter impl must still handle cases where non String keys are used.
 					match = filter.match((Dictionary) environment);
 				} catch (InvalidSyntaxException e) {
-					LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.Catalog_illegal_filter_syntax, new Object[] {connector.getPlatformFilter(), connector.getId(), connector.getSource().getId()})));
+					LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.Catalog_illegal_filter_syntax, connector.getPlatformFilter(), connector.getId(), connector.getSource().getId())));
 				}
 				if (!match) {
 					items.remove(connector);

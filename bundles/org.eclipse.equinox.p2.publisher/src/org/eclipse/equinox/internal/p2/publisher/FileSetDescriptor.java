@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM Corporation - Ongoing development
  ******************************************************************************/
@@ -21,7 +21,7 @@ import java.util.*;
 public class FileSetDescriptor {
 	private final String key;
 	private String configSpec = null;
-	private HashSet<File> fileset = new HashSet<>();
+	private final HashSet<File> fileset = new HashSet<>();
 	private final ArrayList<String[]> permissions = new ArrayList<>();
 	private String links = ""; //$NON-NLS-1$
 

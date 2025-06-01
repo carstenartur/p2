@@ -73,8 +73,7 @@ class FileInfoReader {
 					Exception e = event.getException();
 					if (e != null) {
 						exception.set(e);
-					} else if (event instanceof IRemoteFileSystemBrowseEvent) {
-						IRemoteFileSystemBrowseEvent fsbe = (IRemoteFileSystemBrowseEvent) event;
+					} else if (event instanceof IRemoteFileSystemBrowseEvent fsbe) {
 						IRemoteFile[] remoteFiles = fsbe.getRemoteFiles();
 						if (remoteFiles != null && remoteFiles.length > 0) {
 							remote.set(remoteFiles[0]);
@@ -115,7 +114,7 @@ class FileInfoReader {
 	 * Utility method to check exception condition and determine if retry should be
 	 * done. If there was an exception it is translated into one of the specified
 	 * exceptions and thrown.
-	 * 
+	 *
 	 * @param uri            the URI being read - used for logging purposes
 	 * @param attemptCounter - the current attempt number (start with 0)
 	 * @return true if the exception is an IOException and attemptCounter <
@@ -141,7 +140,7 @@ class FileInfoReader {
 			LogHelper
 					.log(new Status(IStatus.WARNING, Activator.ID,
 							NLS.bind(Messages.connection_to_0_failed_on_1_retry_attempt_2,
-									new String[] { uri.toString(), t.getMessage(), String.valueOf(attemptCounter) }),
+									uri.toString(), t.getMessage(), String.valueOf(attemptCounter)),
 							t));
 			try {
 				Thread.sleep(connectionRetryDelay);

@@ -38,10 +38,10 @@ import org.eclipse.swt.widgets.*;
  */
 public abstract class StructuredIUGroup {
 
-	private FontMetrics fm;
+	private final FontMetrics fm;
 	protected StructuredViewer viewer;
 	private Composite composite;
-	private ProvisioningUI ui;
+	private final ProvisioningUI ui;
 	private IUColumnConfig[] columnConfig;
 
 	/**
@@ -56,10 +56,11 @@ public abstract class StructuredIUGroup {
 	 */
 	protected StructuredIUGroup(ProvisioningUI ui, Composite parent, Font font, IUColumnConfig[] columnConfig) {
 		this.ui = ui;
-		if (columnConfig == null)
+		if (columnConfig == null) {
 			this.columnConfig = ProvUI.getIUColumnConfig();
-		else
+		} else {
 			this.columnConfig = columnConfig;
+		}
 
 		// Set up a fontmetrics for calculations
 		GC gc = new GC(parent);
@@ -144,8 +145,9 @@ public abstract class StructuredIUGroup {
 	}
 
 	protected Control getDefaultFocusControl() {
-		if (viewer != null)
+		if (viewer != null) {
 			return viewer.getControl();
+		}
 		return null;
 	}
 }

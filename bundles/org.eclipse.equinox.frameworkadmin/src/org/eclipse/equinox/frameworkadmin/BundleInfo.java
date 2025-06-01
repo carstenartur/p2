@@ -19,7 +19,7 @@ import org.osgi.framework.Version;
 
 /**
  * This object represents information of a bundle.
- * 
+ *
  * @since 2.0
  */
 public class BundleInfo {
@@ -48,7 +48,7 @@ public class BundleInfo {
 
 	/**
 	 * Create a new BundleInfo object
-	 * 
+	 *
 	 * @param location
 	 *            - the location of the bundle
 	 */
@@ -58,7 +58,7 @@ public class BundleInfo {
 
 	/**
 	 * Create a new BundleInfo object
-	 * 
+	 *
 	 * @param location
 	 *            - the location of the bundle
 	 * @param startLevel
@@ -74,7 +74,7 @@ public class BundleInfo {
 
 	/**
 	 * Create a new BundleInfo object
-	 * 
+	 *
 	 * @param symbolic
 	 *            The Bundle-SymbolicName name for this bundle
 	 * @param version
@@ -98,7 +98,7 @@ public class BundleInfo {
 
 	/**
 	 * Get the bundle id
-	 * 
+	 *
 	 * @return the bundle id or {@link #NO_BUNDLEID}
 	 */
 	public long getBundleId() {
@@ -108,7 +108,7 @@ public class BundleInfo {
 	/**
 	 * The base location An absolute URI which may be used to resolve relative
 	 * {@link #getLocation()} URIs
-	 * 
+	 *
 	 * @return absolute URI or null if not set
 	 */
 	public URI getBaseLocation() {
@@ -118,7 +118,7 @@ public class BundleInfo {
 	/**
 	 * The location of this bundle. A location is required if this bundle will be
 	 * persisted into a configuration file
-	 * 
+	 *
 	 * @return URI location or null if not set
 	 */
 	public URI getLocation() {
@@ -127,7 +127,7 @@ public class BundleInfo {
 
 	/**
 	 * The manifest for this bundle
-	 * 
+	 *
 	 * @return the manifest or null if not set
 	 */
 	public String getManifest() {
@@ -136,7 +136,7 @@ public class BundleInfo {
 
 	/**
 	 * The start level for this bundle
-	 * 
+	 *
 	 * @return the start level or {@link #NO_LEVEL}
 	 */
 	public int getStartLevel() {
@@ -146,7 +146,7 @@ public class BundleInfo {
 	/**
 	 * The Bundle-SymbolicName for this bundle. A symbolic name is required if this
 	 * bundle will be persisted into a configuration file
-	 * 
+	 *
 	 * @return the symbolic name or null if not set
 	 */
 	public String getSymbolicName() {
@@ -155,18 +155,19 @@ public class BundleInfo {
 
 	/**
 	 * Return the version
-	 * 
+	 *
 	 * @return an {@link Version} string, or "0.0.0" if not set
 	 */
 	public String getVersion() {
-		if (version == null)
+		if (version == null) {
 			return EMPTY_VERSION;
+		}
 		return version;
 	}
 
 	/**
 	 * Return the host if this bundle is a fragment
-	 * 
+	 *
 	 * @return the host, or null if this is not a fragment
 	 */
 	public String getFragmentHost() {
@@ -175,7 +176,7 @@ public class BundleInfo {
 
 	/**
 	 * Whether or not this bundle is marked to be started Default is false
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isMarkedAsStarted() {
@@ -184,7 +185,7 @@ public class BundleInfo {
 
 	/**
 	 * Whether or not this bundle is resolved Default is false
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isResolved() {
@@ -193,7 +194,7 @@ public class BundleInfo {
 
 	/**
 	 * Set the bundle id.
-	 * 
+	 *
 	 * @param bundleId
 	 *            The bundle id.
 	 */
@@ -204,7 +205,7 @@ public class BundleInfo {
 	/**
 	 * Set a base location against which relative {@link #getLocation()} URIs may be
 	 * resolved
-	 * 
+	 *
 	 * @param baseLocation
 	 *            - an absolute URI
 	 */
@@ -214,7 +215,7 @@ public class BundleInfo {
 
 	/**
 	 * Set the location for this bundle.
-	 * 
+	 *
 	 * @param location
 	 *            The location of the bundle.
 	 */
@@ -224,7 +225,7 @@ public class BundleInfo {
 
 	/**
 	 * Set the manifest for this bundle
-	 * 
+	 *
 	 * @param manifest
 	 *            The manifest.
 	 */
@@ -234,7 +235,7 @@ public class BundleInfo {
 
 	/**
 	 * Set whether or not this bundle should be started
-	 * 
+	 *
 	 * @param markedAsStarted
 	 *            Whether the bundle should be started.
 	 */
@@ -244,7 +245,7 @@ public class BundleInfo {
 
 	/**
 	 * Set whether or not the bundle is resolved
-	 * 
+	 *
 	 * @param resolved
 	 *            If the bundle is resolved or not.
 	 */
@@ -254,7 +255,7 @@ public class BundleInfo {
 
 	/**
 	 * Set the start level.
-	 * 
+	 *
 	 * @param level
 	 *            if a value &lt; 0 is passed, the start level will be set to
 	 *            {@link #NO_LEVEL}
@@ -265,7 +266,7 @@ public class BundleInfo {
 
 	/**
 	 * Set the Bundle-SymbolicName
-	 * 
+	 *
 	 * @param symbolicName
 	 *            The Bundle-SymbolicName.
 	 */
@@ -275,20 +276,21 @@ public class BundleInfo {
 
 	/**
 	 * Set the version, should be a valid {@link Version} string
-	 * 
+	 *
 	 * @param value
 	 *            The version. A valid {@link Version} string.
 	 */
 	public void setVersion(String value) {
-		if (value == null)
+		if (value == null) {
 			this.version = EMPTY_VERSION;
-		else
+		} else {
 			this.version = value;
+		}
 	}
 
 	/**
 	 * Set the host if this bundle is a fragment
-	 * 
+	 *
 	 * @param fragmentHost
 	 *            The host for this fragment.
 	 */
@@ -300,8 +302,9 @@ public class BundleInfo {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append("BundleInfo("); //$NON-NLS-1$
-		if (symbolicName != null)
+		if (symbolicName != null) {
 			buffer.append(symbolicName);
+		}
 		buffer.append(", "); //$NON-NLS-1$
 		buffer.append(version);
 
@@ -341,40 +344,49 @@ public class BundleInfo {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
+		}
 
-		if (obj == null)
+		if (obj == null) {
 			return false;
+		}
 
-		if (getClass() != obj.getClass())
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 
 		BundleInfo other = (BundleInfo) obj;
 		if (symbolicName == null) {
-			if (other.symbolicName != null)
+			if (other.symbolicName != null) {
 				return false;
-		} else if (!symbolicName.equals(other.symbolicName))
+			}
+		} else if (!symbolicName.equals(other.symbolicName)) {
 			return false;
+		}
 
-		if (!version.equals(other.getVersion()))
+		if (!version.equals(other.getVersion())) {
 			return false;
+		}
 
-		if (location == null || other.location == null)
+		if (location == null || other.location == null) {
 			return true;
+		}
 
 		// compare absolute location URIs
 		URI absoluteLocation = null;
-		if (location.isAbsolute() || baseLocation == null)
+		if (location.isAbsolute() || baseLocation == null) {
 			absoluteLocation = location;
-		else
+		} else {
 			absoluteLocation = URIUtil.append(baseLocation, URIUtil.toUnencodedString(location));
+		}
 
 		URI otherAbsoluteLocation = null;
-		if (other.location.isAbsolute() || other.baseLocation == null)
+		if (other.location.isAbsolute() || other.baseLocation == null) {
 			otherAbsoluteLocation = other.location;
-		else
+		} else {
 			otherAbsoluteLocation = URIUtil.append(other.baseLocation, URIUtil.toUnencodedString(other.location));
+		}
 		return URIUtil.sameURI(absoluteLocation, otherAbsoluteLocation);
 	}
 }

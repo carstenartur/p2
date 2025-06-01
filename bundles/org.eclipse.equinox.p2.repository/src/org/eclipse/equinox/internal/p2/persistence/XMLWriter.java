@@ -26,8 +26,8 @@ public class XMLWriter implements XMLConstants {
 
 	public static class ProcessingInstruction {
 
-		private String target;
-		private String[] data;
+		private final String target;
+		private final String[] data;
 
 		// The standard UTF-8 processing instruction
 		public static final String XML_UTF8 = "<?xml version='1.0' encoding='UTF-8'?>"; //$NON-NLS-1$
@@ -60,11 +60,11 @@ public class XMLWriter implements XMLConstants {
 		}
 	}
 
-	private Stack<String> elements; // XML elements that have not yet been closed
+	private final Stack<String> elements; // XML elements that have not yet been closed
 	private boolean open; // Can attributes be added to the current element?
-	private String indent; // used for each level of indentation
+	private final String indent; // used for each level of indentation
 
-	private PrintWriter pw;
+	private final PrintWriter pw;
 
 	public XMLWriter(OutputStream output, ProcessingInstruction[] piElements) {
 		this.pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8)), false);
@@ -155,8 +155,9 @@ public class XMLWriter implements XMLConstants {
 					// this is the set of legal xml scharacters in unicode excluding high surrogates since they cannot be represented with a char
 					// see http://www.w3.org/TR/REC-xml/#charsets
 					if ((c >= '\u0020' && c <= '\uD7FF') || (c >= '\uE000' && c <= '\uFFFD')) {
-						if (buffer != null)
+						if (buffer != null) {
 							buffer.append(c);
+						}
 						continue;
 					}
 					replace = Character.isWhitespace(c) ? " " : null; //$NON-NLS-1$
@@ -165,12 +166,14 @@ public class XMLWriter implements XMLConstants {
 				buffer = new StringBuilder(txt.length() + 16);
 				buffer.append(txt.substring(0, i));
 			}
-			if (replace != null)
+			if (replace != null) {
 				buffer.append(replace);
+			}
 		}
 
-		if (buffer == null)
+		if (buffer == null) {
 			return txt;
+		}
 
 		return buffer.toString();
 	}

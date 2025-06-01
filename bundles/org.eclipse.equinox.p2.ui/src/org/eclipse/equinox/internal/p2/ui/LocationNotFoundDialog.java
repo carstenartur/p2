@@ -33,9 +33,9 @@ import org.eclipse.ui.PlatformUI;
 
 public class LocationNotFoundDialog implements Runnable {
 
-	private RepositoryTracker repositoryTracker;
-	private ProvisioningUI ui;
-	private URI location;
+	private final RepositoryTracker repositoryTracker;
+	private final ProvisioningUI ui;
+	private final URI location;
 
 	public LocationNotFoundDialog(RepositoryTracker repositoryTracker, ProvisioningUI ui, URI location) {
 		this.repositoryTracker = repositoryTracker;
@@ -46,8 +46,9 @@ public class LocationNotFoundDialog implements Runnable {
 	@Override
 	public void run() {
 		IWorkbench workbench = PlatformUI.getWorkbench();
-		if (workbench.isClosing())
+		if (workbench.isClosing()) {
 			return;
+		}
 		Shell shell = ProvUI.getDefaultParentShell();
 		int result = MessageDialog.open(MessageDialog.QUESTION, shell,
 				ProvUIMessages.ColocatedRepositoryTracker_SiteNotFoundTitle,

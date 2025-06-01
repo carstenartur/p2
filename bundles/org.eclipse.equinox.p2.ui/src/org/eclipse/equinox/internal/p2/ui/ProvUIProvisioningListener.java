@@ -37,7 +37,7 @@ public abstract class ProvUIProvisioningListener implements SynchronousProvision
 
 	int eventTypes = 0;
 	String name;
-	private ProvisioningOperationRunner runner;
+	private final ProvisioningOperationRunner runner;
 
 	public ProvUIProvisioningListener(String name, int eventTypes, ProvisioningOperationRunner runner) {
 		this.name = name;
@@ -48,25 +48,27 @@ public abstract class ProvUIProvisioningListener implements SynchronousProvision
 	@Override
 	public void notify(EventObject o) {
 		if (o instanceof RepositoryOperationBeginningEvent) {
-			if (Tracing.DEBUG_EVENTS_CLIENT)
+			if (Tracing.DEBUG_EVENTS_CLIENT) {
 				Tracing.debug("Batch Eventing:  Ignore Following Events. " + getReceiverString()); //$NON-NLS-1$
-		} else if (o instanceof RepositoryOperationEndingEvent) {
-			RepositoryOperationEndingEvent event = (RepositoryOperationEndingEvent) o;
-
-			if (Tracing.DEBUG_EVENTS_CLIENT)
+			}
+		} else if (o instanceof RepositoryOperationEndingEvent event) {
+			if (Tracing.DEBUG_EVENTS_CLIENT) {
 				Tracing.debug("Batch Eventing:  Batch Ended. " + getReceiverString()); //$NON-NLS-1$
+			}
 			// A batch operation completed.  Refresh.
 			if (runner.eventBatchCount <= 0) {
-				if (Tracing.DEBUG_EVENTS_CLIENT)
+				if (Tracing.DEBUG_EVENTS_CLIENT) {
 					Tracing.debug("Batch Eventing Complete." + getReceiverString()); //$NON-NLS-1$
+				}
 				if (event.getEvent() == null && event.update()) {
 					if (Tracing.DEBUG_EVENTS_CLIENT) {
 						Tracing.debug("Refreshing After Batch." + getReceiverString()); //$NON-NLS-1$
 					}
 					refreshAll();
 				} else if (event.update()) {
-					if (Tracing.DEBUG_EVENTS_CLIENT)
+					if (Tracing.DEBUG_EVENTS_CLIENT) {
 						Tracing.debug("Dispatching Last Event in Batch." + getReceiverString()); //$NON-NLS-1$
+					}
 					notify(event.getEvent());
 				} else if (Tracing.DEBUG_EVENTS_CLIENT) {
 					Tracing.debug("No Refresh on Batch Complete."); //$NON-NLS-1$
@@ -85,13 +87,14 @@ public abstract class ProvUIProvisioningListener implements SynchronousProvision
 			}
 		} else if (runner.eventBatchCount > 0) {
 			// ignore raw events during a batch
-			if (Tracing.DEBUG_EVENTS_CLIENT)
+			if (Tracing.DEBUG_EVENTS_CLIENT) {
 				Tracing.debug(name + " Ignoring: " + o.toString()); //$NON-NLS-1$
+			}
 			return;
-		} else if (o instanceof IProfileEvent && (((eventTypes & PROV_EVENT_IU) == PROV_EVENT_IU) || ((eventTypes & PROV_EVENT_PROFILE) == PROV_EVENT_PROFILE))) {
-			if (Tracing.DEBUG_EVENTS_CLIENT)
+		} else if (o instanceof IProfileEvent event && (((eventTypes & PROV_EVENT_IU) == PROV_EVENT_IU) || ((eventTypes & PROV_EVENT_PROFILE) == PROV_EVENT_PROFILE))) {
+			if (Tracing.DEBUG_EVENTS_CLIENT) {
 				Tracing.debug(o.toString() + getReceiverString());
-			IProfileEvent event = (IProfileEvent) o;
+			}
 			if (event.getReason() == IProfileEvent.CHANGED) {
 				profileChanged(event.getProfileId());
 			} else if (event.getReason() == IProfileEvent.ADDED) {
@@ -100,8 +103,9 @@ public abstract class ProvUIProvisioningListener implements SynchronousProvision
 				profileRemoved(event.getProfileId());
 			}
 		} else if (o instanceof RepositoryEvent) {
-			if (Tracing.DEBUG_EVENTS_CLIENT)
+			if (Tracing.DEBUG_EVENTS_CLIENT) {
 				Tracing.debug(o.toString() + getReceiverString());
+			}
 			handleRepositoryEvent((RepositoryEvent) o);
 		}
 	}
@@ -182,10 +186,11 @@ public abstract class ProvUIProvisioningListener implements SynchronousProvision
 	 */
 	protected void repositoryEnablement(RepositoryEvent event) {
 		// We treat enablement of a repository as if one were added.
-		if (event.isRepositoryEnabled())
+		if (event.isRepositoryEnabled()) {
 			repositoryAdded(event);
-		else
+		} else {
 			repositoryRemoved(event);
+		}
 	}
 
 	/**

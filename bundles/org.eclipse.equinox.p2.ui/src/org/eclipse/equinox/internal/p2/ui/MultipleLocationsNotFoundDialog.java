@@ -29,9 +29,9 @@ import org.eclipse.ui.PlatformUI;
 
 public class MultipleLocationsNotFoundDialog implements Runnable {
 
-	private RepositoryTracker repositoryTracker;
-	private ProvisioningUI ui;
-	private URI[] locations;
+	private final RepositoryTracker repositoryTracker;
+	private final ProvisioningUI ui;
+	private final URI[] locations;
 
 	public MultipleLocationsNotFoundDialog(RepositoryTracker repositoryTracker, ProvisioningUI ui, URI[] locations) {
 		this.repositoryTracker = repositoryTracker;
@@ -42,8 +42,9 @@ public class MultipleLocationsNotFoundDialog implements Runnable {
 	@Override
 	public void run() {
 		IWorkbench workbench = PlatformUI.getWorkbench();
-		if (workbench.isClosing())
+		if (workbench.isClosing()) {
 			return;
+		}
 		Shell shell = ProvUI.getDefaultParentShell();
 		int result = MessageDialog.open(MessageDialog.QUESTION, shell,
 				ProvUIMessages.ColocatedRepositoryTracker_MultipleSitesNotFoundTitle,

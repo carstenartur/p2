@@ -17,7 +17,7 @@ import java.util.*;
 import org.eclipse.equinox.p2.metadata.expression.IEvaluationContext;
 
 /**
- * n-ary <code>intersect</code> operator. The result is the set of elements that were found in all operands. 
+ * n-ary <code>intersect</code> operator. The result is the set of elements that were found in all operands.
  */
 final class Intersect extends Binary {
 	Intersect(Expression operand, Expression param) {
@@ -36,8 +36,9 @@ final class Intersect extends Binary {
 		Set<Object> retained = new HashSet<>();
 		while (itor.hasNext()) {
 			Object value = itor.next();
-			if (resultSet.contains(value))
+			if (resultSet.contains(value)) {
 				retained.add(value);
+			}
 		}
 		return RepeatableIterator.create(retained);
 	}

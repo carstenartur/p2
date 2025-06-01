@@ -7,7 +7,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     Tasktop Technologies - initial API and implementation
  *******************************************************************************/
@@ -43,7 +43,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 /**
  * The main wizard page that allows users to select connectors that they wish to install.
- * 
+ *
  * @author David Green
  * @author Steffen Pingel
  */
@@ -129,9 +129,8 @@ public class CatalogViewer extends FilteredViewer {
 		public boolean select(Viewer filteredViewer, Object parentElement, Object element) {
 			if (element instanceof CatalogItem) {
 				return doFilter((CatalogItem) element);
-			} else if (element instanceof CatalogCategory) {
+			} else if (element instanceof CatalogCategory category) {
 				// only show categories if at least one child is visible
-				CatalogCategory category = (CatalogCategory) element;
 				for (CatalogItem item : category.getItems()) {
 					if (doFilter(item)) {
 						return true;
@@ -164,8 +163,7 @@ public class CatalogViewer extends FilteredViewer {
 
 		@Override
 		protected boolean isLeafMatch(Viewer filteredViewer, Object element) {
-			if (element instanceof CatalogItem) {
-				CatalogItem descriptor = (CatalogItem) element;
+			if (element instanceof CatalogItem descriptor) {
 				if (!(filterMatches(descriptor.getName()) || filterMatches(descriptor.getDescription()) || filterMatches(descriptor.getProvider()) || filterMatches(descriptor.getLicense()))) {
 					return false;
 				}
@@ -394,8 +392,9 @@ public class CatalogViewer extends FilteredViewer {
 		resources = new DiscoveryResources(container.getDisplay());
 		_viewer.getControl().addDisposeListener(e -> {
 			resources.dispose();
-			if (catalog != null)
+			if (catalog != null) {
 				catalog.dispose();
+			}
 		});
 		_viewer.addFilter(new Filter());
 		return _viewer;

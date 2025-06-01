@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  * 	Cloudsmith Inc - initial API and implementation
  * 	IBM Corporation - ongoing development
@@ -115,7 +115,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	protected IFileTransferConnectStartEvent connectEvent;
 	private Job cancelJob;
 	private boolean monitorStarted;
-	private IProvisioningAgent agent;
+	private final IProvisioningAgent agent;
 	private boolean isPause = false;
 	private boolean hasPaused = false;
 	private IFileTransferPausable pasuable = null;
@@ -161,9 +161,11 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 				} catch (InterruptedException e) {
 					return Status.CANCEL_STATUS;
 				}
-				if (theMonitor != null && theMonitor.isCanceled())
-					if (connectEvent != null)
+				if (theMonitor != null && theMonitor.isCanceled()) {
+					if (connectEvent != null) {
 						connectEvent.cancel();
+					}
+				}
 			}
 			return Status.OK_STATUS;
 		}
@@ -172,8 +174,9 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 		protected void canceling() {
 			// wake up from sleep in run method
 			Thread t = getThread();
-			if (t != null)
+			if (t != null) {
 				t.interrupt();
+			}
 		}
 
 	}
@@ -191,14 +194,16 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 		} else if (event instanceof IIncomingFileTransferReceiveStartEvent) {
 			// we no longer need the cancel handler because we are about to fork the
 			// transfer job
-			if (cancelJob != null)
+			if (cancelJob != null) {
 				cancelJob.cancel();
+			}
 			IIncomingFileTransfer source = ((IIncomingFileTransferEvent) event).getSource();
 			try {
 				FileInfo fi = new FileInfo();
 				Date lastModified = source.getRemoteLastModified();
-				if (lastModified != null)
+				if (lastModified != null) {
 					fi.setLastModified(lastModified.getTime());
+				}
 				fi.setName(source.getRemoteFileName());
 				fi.setSize(source.getFileLength());
 				fileInfo = fi;
@@ -249,19 +254,22 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 		} else if (event instanceof IIncomingFileTransferReceiveDoneEvent) {
 			// stop paused Reader if resuming failed
 			this.hasPaused = false;
-			if (closeStreamWhenFinished)
+			if (closeStreamWhenFinished) {
 				hardClose(theOutputStream);
+			}
 
-			if (exception == null)
+			if (exception == null) {
 				exception = ((IIncomingFileTransferReceiveDoneEvent) event).getException();
+			}
 			onDone(((IIncomingFileTransferReceiveDoneEvent) event).getSource());
 		} else if (event instanceof IIncomingFileTransferReceivePausedEvent) {
 			this.hasPaused = true;
 		} else if (event instanceof IIncomingFileTransferReceiveResumedEvent) {
 			// we no longer need the cancel handler because we are about to resume the
 			// transfer job
-			if (cancelJob != null)
+			if (cancelJob != null) {
 				cancelJob.cancel();
+			}
 			try {
 				((IIncomingFileTransferReceiveResumedEvent) event).receive(theOutputStream, this);
 			} catch (IOException e) {
@@ -275,8 +283,9 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	private synchronized void pauseIfPossible(IIncomingFileTransfer source) {
 		if (isPaused() && !hasPaused) {
 			pasuable = source.getAdapter(IFileTransferPausable.class);
-			if (pasuable != null)
+			if (pasuable != null) {
 				pasuable.pause();
+			}
 		}
 	}
 
@@ -347,14 +356,15 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 			}
 
 			private void checkException() throws IOException {
-				if (getException() == null)
+				if (getException() == null) {
 					return;
+				}
 
 				IOException e;
 				Throwable t = RepositoryStatusHelper.unwind(getException());
-				if (t instanceof IOException)
+				if (t instanceof IOException) {
 					e = (IOException) t;
-				else {
+				} else {
 					if (t instanceof UserCancelledException) {
 						Throwable cause = t;
 						t = new OperationCanceledException(t.getMessage());
@@ -380,15 +390,17 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 
 	public void readInto(URI uri, OutputStream anOutputStream, long startPos, IProgressMonitor monitor) //
 			throws CoreException, FileNotFoundException, AuthenticationFailedException, JREHttpClientRequiredException {
-		if (monitor == null)
+		if (monitor == null) {
 			monitor = new NullProgressMonitor();
+		}
 		try {
 			sendRetrieveRequest(uri, anOutputStream, (startPos != -1 ? new DownloadRange(startPos) : null), false,
 					monitor);
 			Job.getJobManager().join(this, new SuppressBlockedMonitor(monitor, 0));
 			waitPaused(uri, anOutputStream, startPos, monitor);
-			if (monitor.isCanceled() && connectEvent != null)
+			if (monitor.isCanceled() && connectEvent != null) {
 				connectEvent.cancel();
+			}
 			// check and throw exception if received in callback
 			checkException(uri, connectionRetryCount);
 		} catch (InterruptedException e) {
@@ -401,8 +413,9 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 				cancelJob = null;
 			}
 			// If monitor was never started, make sure it is balanced
-			if (!monitorStarted)
+			if (!monitorStarted) {
 				monitor.beginTask(null, 1);
+			}
 			monitorStarted = false;
 			monitor.done();
 		}
@@ -414,8 +427,9 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 		if (hasPaused) {
 			while (hasPaused) {
 				Thread.sleep(1000);
-				if (monitor.isCanceled())
+				if (monitor.isCanceled()) {
 					throw new OperationCanceledException();
+				}
 			}
 			Job.getJobManager().join(this, new SuppressBlockedMonitor(monitor, 0));
 			waitPaused(uri, anOutputStream, startPos, monitor);
@@ -447,8 +461,9 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 		this.requestUri = uri;
 
 		for (int retryCount = 0;; retryCount++) {
-			if (monitor != null && monitor.isCanceled())
+			if (monitor != null && monitor.isCanceled()) {
 				throw new OperationCanceledException();
+			}
 
 			try {
 				IFileID fileID = FileIDFactory.getDefault().createFileID(adapter.getRetrieveNamespace(),
@@ -459,11 +474,13 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 			} catch (FileCreateException e) {
 				exception = e;
 			} catch (Throwable t) {
-				if (exception != null)
+				if (exception != null) {
 					exception.printStackTrace();
+				}
 			}
-			if (checkException(uri, retryCount))
+			if (checkException(uri, retryCount)) {
 				break;
+			}
 		}
 	}
 
@@ -488,7 +505,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	 * Utility method to check exception condition and determine if retry should be
 	 * done. If there was an exception it is translated into one of the specified
 	 * exceptions and thrown.
-	 * 
+	 *
 	 * @param uri            the URI being read - used for logging purposes
 	 * @param attemptCounter - the current attempt number (start with 0)
 	 * @return true if the exception is an IOException and attemptCounter <
@@ -508,8 +525,9 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 			RepositoryStatusHelper.checkFileNotFound(exception, uri);
 
 			Throwable t = RepositoryStatusHelper.unwind(exception);
-			if (t instanceof CoreException)
+			if (t instanceof CoreException) {
 				throw RepositoryStatusHelper.unwindCoreException((CoreException) t);
+			}
 
 			if (!retryOnSocketTimeout) {
 				// not meaningful to try 'timeout again' - if a server is that busy, we
@@ -528,7 +546,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 				try {
 					LogHelper.log(new Status(IStatus.WARNING, Activator.ID,
 							NLS.bind(Messages.connection_to_0_failed_on_1_retry_attempt_2,
-									new String[] { uri.toString(), t.getMessage(), String.valueOf(attemptCounter) }),
+									uri.toString(), t.getMessage(), String.valueOf(attemptCounter)),
 							t));
 
 					Thread.sleep(connectionRetryDelay);
@@ -552,10 +570,11 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	public static void hardClose(Object aStream) {
 		if (aStream != null) {
 			try {
-				if (aStream instanceof OutputStream)
+				if (aStream instanceof OutputStream) {
 					((OutputStream) aStream).close();
-				else if (aStream instanceof InputStream)
+				} else if (aStream instanceof InputStream) {
 					((InputStream) aStream).close();
+				}
 			} catch (IOException e) { /* ignore */
 			}
 		}
@@ -563,7 +582,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 
 	private static class DownloadRange implements IFileRangeSpecification {
 
-		private long startPosition;
+		private final long startPosition;
 
 		public DownloadRange(long startPos) {
 			startPosition = startPos;
@@ -582,18 +601,21 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	}
 
 	private void onDone(IIncomingFileTransfer source) {
-		if (testProbe != null)
+		if (testProbe != null) {
 			testProbe.onDone(this, source, theMonitor);
+		}
 	}
 
 	private void onStart(IIncomingFileTransfer source) {
-		if (testProbe != null)
+		if (testProbe != null) {
 			testProbe.onStart(this, source, theMonitor);
+		}
 	}
 
 	private void onData(IIncomingFileTransfer source) {
-		if (testProbe != null)
+		if (testProbe != null) {
 			testProbe.onData(this, source, theMonitor);
+		}
 	}
 
 	/**
@@ -608,7 +630,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	 * Sets the progress statistics. This method is synchronized because the field
 	 * is accessed from both the transfer thread and the thread initiating the
 	 * transfer and we need to ensure field values are consistent across threads.
-	 * 
+	 *
 	 * @param statistics the statistics to set, or <code>null</code>
 	 */
 	private synchronized void setStatistics(ProgressStatistics statistics) {
@@ -619,7 +641,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 	 * Returns the progress statistics. This method is synchronized because the
 	 * field is accessed from both the transfer thread and the thread initiating the
 	 * transfer and we need to ensure field values are consistent across threads.
-	 * 
+	 *
 	 * @return the statistics, or <code>null</code>
 	 */
 	private synchronized ProgressStatistics getStatistics() {
@@ -628,7 +650,7 @@ public final class FileReader extends FileTransferJob implements IFileTransferLi
 
 	/**
 	 * An interface to allow automated tests to hook into file reader events
-	 * 
+	 *
 	 * @see #setTestProbe
 	 */
 	public interface IFileReaderProbe {

@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2017 WindRiver Corporation and others.
  *
- * This program and the accompanying materials 
+ * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     WindRiver Corporation - initial API and implementation
  *******************************************************************************/
@@ -39,8 +39,9 @@ public class P2FWriter extends XMLWriter implements P2FConstants {
 	private void writeIUs(List<IUDetail> ius) {
 		start(IUS_ELEMENT);
 		attributeOptional(COLLECTION_SIZE_ATTRIBUTE, String.valueOf(ius.size()));
-		for (IUDetail iu : ius)
+		for (IUDetail iu : ius) {
 			writeIU(iu);
+		}
 		end(IUS_ELEMENT);
 	}
 

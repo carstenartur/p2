@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  ******************************************************************************/
 package org.eclipse.equinox.p2.publisher.actions;
@@ -22,7 +22,7 @@ import org.eclipse.equinox.p2.publisher.IPublisherResult;
 import org.eclipse.equinox.p2.query.IQuery;
 
 public class RootIUResultFilterAdvice extends AbstractAdvice implements IRootIUAdvice {
-	private IQuery<IInstallableUnit> query;
+	private final IQuery<IInstallableUnit> query;
 
 	public RootIUResultFilterAdvice(IQuery<IInstallableUnit> query) {
 		this.query = query;
@@ -31,8 +31,9 @@ public class RootIUResultFilterAdvice extends AbstractAdvice implements IRootIUA
 	@Override
 	public Collection<IInstallableUnit> getChildren(IPublisherResult result) {
 		Collection<IInstallableUnit> value = result.getIUs(null, IPublisherResult.ROOT);
-		if (query == null)
+		if (query == null) {
 			return value;
+		}
 		return Arrays.asList(query.perform(value.iterator()).toArray(IInstallableUnit.class));
 	}
 }

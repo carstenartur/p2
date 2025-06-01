@@ -107,24 +107,28 @@ public abstract class ProfileParser extends MetadataParser implements ProfileXML
 		}
 
 		public Map<String, String> getProperties() {
-			if (propertiesHandler == null)
+			if (propertiesHandler == null) {
 				return null;
+			}
 			return propertiesHandler.getProperties();
 		}
 
 		public IInstallableUnit[] getInstallableUnits() {
-			if (unitsHandler == null)
+			if (unitsHandler == null) {
 				return null;
+			}
 			return unitsHandler.getUnits();
 		}
 
 		public Map<String, String> getIUProperties(IInstallableUnit iu) {
-			if (iusPropertiesHandler == null)
+			if (iusPropertiesHandler == null) {
 				return null;
+			}
 
 			Map<String, Map<String, String>> iusPropertiesMap = iusPropertiesHandler.getIUsPropertiesMap();
-			if (iusPropertiesMap == null)
+			if (iusPropertiesMap == null) {
 				return null;
+			}
 
 			String iuIdentity = iu.getId() + "_" + iu.getVersion().toString(); //$NON-NLS-1$
 			return iusPropertiesMap.get(iuIdentity);
@@ -135,8 +139,8 @@ public abstract class ProfileParser extends MetadataParser implements ProfileXML
 
 		private final String[] required = new String[] {ID_ATTRIBUTE, VERSION_ATTRIBUTE};
 
-		private String iuIdentity;
-		private Map<String, Map<String, String>> iusPropertiesMap;
+		private final String iuIdentity;
+		private final Map<String, Map<String, String>> iusPropertiesMap;
 		private PropertiesHandler propertiesHandler;
 
 		public IUPropertiesHandler(AbstractHandler parentHandler, Attributes attributes, Map<String, Map<String, String>> iusPropertiesMap) {
@@ -168,7 +172,7 @@ public abstract class ProfileParser extends MetadataParser implements ProfileXML
 
 	protected class IUsPropertiesHandler extends AbstractHandler {
 
-		private Map<String, Map<String, String>> iusPropertiesMap;
+		private final Map<String, Map<String, String>> iusPropertiesMap;
 
 		public IUsPropertiesHandler(AbstractHandler parentHandler, Attributes attributes) {
 			super(parentHandler, IUS_PROPERTIES_ELEMENT);

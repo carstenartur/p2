@@ -33,8 +33,8 @@ public class IUListFormatter {
 	private static final String PREFIX = "${"; //$NON-NLS-1$
 	private static final String LINE_SEP = System.lineSeparator();
 
-	private String formatString;
-	private Collection<String> properties;
+	private final String formatString;
+	private final Collection<String> properties;
 
 	public IUListFormatter(String formatString) {
 		this.formatString = formatString;
@@ -47,8 +47,9 @@ public class IUListFormatter {
 			format(iu, result);
 		}
 
-		if (result.length() > 0)
+		if (result.length() > 0) {
 			result.setLength(result.length() - LINE_SEP.length()); //remove trailing newline
+		}
 		return result.toString();
 	}
 
@@ -58,22 +59,26 @@ public class IUListFormatter {
 			Pattern pattern = Pattern.compile(String.format("\\$\\{%s\\}", property)); //$NON-NLS-1$
 			if (null == property) {
 				String value = iu.getProperty(property, "df_LT"); //$NON-NLS-1$
-				if (value == null)
+				if (value == null) {
 					value = ""; //$NON-NLS-1$ unknown property
+				}
 				s = insert(value, pattern, s);
-			} else switch (property) {
-				case "id": //$NON-NLS-1$
-					s = insert(iu.getId(), pattern, s);
-					break;
-				case "version": //$NON-NLS-1$
-					s = insert(iu.getVersion().toString(), pattern, s);
-					break;
-				default:
-					String value = iu.getProperty(property, "df_LT"); //$NON-NLS-1$
-					if (value == null)
-						value = ""; //$NON-NLS-1$ unknown property
-					s = insert(value, pattern, s);
-					break;
+			} else {
+				switch (property) {
+					case "id": //$NON-NLS-1$
+						s = insert(iu.getId(), pattern, s);
+						break;
+					case "version": //$NON-NLS-1$
+						s = insert(iu.getVersion().toString(), pattern, s);
+						break;
+					default:
+						String value = iu.getProperty(property, "df_LT"); //$NON-NLS-1$
+						if (value == null) {
+							value = ""; //$NON-NLS-1$ unknown property
+						}
+						s = insert(value, pattern, s);
+						break;
+				}
 			}
 		}
 

@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *      IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -22,15 +22,17 @@ public class BuildPublisherApplication extends AbstractPublisherApplication {
 	private List<IPublisherAction> actions;
 
 	public void addAction(IPublisherAction action) {
-		if (actions == null)
+		if (actions == null) {
 			actions = new ArrayList<>(1);
+		}
 		actions.add(action);
 	}
 
 	@Override
 	protected IPublisherAction[] createActions() {
-		if (actions == null)
+		if (actions == null) {
 			return new IPublisherAction[0];
+		}
 		return actions.toArray(new IPublisherAction[actions.size()]);
 	}
 

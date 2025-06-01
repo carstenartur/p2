@@ -30,7 +30,7 @@ import org.eclipse.equinox.p2.ui.ProvisioningUI;
  */
 public class QueryableUpdates implements IQueryable<IInstallableUnit> {
 
-	private IInstallableUnit[] iusToUpdate;
+	private final IInstallableUnit[] iusToUpdate;
 	ProvisioningUI ui;
 
 	public QueryableUpdates(ProvisioningUI ui, IInstallableUnit[] iusToUpdate) {
@@ -40,8 +40,9 @@ public class QueryableUpdates implements IQueryable<IInstallableUnit> {
 
 	@Override
 	public IQueryResult<IInstallableUnit> query(IQuery<IInstallableUnit> query, IProgressMonitor monitor) {
-		if (monitor == null)
+		if (monitor == null) {
 			monitor = new NullProgressMonitor();
+		}
 		int totalWork = 2000;
 		SubMonitor subMonitor = SubMonitor.convert(monitor, ProvUIMessages.QueryableUpdates_UpdateListProgress,
 				totalWork);

@@ -24,9 +24,9 @@ import org.sat4j.pb.tools.*;
 import org.sat4j.specs.ContradictionException;
 
 public class UserDefinedOptimizationFunction extends OptimizationFunction {
-	private Collection<IInstallableUnit> alreadyExistingRoots;
-	private SteppedTimeoutLexicoHelper<Object, Explanation> dependencyHelper;
-	private IQueryable<IInstallableUnit> picker;
+	private final Collection<IInstallableUnit> alreadyExistingRoots;
+	private final SteppedTimeoutLexicoHelper<Object, Explanation> dependencyHelper;
+	private final IQueryable<IInstallableUnit> picker;
 
 	public UserDefinedOptimizationFunction(IQueryable<IInstallableUnit> lastState, List<AbstractVariable> abstractVariables, List<AbstractVariable> optionalVariables, IQueryable<IInstallableUnit> picker, IInstallableUnit selectionContext, Map<String, Map<Version, IInstallableUnit>> slice, DependencyHelper<Object, Explanation> dependencyHelper, Collection<IInstallableUnit> alreadyInstalledIUs) {
 		super(lastState, abstractVariables, optionalVariables, picker, selectionContext, slice);
@@ -153,20 +153,21 @@ public class UserDefinedOptimizationFunction extends OptimizationFunction {
 			IQueryResult<IInstallableUnit> matches = picker.query(query, null);
 			List<IInstallableUnit> toSort = new ArrayList<>(matches.toUnmodifiableSet());
 			toSort.sort(Collections.reverseOrder());
-			if (toSort.isEmpty())
+			if (toSort.isEmpty()) {
 				continue;
+			}
 
 			Projector.AbstractVariable abs = new Projector.AbstractVariable();
 			Object notlatest = dependencyHelper.not(toSort.get(0));
 			try {
 				// notuptodate <=> not iuvn and (iuv1 or iuv2 or ... iuvn-1)
-				dependencyHelper.implication(new Object[] {abs}).implies(notlatest).named(FakeExplanation.getInstance());
+				dependencyHelper.implication(abs).implies(notlatest).named(FakeExplanation.getInstance());
 				Object[] clause = new Object[toSort.size()];
 				toSort.toArray(clause);
 				clause[0] = dependencyHelper.not(abs);
 				dependencyHelper.clause(FakeExplanation.getInstance(), clause);
 				for (int i = 1; i < toSort.size(); i++) {
-					dependencyHelper.implication(new Object[] {notlatest, toSort.get(i)}).implies(abs).named(FakeExplanation.getInstance());
+					dependencyHelper.implication(notlatest, toSort.get(i)).implies(abs).named(FakeExplanation.getInstance());
 				}
 			} catch (ContradictionException e) {
 				// should never happen
@@ -198,8 +199,9 @@ public class UserDefinedOptimizationFunction extends OptimizationFunction {
 
 	private boolean isInstalledAsRoot(IInstallableUnit isInstalled) {
 		for (IInstallableUnit installed : alreadyExistingRoots) {
-			if (isInstalled.equals(installed))
+			if (isInstalled.equals(installed)) {
 				return true;
+			}
 		}
 		return false;
 	}

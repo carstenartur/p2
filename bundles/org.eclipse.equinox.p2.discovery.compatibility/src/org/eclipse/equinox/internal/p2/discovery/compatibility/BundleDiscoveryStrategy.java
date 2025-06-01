@@ -7,7 +7,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     Tasktop Technologies - initial API and implementation
  *******************************************************************************/
@@ -22,7 +22,7 @@ import org.osgi.framework.Bundle;
 
 /**
  * A strategy for discovering via installed platform {@link Bundle bundles}.
- * 
+ *
  * @author David Green
  */
 public class BundleDiscoveryStrategy extends AbstractDiscoveryStrategy {
@@ -71,7 +71,7 @@ public class BundleDiscoveryStrategy extends AbstractDiscoveryStrategy {
 							CatalogCategory category = extensionReader.readConnectorCategory(element, CatalogCategory.class);
 							category.setSource(discoverySource);
 							if (!discoverySource.getPolicy().isPermitCategories()) {
-								LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.BundleDiscoveryStrategy_categoryDisallowed, new Object[] {category.getName(), category.getId(), element.getContributor().getName()}), null));
+								LogHelper.log(new Status(IStatus.ERROR, DiscoveryCore.ID_PLUGIN, NLS.bind(Messages.BundleDiscoveryStrategy_categoryDisallowed, category.getName(), category.getId(), element.getContributor().getName()), null));
 							} else {
 								categories.add(category);
 							}

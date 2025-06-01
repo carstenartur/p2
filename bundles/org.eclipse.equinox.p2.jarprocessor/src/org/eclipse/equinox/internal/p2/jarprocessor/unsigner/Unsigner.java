@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -47,8 +47,9 @@ public class Unsigner {
 				while (entries.hasMoreElements()) {
 					ZipEntry entry = entries.nextElement();
 					String entryName = entry.getName();
-					if (entryName.endsWith(SF_EXT) && entryName.startsWith(META_INF))
+					if (entryName.endsWith(SF_EXT) && entryName.startsWith(META_INF)) {
 						return true;
+					}
 				}
 			}
 			return false;
@@ -122,8 +123,9 @@ public class Unsigner {
 			}
 		} else {
 			if (entryName.startsWith(META_INF)
-					&& (entryName.endsWith(SF_EXT) || entryName.endsWith(RSA_EXT) || entryName.endsWith(DSA_EXT)))
+					&& (entryName.endsWith(SF_EXT) || entryName.endsWith(RSA_EXT) || entryName.endsWith(DSA_EXT))) {
 				return 2;
+			}
 		}
 		return 0;
 	}

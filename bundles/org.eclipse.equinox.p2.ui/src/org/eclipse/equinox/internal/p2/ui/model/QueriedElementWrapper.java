@@ -49,8 +49,7 @@ public abstract class QueriedElementWrapper extends ElementWrapper {
 	 */
 	@Override
 	protected Object wrap(Object item) {
-		if (item instanceof QueriedElement) {
-			QueriedElement element = (QueriedElement) item;
+		if (item instanceof QueriedElement element) {
 			if (!element.knowsQueryable()) {
 				element.setQueryable(queryable);
 			}
@@ -69,18 +68,17 @@ public abstract class QueriedElementWrapper extends ElementWrapper {
 			// All we can do is look for the most common reasons and guess.  If the collection
 			// is empty and the parent is an IU, then being empty is not a big deal, it means
 			// we are in drilldown.
-			if (parent instanceof MetadataRepositoryElement) {
-				MetadataRepositoryElement repo = (MetadataRepositoryElement) parent;
+			if (parent instanceof MetadataRepositoryElement repo) {
 				RepositoryTracker manipulator = repo.getProvisioningUI().getRepositoryTracker();
 				if (manipulator.hasNotFoundStatusBeenReported(repo.getLocation())) {
 					return emptyExplanation(IStatus.ERROR, NLS.bind(ProvUIMessages.QueriedElementWrapper_SiteNotFound, URIUtil.toUnencodedString(repo.getLocation())), ""); //$NON-NLS-1$
 				}
 			}
-			if (parent instanceof QueriedElement) {
-				QueriedElement element = (QueriedElement) parent;
+			if (parent instanceof QueriedElement element) {
 				IUViewQueryContext context = element.getQueryContext();
-				if (context == null)
+				if (context == null) {
 					context = ProvUI.getQueryContext(element.getPolicy());
+				}
 				if (parent instanceof MetadataRepositoryElement || parent instanceof MetadataRepositories) {
 					if (context != null && context.getViewType() == IUViewQueryContext.AVAILABLE_VIEW_BY_CATEGORY && context.getUseCategories()) {
 						return emptyExplanation(IStatus.INFO, ProvUIMessages.QueriedElementWrapper_NoCategorizedItemsExplanation, context.getUsingCategoriesDescription());
@@ -95,8 +93,9 @@ public abstract class QueriedElementWrapper extends ElementWrapper {
 		// We had elements but now they have been filtered out.  Hopefully
 		// we can explain this.
 		if (elements.isEmpty()) {
-			if (emptyExplanationString != null)
+			if (emptyExplanationString != null) {
 				return emptyExplanation(emptyExplanationSeverity, emptyExplanationString, emptyExplanationDescription);
+			}
 			// We filtered out content but never explained it.  Ideally this doesn't happen if
 			// all wrappers explain any filtering.
 			return emptyExplanation(emptyExplanationSeverity, ProvUIMessages.QueriedElementWrapper_NoItemsExplanation, null);

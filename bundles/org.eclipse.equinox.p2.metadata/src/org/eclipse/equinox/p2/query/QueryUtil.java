@@ -34,7 +34,7 @@ import org.eclipse.equinox.p2.metadata.expression.IExpressionFactory;
 
 /**
  * Helper class for query related tasks.
- * 
+ *
  * @since 2.0
  */
 public class QueryUtil {
@@ -65,7 +65,7 @@ public class QueryUtil {
 
 	/**
 	 * Creates a queryable that combines the given collection of input queryables
-	 * 
+	 *
 	 * @param queryables The collection of queryables to be combined
 	 */
 	public static <T> IQueryable<T> compoundQueryable(Collection<? extends IQueryable<T>> queryables) {
@@ -76,7 +76,7 @@ public class QueryUtil {
 
 	/**
 	 * Creates a queryable that combines the two provided input queryables
-	 * 
+	 *
 	 * @param query1 The first queryable
 	 * @param query2 The second queryable
 	 */
@@ -90,7 +90,7 @@ public class QueryUtil {
 	 * boolean 'and' or a boolean 'or' expression depending on the <code>and</code>
 	 * flag. If at least one query is a full query, all queries will instead be evaluated
 	 * using intersection when <code>and</code> is <code>true</code> or a union.
-	 * 
+	 *
 	 * @param queries The queries to perform
 	 * @param and <code>true</code> if this query represents an intersection or a
 	 * logical 'and', and <code>false</code> if this query represents a union or
@@ -101,39 +101,45 @@ public class QueryUtil {
 	public static <T> IQuery<T> createCompoundQuery(Collection<? extends IQuery<? extends T>> queries, boolean and) {
 		IExpressionFactory factory = ExpressionUtil.getFactory();
 		int top = queries.size();
-		if (top == 1)
+		if (top == 1) {
 			return (IQuery<T>) queries.iterator().next();
+		}
 
 		Class<? extends T> elementClass = (Class<T>) Object.class;
-		if (top == 0)
+		if (top == 0) {
 			return QueryUtil.createMatchQuery(elementClass, ExpressionUtil.TRUE_EXPRESSION);
+		}
 
 		IExpression[] expressions = new IExpression[top];
 		boolean justBooleans = true;
 		boolean justContexts = true;
 		int idx = 0;
 		for (IQuery<? extends T> query : queries) {
-			if (query instanceof IMatchQuery<?>)
+			if (query instanceof IMatchQuery<?>) {
 				justContexts = false;
-			else
+			} else {
 				justBooleans = false;
+			}
 
 			IExpression expr = query.getExpression();
-			if (expr == null)
+			if (expr == null) {
 				expr = factory.toExpression(query);
+			}
 
 			Class<? extends T> ec = ExpressionQuery.getElementClass(query);
-			if (elementClass == null)
+			if (elementClass == null) {
 				elementClass = ec;
-			else if (elementClass != ec) {
+			} else if (elementClass != ec) {
 				if (elementClass.isAssignableFrom(ec)) {
-					if (and)
+					if (and) {
 						// Use most restrictive class
 						elementClass = ec;
+					}
 				} else if (ec.isAssignableFrom(elementClass)) {
-					if (!and)
+					if (!and) {
 						// Use least restrictive class
 						elementClass = ec;
+					}
 				}
 			}
 			expressions[idx++] = expr;
@@ -146,13 +152,15 @@ public class QueryUtil {
 
 		if (!justContexts) {
 			// Mix of boolean queries and context queries. All must be converted into context then.
-			for (idx = 0; idx < expressions.length; ++idx)
+			for (idx = 0; idx < expressions.length; ++idx) {
 				expressions[idx] = makeContextExpression(factory, expressions[idx]);
+			}
 		}
 
 		IExpression compound = expressions[0];
-		for (idx = 1; idx < expressions.length; ++idx)
+		for (idx = 1; idx < expressions.length; ++idx) {
 			compound = and ? factory.intersect(compound, expressions[idx]) : factory.union(compound, expressions[idx]);
+		}
 		return QueryUtil.createQuery(elementClass, compound);
 	}
 
@@ -162,7 +170,7 @@ public class QueryUtil {
 	 * boolean 'and' or a boolean 'or' expression depending on the <code>and</code>
 	 * flag. If at least one query is a full query, all queries will instead be evaluated
 	 * using intersection when <code>and</code> is <code>true</code> or a union.
-	 * 
+	 *
 	 * @param query1 the first query
 	 * @param query2 the second query
 	 * @param and <code>true</code> if this query represents an intersection or a
@@ -186,29 +194,30 @@ public class QueryUtil {
 
 	/**
 	 * Creates a new query that will return the members of the
-	 * given <code>category</code>.  If the specified {@link IInstallableUnit} 
-	 * is not a category, then no installable unit will satisfy the query. 
-	 * 
+	 * given <code>category</code>.  If the specified {@link IInstallableUnit}
+	 * is not a category, then no installable unit will satisfy the query.
+	 *
 	 * @param category The category
 	 * @return A query that returns category members
 	 */
 	public static IQuery<IInstallableUnit> createIUCategoryMemberQuery(IInstallableUnit category) {
-		if (QueryUtil.isCategory(category))
+		if (QueryUtil.isCategory(category)) {
 			return QueryUtil.createMatchQuery(matchesRequirementsExpression, category.getRequirements());
+		}
 		return NO_UNITS;
 	}
 
 	/**
 	 * Creates a query matching every {@link IInstallableUnit} that is a category.
 	 * @return The query that matches categories
-	 * @since 2.0 
+	 * @since 2.0
 	 */
 	public static IQuery<IInstallableUnit> createIUCategoryQuery() {
 		return createIUPropertyQuery(QueryUtil.PROP_TYPE_CATEGORY, Boolean.TRUE.toString());
 	}
 
 	/**
-	 * Creates a query matching every {@link IInstallableUnit} that is a group. 
+	 * Creates a query matching every {@link IInstallableUnit} that is a group.
 	 * @return a query that matches all groups
 	 */
 	public static IQuery<IInstallableUnit> createIUGroupQuery() {
@@ -234,7 +243,7 @@ public class QueryUtil {
 
 	/**
 	 * Creates a query that searches for {@link IInstallableUnit} instances that have
-	 * a property whose value matches the provided value.  If no property name is 
+	 * a property whose value matches the provided value.  If no property name is
 	 * specified, then all {@link IInstallableUnit} instances are accepted.
 	 * @param propertyName The key of the property to match or <code>null</code> to match all
 	 * @param propertyValue The value of the property. Can be {@link #ANY} to match all values
@@ -242,21 +251,25 @@ public class QueryUtil {
 	 * @return The query matching properties
 	 */
 	public static IQuery<IInstallableUnit> createIUPropertyQuery(String propertyName, String propertyValue) {
-		if (propertyName == null)
+		if (propertyName == null) {
 			return QueryUtil.createMatchQuery(ExpressionUtil.TRUE_EXPRESSION);
-		if (propertyValue == null)
+		}
+		if (propertyValue == null) {
 			return QueryUtil.createMatchQuery(matchIU_propNull, propertyName);
-		if (ANY.equals(propertyValue))
+		}
+		if (ANY.equals(propertyValue)) {
 			return QueryUtil.createMatchQuery(matchIU_propAny, propertyName);
-		if (Boolean.parseBoolean(propertyValue))
+		}
+		if (Boolean.parseBoolean(propertyValue)) {
 			return QueryUtil.createMatchQuery(matchIU_propTrue, propertyName);
+		}
 		return QueryUtil.createMatchQuery(matchIU_propValue, propertyName, propertyValue);
 	}
 
 	/**
 	 * Creates a query that will match any {@link IInstallableUnit} with the given
 	 * id and version.
-	 * 
+	 *
 	 * @param versionedId The precise id/version combination that a matching unit must have
 	 * @return a query that matches IU's by id and version
 	 */
@@ -267,7 +280,7 @@ public class QueryUtil {
 	/**
 	 * Creates a query that will match any {@link IInstallableUnit} with the given
 	 * id, regardless of version.
-	 * 
+	 *
 	 * @param id The installable unit id to match, or <code>null</code> to match any id
 	 * @return a query that matches IU's by id
 	 */
@@ -278,38 +291,42 @@ public class QueryUtil {
 	/**
 	 * Creates a query that will match any {@link IInstallableUnit} with the given
 	 * id and version.
-	 * 
+	 *
 	 * @param id The installable unit id to match, or <code>null</code> to match any id
 	 * @param version The precise version that a matching unit must have or <code>null</code>
 	 * to match any version
 	 * @return a query that matches IU's by id and version
 	 */
 	public static IQuery<IInstallableUnit> createIUQuery(String id, Version version) {
-		if (version == null || version.equals(Version.emptyVersion))
+		if (version == null || version.equals(Version.emptyVersion)) {
 			return createIUQuery(id);
-		if (id == null)
+		}
+		if (id == null) {
 			return QueryUtil.createMatchQuery(matchIU_Version, version);
+		}
 		return QueryUtil.createMatchQuery(matchIU_IDAndVersion, id, version);
 	}
 
 	/**
 	 * Creates a query that will match any {@link IInstallableUnit} with the given
 	 * id, and whose version falls in the provided range.
-	 * 
+	 *
 	 * @param id The installable unit id to match, or <code>null</code> to match any id
 	 * @param range The version range to match or <code>null</code> to match any range.
 	 * @return a query that matches IU's by id and range
 	 */
 	public static IQuery<IInstallableUnit> createIUQuery(String id, VersionRange range) {
-		if (range == null || range.equals(VersionRange.emptyRange))
+		if (range == null || range.equals(VersionRange.emptyRange)) {
 			return createIUQuery(id);
-		if (id == null)
+		}
+		if (id == null) {
 			return QueryUtil.createMatchQuery(matchIU_Range, range);
+		}
 		return QueryUtil.createMatchQuery(matchIU_IDAndRange, id, range);
 	}
 
 	/**
-	 * Creates a query that returns the latest version for each unique id of an {@link IVersionedId}.  
+	 * Creates a query that returns the latest version for each unique id of an {@link IVersionedId}.
 	 * All other elements are discarded.
 	 * @return A query matching the latest version for each id.
 	 */
@@ -319,7 +336,7 @@ public class QueryUtil {
 
 	/**
 	 * Creates a query that returns the latest version for each unique id of an {@link IVersionedId}
-	 * from the collection produced by <code>query</code>. 
+	 * from the collection produced by <code>query</code>.
 	 * All other elements are discarded.
 	 * @param query The query that precedes the latest query when evaluating.
 	 * @return A query matching the latest version for each id.
@@ -387,7 +404,7 @@ public class QueryUtil {
 	 * all candidates and discriminate all candidates that are not instances of
 	 * <code>matchingClass</code> or for which the boolean <code>matchExpression</code>
 	 * returns false.
-	 * 
+	 *
 	 * @param <T> The type of input object that the created query accepts
 	 * @param matchingClass The class that matching candidates must be an instance of
 	 * @param matchExpression The boolean expression used for filtering one candidate
@@ -400,10 +417,10 @@ public class QueryUtil {
 
 	/**
 	 * <p>Creates a piped query based on the provided input queries.</p>
-	 * <p>A pipe is a composite query in which each sub-query is executed in succession.  
+	 * <p>A pipe is a composite query in which each sub-query is executed in succession.
 	 * The results from the ith sub-query are piped as input into the i+1th sub-query. The
 	 * query will short-circuit if any query returns an empty result set.</p>
-	 * 
+	 *
 	 * @param queries the ordered list of queries to perform
 	 * @return A query pipe
 	 */
@@ -415,8 +432,9 @@ public class QueryUtil {
 		int idx = 0;
 		for (IQuery<? extends T> query : queries) {
 			IExpression expr = query.getExpression();
-			if (expr == null)
+			if (expr == null) {
 				expr = factory.toExpression(query);
+			}
 			expressions[idx++] = expr;
 		}
 		IExpression pipe = factory.pipe(expressions);
@@ -427,7 +445,7 @@ public class QueryUtil {
 
 	/**
 	 * <p>Creates a piped query based on the provided input queries.</p>
-	 * <p>A pipe is a composite query in which each sub-query is executed in succession.  
+	 * <p>A pipe is a composite query in which each sub-query is executed in succession.
 	 * The results from the ith sub-query are piped as input into the i+1th sub-query. The
 	 * query will short-circuit if any query returns an empty result set.</p>
 	 *
@@ -490,19 +508,20 @@ public class QueryUtil {
 	}
 
 	/**
-	 * Test if the {@link IInstallableUnit} is a category. 
+	 * Test if the {@link IInstallableUnit} is a category.
 	 * @param iu the element being tested.
 	 * @return <code>true</code> if the parameter is a category.
 	 */
 	public static boolean isCategory(IInstallableUnit iu) {
 		String value = iu.getProperty(PROP_TYPE_CATEGORY);
-		if (value != null && (value.equals(Boolean.TRUE.toString())))
+		if (value != null && (value.equals(Boolean.TRUE.toString()))) {
 			return true;
+		}
 		return false;
 	}
 
 	/**
-	 * Test if the {@link IInstallableUnit} is a fragment. 
+	 * Test if the {@link IInstallableUnit} is a fragment.
 	 * @param iu the element being tested.
 	 * @return <code>true</code> if the parameter is a fragment.
 	 */
@@ -511,47 +530,51 @@ public class QueryUtil {
 	}
 
 	/**
-	 * Test if the {@link IInstallableUnit} is a group. 
+	 * Test if the {@link IInstallableUnit} is a group.
 	 * @param iu the element being tested.
 	 * @return <code>true</code> if the parameter is a group.
 	 */
 	public static boolean isGroup(IInstallableUnit iu) {
 		String value = iu.getProperty(PROP_TYPE_GROUP);
-		if (value != null && (value.equals(Boolean.TRUE.toString())))
+		if (value != null && (value.equals(Boolean.TRUE.toString()))) {
 			return true;
+		}
 		return false;
 	}
 
 	/**
-	 * Test if the {@link IInstallableUnit} is a product. 
+	 * Test if the {@link IInstallableUnit} is a product.
 	 * @param iu the element being tested.
 	 * @return <code>true</code> if the parameter is a group.
 	 * @since 2.2
 	 */
 	public static boolean isProduct(IInstallableUnit iu) {
 		String value = iu.getProperty(MetadataFactory.InstallableUnitDescription.PROP_TYPE_PRODUCT);
-		if (value != null && (value.equals(Boolean.TRUE.toString())))
+		if (value != null && (value.equals(Boolean.TRUE.toString()))) {
 			return true;
+		}
 		return false;
 	}
 
 	/**
-	 * Test if the {@link IInstallableUnit} is a patch. 
+	 * Test if the {@link IInstallableUnit} is a patch.
 	 * @param iu the element being tested.
 	 * @return <code>true</code> if the parameter is a patch.
 	 */
 	public static boolean isPatch(IInstallableUnit iu) {
 		String value = iu.getProperty(PROP_TYPE_PATCH);
-		if (value != null && (value.equals(Boolean.TRUE.toString())))
+		if (value != null && (value.equals(Boolean.TRUE.toString()))) {
 			return true;
+		}
 		return false;
 	}
 
 	private static IExpression makeContextExpression(IExpressionFactory factory, IExpression expr) {
 		VariableFinder finder = new VariableFinder(ExpressionFactory.EVERYTHING);
 		expr.accept(finder);
-		if (!finder.isFound())
+		if (!finder.isFound()) {
 			expr = factory.select(ExpressionFactory.EVERYTHING, factory.lambda(ExpressionFactory.THIS, expr));
+		}
 		return expr;
 	}
 }

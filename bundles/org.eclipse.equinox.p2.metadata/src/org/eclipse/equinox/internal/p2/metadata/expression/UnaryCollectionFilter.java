@@ -33,12 +33,12 @@ abstract class UnaryCollectionFilter extends Unary {
 
 	@Override
 	public void toString(StringBuilder bld, Variable rootVariable) {
-		if (operand instanceof Select) {
-			Select select = (Select) operand;
+		if (operand instanceof Select select) {
 			CollectionFilter.appendProlog(bld, rootVariable, select.operand, getOperator());
 			appendOperand(bld, rootVariable, select.lambda, getPriority());
-		} else
+		} else {
 			CollectionFilter.appendProlog(bld, rootVariable, operand, getOperator());
+		}
 		bld.append(')');
 	}
 

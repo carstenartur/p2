@@ -17,7 +17,7 @@ import org.eclipse.equinox.p2.metadata.expression.IEvaluationContext;
 
 /**
  * n-ary AND operator. The full evaluation is <code>true</code> if all its operands evaluate to
- * <code>true</code>. 
+ * <code>true</code>.
  */
 final class And extends NAry {
 	And(Expression[] operands) {
@@ -27,8 +27,9 @@ final class And extends NAry {
 	@Override
 	public Object evaluate(IEvaluationContext context) {
 		for (Expression operand : operands) {
-			if (operand.evaluate(context) != Boolean.TRUE)
+			if (operand.evaluate(context) != Boolean.TRUE) {
 				return Boolean.FALSE;
+			}
 		}
 		return Boolean.TRUE;
 	}
@@ -51,8 +52,9 @@ final class And extends NAry {
 	@Override
 	public void toLDAPString(StringBuilder buf) {
 		buf.append("(&"); //$NON-NLS-1$
-		for (Expression operand : operands)
+		for (Expression operand : operands) {
 			operand.toLDAPString(buf);
+		}
 		buf.append(')');
 	}
 }

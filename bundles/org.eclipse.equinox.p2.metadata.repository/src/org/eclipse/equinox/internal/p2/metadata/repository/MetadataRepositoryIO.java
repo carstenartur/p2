@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2022 IBM Corporation and others.
+ * Copyright (c) 2007, 2025 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -17,7 +17,6 @@ package org.eclipse.equinox.internal.p2.metadata.repository;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Set;
@@ -76,8 +75,9 @@ public class MetadataRepositoryIO {
 				}
 				return repositoryParser.getRepository();
 			} finally {
-				if (bufferedInput != null)
+				if (bufferedInput != null) {
 					bufferedInput.close();
+				}
 			}
 		} catch (IOException ioe) {
 			String msg = NLS.bind(Messages.io_failedRead, location);
@@ -151,26 +151,23 @@ public class MetadataRepositoryIO {
 		 * @param size The number of references  to write
 		 */
 		protected void writeRepositoryReferences(Iterator<IRepositoryReference> references, int size) {
-			if (size == 0)
+			if (size == 0) {
 				return;
+			}
 			start(REPOSITORY_REFERENCES_ELEMENT);
 			attribute(COLLECTION_SIZE_ATTRIBUTE, size);
-			while (references.hasNext())
+			while (references.hasNext()) {
 				writeRepositoryReference(references.next());
+			}
 			end(REPOSITORY_REFERENCES_ELEMENT);
 		}
 
 		private void writeRepositoryReference(IRepositoryReference reference) {
 			start(REPOSITORY_REFERENCE_ELEMENT);
 			attribute(URI_ATTRIBUTE, reference.getLocation().toString());
-
-			try {
-				// we write the URL attribute for backwards compatibility with 3.4.x
-				// this attribute should be removed if we make a breaking format change.
-				attribute(URL_ATTRIBUTE, URIUtil.toURL(reference.getLocation()).toExternalForm());
-			} catch (MalformedURLException e) {
-				attribute(URL_ATTRIBUTE, reference.getLocation().toString());
-			}
+			// we write the URL attribute for backwards compatibility with 3.4.x
+			// this attribute should be removed if we make a breaking format change.
+			attribute(URL_ATTRIBUTE, reference.getLocation().toString());
 
 			attribute(TYPE_ATTRIBUTE, Integer.toString(reference.getType()));
 			attribute(OPTIONS_ATTRIBUTE, Integer.toString(reference.getOptions()));
@@ -258,7 +255,7 @@ public class MetadataRepositoryIO {
 
 			private AbstractMetadataRepository repository = null;
 
-			private RepositoryState state = new RepositoryState();
+			private final RepositoryState state = new RepositoryState();
 
 			public RepositoryHandler() {
 				super();
@@ -316,8 +313,9 @@ public class MetadataRepositoryIO {
 					state.Repositories = repositoryReferencesHandler == null ? new IRepositoryReference[0] : repositoryReferencesHandler.getReferences();
 					Object repositoryObject = null;
 					//can't create repository if missing type - this is already logged when parsing attributes
-					if (state.Type == null)
+					if (state.Type == null) {
 						return;
+					}
 					try {
 						Class<?> clazz = Class.forName(state.Type);
 						Constructor<?> ctor = clazz.getConstructor(IProvisioningAgent.class);

@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     EclipseSource - ongoing development
@@ -25,7 +25,7 @@ import org.eclipse.equinox.p2.metadata.MetadataFactory;
  * that is needed by a touchpoint to execute its phases.
  * <p>
  * The format of a touchpoint instruction statement sequence is as follows:
- * 
+ *
  * statement-sequence : | statement ';' | statement-sequence statement ;
  *
  * Where a statement is of the format:
@@ -49,7 +49,7 @@ public class TouchpointInstruction implements ITouchpointInstruction {
 	/**
 	 * Encodes an action statement in string form. This method will take care of
 	 * escaping any illegal characters in function parameter values.
-	 * 
+	 *
 	 * @param actionName The name of the action.
 	 * @param parameters The function's parameters. This is a
 	 *                   Map&lt;String,String&gt; where the keys are parameter names
@@ -61,10 +61,11 @@ public class TouchpointInstruction implements ITouchpointInstruction {
 		result.append('(');
 		boolean first = true;
 		for (Entry<String, String> entry : parameters.entrySet()) {
-			if (first)
+			if (first) {
 				first = false;
-			else
+			} else {
 				result.append(',');
+			}
 			result.append(entry.getKey());
 			result.append(':');
 			appendEncoded(result, entry.getValue());
@@ -105,30 +106,36 @@ public class TouchpointInstruction implements ITouchpointInstruction {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (!(obj instanceof ITouchpointInstruction))
+		}
+		if (!(obj instanceof ITouchpointInstruction other)) {
 			return false;
-		ITouchpointInstruction other = (ITouchpointInstruction) obj;
+		}
 		if (body == null) {
-			if (other.getBody() != null)
+			if (other.getBody() != null) {
 				return false;
-		} else if (!body.equals(other.getBody()))
+			}
+		} else if (!body.equals(other.getBody())) {
 			return false;
+		}
 		if (importAttribute == null) {
-			if (other.getImportAttribute() != null)
+			if (other.getImportAttribute() != null) {
 				return false;
-		} else if (!importAttribute.equals(other.getImportAttribute()))
+			}
+		} else if (!importAttribute.equals(other.getImportAttribute())) {
 			return false;
+		}
 		return true;
 	}
 
 	/**
 	 * Returns the body of this touchpoint instruction. The body is either a
 	 * sequence of instruction statements, or a simple string value.
-	 * 
+	 *
 	 * @return The body of this touchpoint instruction
 	 */
 	@Override

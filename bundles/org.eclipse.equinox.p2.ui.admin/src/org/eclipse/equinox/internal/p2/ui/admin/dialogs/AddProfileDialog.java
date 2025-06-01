@@ -25,14 +25,14 @@ import org.eclipse.swt.widgets.*;
 
 /**
  * Dialog that allows a profile to be defined and added.
- * 
+ *
  * @since 3.4
  */
 public class AddProfileDialog extends StatusDialog {
 
 	private ProfileGroup profileGroup;
 	private Button okButton;
-	private String[] knownProfileIds;
+	private final String[] knownProfileIds;
 	private String addedProfileId;
 
 	public AddProfileDialog(Shell parentShell, String[] knownProfiles) {
@@ -117,8 +117,9 @@ public class AddProfileDialog extends StatusDialog {
 	}
 
 	protected void setOkEnablement(boolean enable) {
-		if (okButton != null && !okButton.isDisposed())
+		if (okButton != null && !okButton.isDisposed()) {
 			okButton.setEnabled(enable);
+		}
 	}
 
 	/**

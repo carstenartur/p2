@@ -38,30 +38,35 @@ public class OSGiVersion extends BasicVersion {
 
 	static {
 		allowedOSGiChars = new boolean[128];
-		for (int c = '0'; c <= '9'; ++c)
+		for (int c = '0'; c <= '9'; ++c) {
 			allowedOSGiChars[c] = true;
-		for (int c = 'A'; c <= 'Z'; ++c)
+		}
+		for (int c = 'A'; c <= 'Z'; ++c) {
 			allowedOSGiChars[c] = true;
-		for (int c = 'a'; c <= 'z'; ++c)
+		}
+		for (int c = 'a'; c <= 'z'; ++c) {
 			allowedOSGiChars[c] = true;
+		}
 		allowedOSGiChars['_'] = true;
 		allowedOSGiChars['-'] = true;
 	}
 
 	public static boolean isValidOSGiQualifier(Comparable<?> e) {
-		if (e == VersionVector.MAXS_VALUE)
+		if (e == VersionVector.MAXS_VALUE) {
 			return true;
+		}
 
-		if (!(e instanceof String))
+		if (!(e instanceof String s)) {
 			return false;
+		}
 
-		String s = (String) e;
 		int idx = s.length();
 		boolean[] allowed = allowedOSGiChars;
 		while (--idx >= 0) {
 			int c = s.charAt(idx);
-			if (c < '-' || c > 'z' || !allowed[c])
+			if (c < '-' || c > 'z' || !allowed[c]) {
 				return false;
+			}
 		}
 		return true;
 	}
@@ -71,10 +76,12 @@ public class OSGiVersion extends BasicVersion {
 		Comparable<?> pad = vector.get(vtop);
 		if (vtop != 4) {
 			if (vtop == 0) {
-				if (pad == null)
+				if (pad == null) {
 					return (BasicVersion) emptyVersion;
-				if (pad == VersionVector.MAX_VALUE)
+				}
+				if (pad == VersionVector.MAX_VALUE) {
 					return (BasicVersion) MAX_VERSION;
+				}
 			}
 			throw new IllegalArgumentException();
 		}
@@ -89,29 +96,31 @@ public class OSGiVersion extends BasicVersion {
 		this.major = major;
 		this.minor = minor;
 		this.micro = micro;
-		if (!isValidOSGiQualifier(qualifier))
+		if (!isValidOSGiQualifier(qualifier)) {
 			throw new IllegalArgumentException(NLS.bind(Messages._0_is_not_a_valid_qualifier_in_osgi_1, "qualifier", this)); //$NON-NLS-1$
+		}
 		//intern the qualifier string to avoid duplication
-		if (qualifier instanceof String)
+		if (qualifier instanceof String) {
 			qualifier = ((String) qualifier).intern();
+		}
 		this.qualifier = qualifier;
 	}
 
 	@Override
 	public int compareTo(Version v) {
 		int result;
-		if (!(v instanceof OSGiVersion)) {
+		if (!(v instanceof OSGiVersion ov)) {
 			BasicVersion ov = (BasicVersion) v;
 			result = VersionVector.compare(getVector(), null, ov.getVector(), ov.getPad());
 		} else {
-			OSGiVersion ov = (OSGiVersion) v;
 			result = major - ov.major;
 			if (result == 0) {
 				result = minor - ov.minor;
 				if (result == 0) {
 					result = micro - ov.micro;
-					if (result == 0)
+					if (result == 0) {
 						result = VersionVector.compareSegments(qualifier, ov.qualifier);
+					}
 				}
 			}
 		}
@@ -120,18 +129,17 @@ public class OSGiVersion extends BasicVersion {
 
 	@Override
 	public boolean equals(Object object) {
-		if (object == this)
+		if (object == this) {
 			return true;
+		}
 
-		if (!(object instanceof OSGiVersion)) {
-			if (object instanceof BasicVersion) {
-				BasicVersion ov = (BasicVersion) object;
+		if (!(object instanceof OSGiVersion other)) {
+			if (object instanceof BasicVersion ov) {
 				return VersionVector.equals(getVector(), null, ov.getVector(), ov.getPad());
 			}
 			return false;
 		}
 
-		OSGiVersion other = (OSGiVersion) object;
 		return micro == other.micro && minor == other.minor && major == other.major && qualifier.equals(other.qualifier);
 	}
 
@@ -239,8 +247,9 @@ public class OSGiVersion extends BasicVersion {
 	private Object readResolve() {
 		OSGiVersion v = this;
 		// Preserve the empty string singleton.
-		if (qualifier.equals(VersionVector.MINS_VALUE))
+		if (qualifier.equals(VersionVector.MINS_VALUE)) {
 			v = new OSGiVersion(major, minor, micro, VersionVector.MINS_VALUE);
+		}
 		return v;
 	}
 }

@@ -27,10 +27,10 @@ import org.eclipse.equinox.p2.query.*;
  */
 public class ElementQueryDescriptor {
 
-	private IQuery<Object> query;
-	private Collector<Object> collector;
-	private IQueryable<Object> queryable;
-	private ElementWrapper wrapper;
+	private final IQuery<Object> query;
+	private final Collector<Object> collector;
+	private final IQueryable<Object> queryable;
+	private final ElementWrapper wrapper;
 
 	/**
 	 * Creates an ElementQueryDescriptor to represent a Query, its collector the queryable
@@ -58,14 +58,16 @@ public class ElementQueryDescriptor {
 	public Collection<?> performQuery(IProgressMonitor monitor) {
 		Collector<Object> results = this.collector;
 		// If the query is completely described, perform it
-		if (query != null && collector != null && queryable != null)
+		if (query != null && collector != null && queryable != null) {
 			results.addAll(this.queryable.query(this.query, monitor));
-		else if (results == null)
+		} else if (results == null) {
 			results = new Collector<>();
+		}
 		// Let the wrapper analyze the results, even if we didn't perform the query.
 		// This allows the wrapper to modify the results with explanations.
-		if (wrapper != null)
+		if (wrapper != null) {
 			return wrapper.getElements(results);
+		}
 		return results.toUnmodifiableSet();
 	}
 

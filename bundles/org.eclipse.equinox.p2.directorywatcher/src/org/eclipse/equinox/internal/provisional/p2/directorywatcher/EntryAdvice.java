@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2017 Code 9 and others. 
+ * Copyright (c) 2008, 2017 Code 9 and others.
  *
  * This
  * program and the accompanying materials are made available under the terms of
@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  ******************************************************************************/
@@ -29,11 +29,11 @@ import org.eclipse.equinox.p2.repository.artifact.IArtifactDescriptor;
 /**
  * Entry advice captures the name, location, modified time, shape etc of something
  * discovered by the repository listener.  It is a simplified structure intended to represent
- * only one entry at a time and that entry is the the only entry being published.  
+ * only one entry at a time and that entry is the the only entry being published.
  */
 public class EntryAdvice implements IPropertyAdvice {
-	private Map<String, String> metadataProps = new HashMap<>();
-	private Map<String, String> artifactProps = new HashMap<>();
+	private final Map<String, String> metadataProps = new HashMap<>();
+	private final Map<String, String> artifactProps = new HashMap<>();
 
 	@Override
 	public boolean isApplicable(String configSpec, boolean includeDefault, String id, Version version) {
@@ -45,19 +45,22 @@ public class EntryAdvice implements IPropertyAdvice {
 	}
 
 	void setProperties(File location, long timestamp, URI reference, String linkFile) {
-		if (reference == null)
+		if (reference == null) {
 			artifactProps.remove(RepositoryListener.ARTIFACT_REFERENCE);
-		else
+		} else {
 			artifactProps.put(RepositoryListener.ARTIFACT_REFERENCE, reference.toString());
-		if (location.isDirectory())
+		}
+		if (location.isDirectory()) {
 			artifactProps.put(RepositoryListener.ARTIFACT_FOLDER, Boolean.TRUE.toString());
-		else
+		} else {
 			artifactProps.remove(RepositoryListener.ARTIFACT_FOLDER);
+		}
 		artifactProps.put(RepositoryListener.FILE_NAME, location.getAbsolutePath());
 		metadataProps.put(RepositoryListener.FILE_NAME, location.getAbsolutePath());
 		metadataProps.put(RepositoryListener.FILE_LAST_MODIFIED, Long.toString(timestamp));
-		if (linkFile != null)
+		if (linkFile != null) {
 			metadataProps.put(Site.PROP_LINK_FILE, linkFile);
+		}
 	}
 
 	@Override

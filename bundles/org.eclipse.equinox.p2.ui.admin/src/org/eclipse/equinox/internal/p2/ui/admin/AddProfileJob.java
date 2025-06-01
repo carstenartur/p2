@@ -21,12 +21,12 @@ import org.eclipse.equinox.p2.operations.ProvisioningSession;
 
 /**
  * Operation that adds the given profile to the profile registry.
- * 
+ *
  * @since 3.6
  */
 public class AddProfileJob extends ProvisioningJob {
-	private String profileId;
-	private Map<String, String> profileProperties;
+	private final String profileId;
+	private final Map<String, String> profileProperties;
 
 	public AddProfileJob(String label, ProvisioningSession session, String profileId, Map<String, String> profileProperties) {
 		super(label, session);

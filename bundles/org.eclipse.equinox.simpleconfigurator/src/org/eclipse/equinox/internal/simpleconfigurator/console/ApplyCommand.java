@@ -25,9 +25,9 @@ import org.osgi.util.tracker.ServiceTracker;
  */
 public class ApplyCommand {
 
-	private URL configURL;
-	private CommandInterpreter interpreter;
-	private BundleContext context;
+	private final URL configURL;
+	private final CommandInterpreter interpreter;
+	private final BundleContext context;
 
 	public ApplyCommand(CommandInterpreter interpreter, BundleContext context, URL configURL) {
 		this.interpreter = interpreter;
@@ -45,13 +45,15 @@ public class ApplyCommand {
 		Configurator configurator = (Configurator) tracker.getService();
 		if (configurator != null) {
 			try {
-				if (configURL != null)
+				if (configURL != null) {
 					configurator.applyConfiguration(configURL);
-				else
+				} else {
 					configurator.applyConfiguration();
+				}
 
-				if (configurator.getUrlInUse() == null)
+				if (configurator.getUrlInUse() == null) {
 					interpreter.println("Config URL not set.");
+				}
 			} catch (IOException e) {
 				interpreter.println(e.getMessage());
 			}

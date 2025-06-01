@@ -22,8 +22,8 @@ import org.eclipse.equinox.p2.query.IQueryResult;
  * This class is used to keep pretty print a normal query using the information passed in.
  */
 public class PrettyQuery<T> implements IQuery<T> {
-	private IQuery<T> decorated;
-	private String userString;
+	private final IQuery<T> decorated;
+	private final String userString;
 
 	public PrettyQuery(IQuery<T> toDecorate, String userReadable) {
 		decorated = toDecorate;
@@ -42,8 +42,9 @@ public class PrettyQuery<T> implements IQuery<T> {
 
 	@Override
 	public String toString() {
-		if (userString != null)
+		if (userString != null) {
 			return userString;
+		}
 		return decorated.toString();
 	}
 }

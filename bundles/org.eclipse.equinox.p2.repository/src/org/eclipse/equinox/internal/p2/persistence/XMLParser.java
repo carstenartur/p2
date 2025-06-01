@@ -298,14 +298,17 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 
 		private URI constructURI(Attributes attributes, boolean required, String location) {
 			try {
-				if (location != null)
+				if (location != null) {
 					return new URI(location);
-				if (required)
+				}
+				if (required) {
 					location = parseRequiredAttributes(attributes, new String[] {URL_ATTRIBUTE})[0];
-				else
+				} else {
 					location = parseOptionalAttribute(attributes, URL_ATTRIBUTE);
-				if (location == null)
+				}
+				if (location == null) {
 					return null;
+				}
 				return URIUtil.toURI(new URL(location));
 			} catch (MalformedURLException e) {
 				invalidAttributeValue(elementHandled, URL_ATTRIBUTE, location, e);
@@ -407,7 +410,7 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 	 */
 	protected class PropertiesHandler extends AbstractHandler {
 
-		private OrderedProperties properties;
+		private final OrderedProperties properties;
 
 		public PropertiesHandler(ContentHandler parentHandler, Attributes attributes) {
 			super(parentHandler, PROPERTIES_ELEMENT);
@@ -563,8 +566,9 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 				: " (" + getRootObject() + ")"); //$NON-NLS-1$ //$NON-NLS-2$
 		if (this.locator != null) {
 			String name = this.locator.getSystemId();
-			if (errorContext != null && (name == null || name.trim().length() == 0))
+			if (errorContext != null && (name == null || name.trim().length() == 0)) {
 				name = errorContext;
+			}
 			line = this.locator.getLineNumber();
 			column = this.locator.getColumnNumber();
 			if (line > 0) {
@@ -689,8 +693,9 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 	}
 
 	public void checkCancel() {
-		if (monitor != null && monitor.isCanceled())
+		if (monitor != null && monitor.isCanceled()) {
 			throw new OperationCanceledException();
+		}
 	}
 
 	/**
@@ -710,8 +715,9 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 
 	public VersionRange checkVersionRange(String element, String attribute, String value) {
 		try {
-			if (value != null)
+			if (value != null) {
 				return VersionRange.create(value);
+			}
 		} catch (IllegalArgumentException iae) {
 			invalidAttributeValue(element, attribute, value);
 		} catch (NullPointerException npe) {
@@ -721,8 +727,9 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 	}
 
 	public void unexpectedAttribute(String element, String attribute, String value) {
-		if (Tracing.DEBUG_PARSE_PROBLEMS)
+		if (Tracing.DEBUG_PARSE_PROBLEMS) {
 			Tracing.debug("Unexpected attribute for element " + element + ": " + attribute + '=' + value); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	public void invalidAttributeValue(String element, String attribute, String value) {
@@ -730,23 +737,25 @@ public abstract class XMLParser extends DefaultHandler implements XMLConstants {
 	}
 
 	public void invalidAttributeValue(String element, String attribute, String value, Throwable exception) {
-		addError(IStatus.WARNING, NLS.bind(Messages.XMLParser_Illegal_Value_For_Attribute, new Object[] {attribute, element, value}), exception);
+		addError(IStatus.WARNING, NLS.bind(Messages.XMLParser_Illegal_Value_For_Attribute, attribute, element, value), exception);
 	}
 
 	public void unexpectedElement(AbstractHandler handler, String element, Attributes attributes) {
-		if (Tracing.DEBUG_PARSE_PROBLEMS)
+		if (Tracing.DEBUG_PARSE_PROBLEMS) {
 			Tracing.debug("Unexpected element in element " + handler.getName() + ": <" + element + toString(attributes) + '>'); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	public void duplicateElement(AbstractHandler handler, String element, Attributes attributes) {
-		addError(IStatus.WARNING, NLS.bind(Messages.XMLParser_Duplicate_Element, new Object[] {handler.getName(), element, toString(attributes)}), null);
+		addError(IStatus.WARNING, NLS.bind(Messages.XMLParser_Duplicate_Element, handler.getName(), element, toString(attributes)), null);
 		//ignore the duplicate element entirely because we have already logged it
 		new IgnoringHandler(handler);
 	}
 
 	public void unexpectedCharacterData(AbstractHandler handler, String cdata) {
-		if (Tracing.DEBUG_PARSE_PROBLEMS)
+		if (Tracing.DEBUG_PARSE_PROBLEMS) {
 			Tracing.debug("Unexpected character data in element " + handler.getName() + ": " + cdata.trim()); //$NON-NLS-1$ //$NON-NLS-2$
+		}
 	}
 
 	/**

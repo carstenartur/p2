@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  ******************************************************************************/
@@ -28,9 +28,9 @@ import org.eclipse.equinox.p2.repository.artifact.IArtifactDescriptor;
 import org.eclipse.equinox.spi.p2.publisher.PublisherHelper;
 
 public class RootFilesAction extends AbstractPublisherAction {
-	private String idBase;
-	private Version version;
-	private String flavor;
+	private final String idBase;
+	private final Version version;
+	private final String flavor;
 	private boolean createParent = true;
 
 	/**
@@ -61,16 +61,19 @@ public class RootFilesAction extends AbstractPublisherAction {
 		// TODO try and find common properties across platforms
 		String[] configSpecs = publisherInfo.getConfigurations();
 		for (String configSpec : configSpecs) {
-			if (monitor.isCanceled())
+			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
+			}
 			generateRootFileIUs(configSpec, innerResult);
 		}
 		// merge the IUs  into the final result as non-roots and create a parent IU that captures them all
 		results.merge(innerResult, IPublisherResult.MERGE_ALL_NON_ROOT);
-		if (createParent)
+		if (createParent) {
 			publishTopLevelRootFilesIU(innerResult.getIUs(null, IPublisherResult.ROOT), results);
-		if (monitor.isCanceled())
+		}
+		if (monitor.isCanceled()) {
 			return Status.CANCEL_STATUS;
+		}
 		return Status.OK_STATUS;
 	}
 
@@ -78,8 +81,9 @@ public class RootFilesAction extends AbstractPublisherAction {
 		InstallableUnitDescription descriptor = createParentIU(children, computeIUId(idBase, flavor), version);
 		descriptor.setSingleton(true);
 		IInstallableUnit rootIU = MetadataFactory.createInstallableUnit(descriptor);
-		if (rootIU == null)
+		if (rootIU == null) {
 			return;
+		}
 		result.addIU(rootIU, IPublisherResult.ROOT);
 	}
 
@@ -110,7 +114,7 @@ public class RootFilesAction extends AbstractPublisherAction {
 		cu.setId(configUnitId);
 		cu.setVersion(version);
 		cu.setFilter(filter);
-		cu.setHost(new IRequirement[] {MetadataFactory.createRequirement(IInstallableUnit.NAMESPACE_IU_ID, iuId, new VersionRange(version, true, version, true), null, false, false)});
+		cu.setHost(MetadataFactory.createRequirement(IInstallableUnit.NAMESPACE_IU_ID, iuId, new VersionRange(version, true, version, true), null, false, false));
 		cu.setProperty(InstallableUnitDescription.PROP_TYPE_FRAGMENT, Boolean.TRUE.toString());
 
 		//TODO bug 218890, would like the fragment to provide the launcher capability as well, but can't right now.
@@ -135,13 +139,14 @@ public class RootFilesAction extends AbstractPublisherAction {
 	}
 
 	private IPathComputer createPrefixComputer(File root) {
-		if (root == null)
+		if (root == null) {
 			return createParentPrefixComputer(1);
+		}
 		return createRootPrefixComputer(root);
 	}
 
 	/**
-	 * Compiles the <class>IRootFilesAdvice</class> from the <code>info</code> into one <class>IRootFilesAdvice</class> 
+	 * Compiles the <class>IRootFilesAdvice</class> from the <code>info</code> into one <class>IRootFilesAdvice</class>
 	 * and returns the result.
 	 * @return a compilation of <class>IRootfilesAdvice</class> from the <code>info</code>.
 	 */
@@ -152,14 +157,17 @@ public class RootFilesAction extends AbstractPublisherAction {
 		File root = null;
 		for (IRootFilesAdvice entry : advice) {
 			// TODO for now we simply get root from the first advice that has one
-			if (root == null)
+			if (root == null) {
 				root = entry.getRoot();
+			}
 			File[] list = entry.getIncludedFiles();
-			if (list != null)
+			if (list != null) {
 				inclusions.addAll(Arrays.asList(list));
+			}
 			list = entry.getExcludedFiles();
-			if (list != null)
+			if (list != null) {
 				exclusions.addAll(Arrays.asList(list));
+			}
 		}
 		File[] includeList = inclusions.toArray(new File[inclusions.size()]);
 		File[] excludeList = exclusions.toArray(new File[exclusions.size()]);

@@ -427,8 +427,7 @@ public class TrustCertificateDialog extends SelectionDialog {
 			public String getText(Object element) {
 				if (element instanceof TreeNode) {
 					Object o = ((TreeNode) element).getValue();
-					if (o instanceof PGPPublicKey) {
-						PGPPublicKey key = (PGPPublicKey) o;
+					if (o instanceof PGPPublicKey key) {
 						String userFriendlyFingerPrint = userFriendlyFingerPrint(key);
 						java.util.List<String> users = new ArrayList<>();
 						key.getUserIDs().forEachRemaining(users::add);
@@ -754,9 +753,9 @@ public class TrustCertificateDialog extends SelectionDialog {
 	}
 
 	private static class PGPOrX509ColumnLabelProvider extends ColumnLabelProvider {
-		private Function<PGPPublicKey, String> pgpMap;
-		private Function<X509Certificate, String> x509map;
-		private String unsignedValue;
+		private final Function<PGPPublicKey, String> pgpMap;
+		private final Function<X509Certificate, String> x509map;
+		private final String unsignedValue;
 
 		public PGPOrX509ColumnLabelProvider(Function<PGPPublicKey, String> pgpMap,
 				Function<X509Certificate, String> x509map, String unsignedValue) {
@@ -785,8 +784,8 @@ public class TrustCertificateDialog extends SelectionDialog {
 	}
 
 	private static class ArtifactLabelProvider extends ColumnLabelProvider {
-		private Function<IArtifactKey, String> labelProvider;
-		private Function<IArtifactKey, Font> fontProvider;
+		private final Function<IArtifactKey, String> labelProvider;
+		private final Function<IArtifactKey, Font> fontProvider;
 
 		public ArtifactLabelProvider(Function<IArtifactKey, String> labelProvider,
 				Function<IArtifactKey, Font> fontProvider) {

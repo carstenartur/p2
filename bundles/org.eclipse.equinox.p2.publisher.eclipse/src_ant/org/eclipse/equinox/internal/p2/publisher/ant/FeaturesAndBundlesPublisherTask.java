@@ -7,7 +7,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors: IBM - Initial API and implementation
  ******************************************************************************/
 package org.eclipse.equinox.internal.p2.publisher.ant;
@@ -41,21 +41,22 @@ public class FeaturesAndBundlesPublisherTask extends AbstractPublishTask {
 		File[] b = getLocations(bundles);
 
 		ArrayList<IPublisherAction> actions = new ArrayList<>();
-		if (f.length > 0)
+		if (f.length > 0) {
 			actions.add(new FeaturesAction(f));
-		if (b.length > 0)
+		}
+		if (b.length > 0) {
 			actions.add(new BundlesAction(b));
+		}
 
-		if (actions.size() > 0)
+		if (actions.size() > 0) {
 			new Publisher(getInfo()).publish(actions.toArray(new IPublisherAction[actions.size()]), new NullProgressMonitor());
+		}
 	}
 
 	private File[] getLocations(List<Object> collection) {
 		ArrayList<Object> results = new ArrayList<>();
 		for (Object obj : collection) {
-			if (obj instanceof FileSet) {
-				FileSet set = (FileSet) obj;
-
+			if (obj instanceof FileSet set) {
 				DirectoryScanner scanner = set.getDirectoryScanner(getProject());
 				String[][] elements = new String[][] {scanner.getIncludedDirectories(), scanner.getIncludedFiles()};
 				for (int i = 0; i < 2; i++) {

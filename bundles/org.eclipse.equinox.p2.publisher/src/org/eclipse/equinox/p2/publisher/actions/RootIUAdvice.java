@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  ******************************************************************************/
@@ -25,7 +25,7 @@ import org.eclipse.equinox.p2.publisher.IPublisherResult;
  */
 public class RootIUAdvice extends AbstractAdvice implements IRootIUAdvice {
 
-	private Collection<? extends Object> children;
+	private final Collection<? extends Object> children;
 
 	public RootIUAdvice(Collection<? extends Object> children) {
 		this.children = children;

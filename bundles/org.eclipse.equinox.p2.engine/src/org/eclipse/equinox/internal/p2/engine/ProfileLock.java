@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Red Hat Inc. - Bug 460967
  ******************************************************************************/
@@ -62,12 +62,14 @@ public class ProfileLock {
 	 */
 	public void checkLocked() {
 		synchronized (lock) {
-			if (lockHolder == null)
+			if (lockHolder == null) {
 				throw new IllegalStateException(Messages.SimpleProfileRegistry_Profile_not_locked);
+			}
 
 			Thread current = Thread.currentThread();
-			if (lockHolder != current)
+			if (lockHolder != current) {
 				throw new IllegalStateException(Messages.thread_not_owner);
+			}
 		}
 	}
 
@@ -78,15 +80,16 @@ public class ProfileLock {
 	 * the lock becomes available. If the lock is currently held by another process,
 	 * this method returns <code>false</code>. Re-entrant attempts to acquire the
 	 * same profile lock multiple times in the same thread is not allowed.
-	 * 
+	 *
 	 * @return <code>true</code> if the lock was successfully obtained by this thread,
 	 * and <code>false</code> if another process is currently holding the lock.
 	 */
 	public boolean lock() {
 		synchronized (lock) {
 			Thread current = Thread.currentThread();
-			if (lockHolder == current)
+			if (lockHolder == current) {
 				throw new IllegalStateException(Messages.profile_lock_not_reentrant);
+			}
 
 			boolean locationLocked = (waiting != 0);
 			while (lockHolder != null) {
@@ -100,13 +103,15 @@ public class ProfileLock {
 				} finally {
 					waiting--;
 					// if interrupted restore interrupt to thread state
-					if (interrupted)
+					if (interrupted) {
 						current.interrupt();
+					}
 				}
 			}
 			try {
-				if (!locationLocked && !location.lock())
+				if (!locationLocked && !location.lock()) {
 					return false;
+				}
 
 				lockHolder = current;
 			} catch (IOException e) {
@@ -122,24 +127,27 @@ public class ProfileLock {
 	 */
 	public void unlock() {
 		synchronized (lock) {
-			if (lockHolder == null)
+			if (lockHolder == null) {
 				throw new IllegalStateException(Messages.SimpleProfileRegistry_Profile_not_locked);
+			}
 
 			Thread current = Thread.currentThread();
-			if (lockHolder != current)
+			if (lockHolder != current) {
 				throw new IllegalStateException(Messages.thread_not_owner);
+			}
 
 			lockHolder = null;
-			if (waiting == 0)
+			if (waiting == 0) {
 				location.release();
-			else
+			} else {
 				lock.notify();
+			}
 		}
 	}
 
 	/**
 	 * Returns whether a thread in this process currently holds the profile lock.
-	 * 
+	 *
 	 * @return <code>true</code> if a thread in this process owns the profile lock,
 	 * and <code>false</code> otherwise
 	 */

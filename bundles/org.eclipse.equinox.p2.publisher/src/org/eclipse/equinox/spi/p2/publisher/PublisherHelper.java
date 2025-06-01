@@ -106,9 +106,8 @@ public class PublisherHelper {
 
 	private static IArtifactDescriptor createArtifactDescriptor(IPublisherInfo info, IArtifactRepository artifactRepo, IArtifactKey key, File pathOnDisk) {
 		IArtifactDescriptor result = artifactRepo != null ? artifactRepo.createArtifactDescriptor(key) : new ArtifactDescriptor(key);
-		if (result instanceof ArtifactDescriptor) {
+		if (result instanceof ArtifactDescriptor descriptor) {
 			if (pathOnDisk != null && pathOnDisk.isFile()) {
-				ArtifactDescriptor descriptor = (ArtifactDescriptor) result;
 				descriptor.setProperty(IArtifactDescriptor.ARTIFACT_SIZE, Long.toString(pathOnDisk.length()));
 				descriptor.setProperty(IArtifactDescriptor.DOWNLOAD_SIZE, Long.toString(pathOnDisk.length()));
 
@@ -204,12 +203,15 @@ public class PublisherHelper {
 	 * @throws UnsupportedOperationException if the version could not be converted into an OSGi version
 	 */
 	public static org.osgi.framework.Version toOSGiVersion(Version version) {
-		if (version == null)
+		if (version == null) {
 			return null;
-		if (version == Version.emptyVersion)
+		}
+		if (version == Version.emptyVersion) {
 			return org.osgi.framework.Version.emptyVersion;
-		if (version == Version.MAX_VERSION)
+		}
+		if (version == Version.MAX_VERSION) {
 			return new org.osgi.framework.Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
+		}
 
 		BasicVersion bv = (BasicVersion) version;
 		return new org.osgi.framework.Version(bv.getMajor(), bv.getMinor(), bv.getMicro(), bv.getQualifier());

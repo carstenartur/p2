@@ -7,9 +7,9 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
- *   IBM Corporation - initial implementation and ideas 
+ *   IBM Corporation - initial implementation and ideas
  *   Code 9 - ongoing development
  *******************************************************************************/
 package org.eclipse.equinox.internal.provisional.p2.directorywatcher;
@@ -44,12 +44,12 @@ public class RepositoryListener extends DirectoryChangeListener {
 	public static final String FILE_NAME = "file.name"; //$NON-NLS-1$
 	private final IMetadataRepository metadataRepository;
 	private final CachingArtifactRepository artifactRepository;
-	// at any point in time currentFiles is the list of files/dirs that the watcher has seen and 
+	// at any point in time currentFiles is the list of files/dirs that the watcher has seen and
 	// believes to be on disk.
 	private final Map<File, Long> currentFiles = new HashMap<>();
 	private final Collection<File> polledSeenFiles = new HashSet<>();
 
-	private EntryAdvice advice = new EntryAdvice();
+	private final EntryAdvice advice = new EntryAdvice();
 	private PublisherInfo info;
 	private IPublisherResult iusToAdd;
 	private IPublisherResult iusToChange;
@@ -114,18 +114,21 @@ public class RepositoryListener extends DirectoryChangeListener {
 		boolean isDirectory = file.isDirectory();
 		// is it a feature ?
 		if (isDirectory && file.getParentFile() != null && file.getParentFile().getName().equals("features") //$NON-NLS-1$
-				&& new File(file, "feature.xml").exists()) //$NON-NLS-1$ )
+				&& new File(file, "feature.xml").exists()) { //$NON-NLS-1$ )
 			return processFeature(file, isAddition);
+		}
 		// could it be a bundle ?
-		if (isDirectory || file.getName().endsWith(".jar")) //$NON-NLS-1$
+		if (isDirectory || file.getName().endsWith(".jar")) { //$NON-NLS-1$
 			return processBundle(file, isDirectory, isAddition);
+		}
 		return false;
 	}
 
 	private boolean processBundle(File file, boolean isDirectory, boolean isAddition) {
 		BundleDescription bundleDescription = BundlesAction.createBundleDescriptionIgnoringExceptions(file);
-		if (bundleDescription == null)
+		if (bundleDescription == null) {
 			return false;
+		}
 
 		advice.setProperties(file, file.lastModified(), file.toURI());
 		return publish(new BundlesAction(new BundleDescription[] { bundleDescription }), isAddition);
@@ -153,8 +156,9 @@ public class RepositoryListener extends DirectoryChangeListener {
 	@Override
 	public Long getSeenFile(File file) {
 		Long lastSeen = currentFiles.get(file);
-		if (lastSeen != null)
+		if (lastSeen != null) {
 			polledSeenFiles.add(file);
+		}
 		return lastSeen;
 	}
 
@@ -181,8 +185,9 @@ public class RepositoryListener extends DirectoryChangeListener {
 	 * Flush all the pending changes to the metadata repository.
 	 */
 	private void synchronizeMetadataRepository(final Collection<File> removedFiles) {
-		if (metadataRepository == null)
+		if (metadataRepository == null) {
 			return;
+		}
 		final Collection<IInstallableUnit> changes = iusToChange.getIUs(null, null);
 		// first remove any IUs that have changed or that are associated with removed files
 		if (!removedFiles.isEmpty() || !changes.isEmpty()) {
@@ -193,8 +198,9 @@ public class RepositoryListener extends DirectoryChangeListener {
 			// because when we have large numbers of files, the performance is much better.
 			// See bug 324353.
 			Collection<String> paths = new HashSet<>(removedFiles.size());
-			for (File file : removedFiles)
+			for (File file : removedFiles) {
 				paths.add(file.getAbsolutePath());
+			}
 			IQuery<IInstallableUnit> removeQuery = QueryUtil.createMatchQuery( //
 					"$1.exists(x | properties[$0] == x)", FILE_NAME, paths); //$NON-NLS-1$
 			IQueryResult<IInstallableUnit> toRemove = metadataRepository.query(removeQuery, null);
@@ -203,8 +209,9 @@ public class RepositoryListener extends DirectoryChangeListener {
 		// Then add all the new IUs as well as the new copies of the ones that have changed
 		Collection<IInstallableUnit> additions = iusToAdd.getIUs(null, null);
 		additions.addAll(changes);
-		if (!additions.isEmpty())
+		if (!additions.isEmpty()) {
 			metadataRepository.addInstallableUnits(additions);
+		}
 	}
 
 	/**
@@ -213,8 +220,9 @@ public class RepositoryListener extends DirectoryChangeListener {
 	 * to ensure that all the additions and removals have been completed.
 	 */
 	private void synchronizeArtifactRepository(final Collection<File> removedFiles) {
-		if (artifactRepository == null)
+		if (artifactRepository == null) {
 			return;
+		}
 		if (!removedFiles.isEmpty()) {
 			IArtifactDescriptor[] descriptors = artifactRepository.descriptorQueryable()
 					.query(ArtifactDescriptorQuery.ALL_DESCRIPTORS, null).toArray(IArtifactDescriptor.class);
@@ -228,8 +236,9 @@ public class RepositoryListener extends DirectoryChangeListener {
 					}
 				} else {
 					File artifactFile = new File(filename);
-					if (removedFiles.contains(artifactFile))
+					if (removedFiles.contains(artifactFile)) {
 						artifactRepository.removeDescriptor(descriptor);
+					}
 				}
 			}
 		}
@@ -237,7 +246,7 @@ public class RepositoryListener extends DirectoryChangeListener {
 	}
 
 	/**
-	 * Prime the list of current files that the listener knows about.  This traverses the 
+	 * Prime the list of current files that the listener knows about.  This traverses the
 	 * repos and looks for the related filename and modified timestamp information.
 	 */
 	private void synchronizeCurrentFiles() {

@@ -32,7 +32,7 @@ import org.eclipse.equinox.p2.query.IQueryable;
 public class CategoryElementWrapper extends QueriedElementWrapper {
 
 	// Used to track nested categories
-	private Set<String> referredIUs = new HashSet<>();
+	private final Set<String> referredIUs = new HashSet<>();
 
 	public CategoryElementWrapper(IQueryable<?> queryable, Object parent) {
 		super(queryable, parent);
@@ -40,8 +40,7 @@ public class CategoryElementWrapper extends QueriedElementWrapper {
 
 	@Override
 	protected boolean shouldWrap(Object match) {
-		if (match instanceof IInstallableUnit) {
-			IInstallableUnit iu = (IInstallableUnit) match;
+		if (match instanceof IInstallableUnit iu) {
 			Collection<IRequirement> requirements = iu.getRequirements();
 			for (IRequirement requirement : requirements) {
 				if (requirement instanceof IRequiredCapability) {
@@ -68,8 +67,9 @@ public class CategoryElementWrapper extends QueriedElementWrapper {
 
 	@Override
 	public Collection<?> getElements(Collector<?> collector) {
-		if (collector.isEmpty())
+		if (collector.isEmpty()) {
 			return super.getElements(collector);
+		}
 		Collection<?> results = super.getElements(collector);
 		cleanList();
 		return results;

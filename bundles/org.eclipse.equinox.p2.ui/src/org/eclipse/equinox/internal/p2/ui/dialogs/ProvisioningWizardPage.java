@@ -21,8 +21,8 @@ import org.eclipse.ui.PlatformUI;
 
 abstract class ProvisioningWizardPage extends WizardPage implements ICopyable {
 
-	private ProvisioningUI ui;
-	private ProvisioningOperationWizard wizard;
+	private final ProvisioningUI ui;
+	private final ProvisioningOperationWizard wizard;
 
 	protected ProvisioningWizardPage(String pageName, ProvisioningUI ui, ProvisioningOperationWizard wizard) {
 		super(pageName);
@@ -42,8 +42,9 @@ abstract class ProvisioningWizardPage extends WizardPage implements ICopyable {
 	@Override
 	public void copyToClipboard(Control activeControl) {
 		String text = getClipboardText(activeControl);
-		if (text.length() == 0)
+		if (text.length() == 0) {
 			return;
+		}
 		Clipboard clipboard = new Clipboard(PlatformUI.getWorkbench().getDisplay());
 		clipboard.setContents(new Object[] {text}, new Transfer[] {TextTransfer.getInstance()});
 		clipboard.dispose();

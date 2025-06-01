@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   EclipseSource - initial API and implementation
  ******************************************************************************/
 package org.eclipse.equinox.p2.publisher.actions;
@@ -25,7 +25,7 @@ import org.eclipse.equinox.p2.query.*;
  */
 public class QueryableFilterAdvice implements IFilterAdvice {
 
-	private IQueryable<IInstallableUnit> queryable;
+	private final IQueryable<IInstallableUnit> queryable;
 
 	public QueryableFilterAdvice(IQueryable<IInstallableUnit> queryable) {
 		this.queryable = queryable;
@@ -35,15 +35,18 @@ public class QueryableFilterAdvice implements IFilterAdvice {
 	public IMatchExpression<IInstallableUnit> getFilter(String id, Version version, boolean exact) {
 		IQuery<IInstallableUnit> query = QueryUtil.createIUQuery(id, version);
 		IQueryResult<IInstallableUnit> result = queryable.query(query, null);
-		if (!result.isEmpty())
+		if (!result.isEmpty()) {
 			return result.iterator().next().getFilter();
-		if (exact)
+		}
+		if (exact) {
 			return null;
+		}
 
 		query = QueryUtil.createIUQuery(id);
 		result = queryable.query(query, null);
-		if (!result.isEmpty())
+		if (!result.isEmpty()) {
 			return result.iterator().next().getFilter();
+		}
 		return null;
 	}
 

@@ -65,26 +65,30 @@ public class DebugHelper {
 	}
 
 	public static String formatArray(Collection<? extends Object> array, boolean toString, boolean newLines) {
-		if (array == null || array.size() == 0)
+		if (array == null || array.size() == 0) {
 			return "[]"; //$NON-NLS-1$
+		}
 
 		StringBuilder buffer = new StringBuilder();
 		buffer.append('[');
 		boolean first = true;
 		for (Object elem : array) {
-			if (first)
+			if (first) {
 				first = false;
-			else
+			} else {
 				buffer.append(',');
+			}
 
-			if (toString)
+			if (toString) {
 				buffer.append(elem.toString());
-			else
+			} else {
 				buffer.append(elem.getClass().getName());
-			if (newLines)
+			}
+			if (newLines) {
 				buffer.append(DebugHelper.LINE_SEPARATOR);
-			else
+			} else {
 				buffer.append(' ');
+			}
 		}
 		buffer.append(']');
 		return buffer.toString();
@@ -105,8 +109,7 @@ public class DebugHelper {
 	public static String formatOperands(Operand[] operands) {
 		String[] operandStrings = new String[operands.length];
 		for (int i = 0; i < operands.length; i++) {
-			if (operands[i] instanceof InstallableUnitOperand) {
-				InstallableUnitOperand iuOperand = (InstallableUnitOperand) operands[i];
+			if (operands[i] instanceof InstallableUnitOperand iuOperand) {
 				operandStrings[i] = formatInstallableUnitOperand(iuOperand);
 			} else {
 				operandStrings[i] = operands[i].toString();
@@ -118,12 +121,14 @@ public class DebugHelper {
 	public static String formatInstallableUnitOperand(InstallableUnitOperand iuOperand) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(iuOperand.first());
-		if (iuOperand.first() != null && iuOperand.first().getFragments() != null)
+		if (iuOperand.first() != null && iuOperand.first().getFragments() != null) {
 			buffer.append(DebugHelper.formatArray(iuOperand.first().getFragments(), true, false));
+		}
 		buffer.append(" --> "); //$NON-NLS-1$
 		buffer.append(iuOperand.second());
-		if (iuOperand.second() != null && iuOperand.second().getFragments() != null)
+		if (iuOperand.second() != null && iuOperand.second().getFragments() != null) {
 			buffer.append(DebugHelper.formatArray(iuOperand.second().getFragments(), true, false));
+		}
 		return buffer.toString();
 	}
 
@@ -140,8 +145,7 @@ public class DebugHelper {
 	public static String formatAction(ProvisioningAction action, Map<String, Object> parameters) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(action.getClass().getName());
-		if (action instanceof ParameterizedProvisioningAction) {
-			ParameterizedProvisioningAction parameterizedAction = (ParameterizedProvisioningAction) action;
+		if (action instanceof ParameterizedProvisioningAction parameterizedAction) {
 			buffer.append("{action=" + parameterizedAction.getAction().getClass().getName()); //$NON-NLS-1$
 			buffer.append(", actionText=" + parameterizedAction.getActionText() + "}"); //$NON-NLS-1$ //$NON-NLS-2$
 		}
@@ -152,8 +156,9 @@ public class DebugHelper {
 
 	public static String formatParameters(Map<String, ? extends Object> parameters) {
 		Iterator<? extends Entry<String, ? extends Object>> it = parameters.entrySet().iterator();
-		if (!it.hasNext())
+		if (!it.hasNext()) {
 			return "{}"; //$NON-NLS-1$
+		}
 
 		StringBuilder buffer = new StringBuilder();
 		buffer.append('{');
@@ -163,14 +168,15 @@ public class DebugHelper {
 			buffer.append(key);
 			buffer.append('=');
 			Object value = e.getValue();
-			if (value == null)
+			if (value == null) {
 				buffer.append(value);
-			else if (value instanceof String || value instanceof File || value instanceof Operand || value instanceof IArtifactKey || value instanceof IInstallableUnit)
+			} else if (value instanceof String || value instanceof File || value instanceof Operand || value instanceof IArtifactKey || value instanceof IInstallableUnit) {
 				buffer.append(value);
-			else if (value instanceof IProfile)
+			} else if (value instanceof IProfile) {
 				buffer.append(((IProfile) value).getProfileId());
-			else
+			} else {
 				buffer.append(value.getClass().getName());
+			}
 			if (!it.hasNext()) {
 				buffer.append('}');
 				break;

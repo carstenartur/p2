@@ -105,8 +105,9 @@ public class SimpleArtifactRepositoryIO {
 						result = repositoryParser.getStatus();
 					}
 				} finally {
-					if (lock)
+					if (lock) {
 						unlock(location);
+					}
 				}
 
 				switch (result.getSeverity()) {
@@ -119,12 +120,14 @@ public class SimpleArtifactRepositoryIO {
 						LogHelper.log(result);
 				}
 				SimpleArtifactRepository repository = repositoryParser.getRepository();
-				if (repository == null)
+				if (repository == null) {
 					throw new ProvisionException(new Status(IStatus.ERROR, Activator.ID, ProvisionException.REPOSITORY_FAILED_READ, Messages.io_parseError, null));
+				}
 				return repository;
 			} finally {
-				if (bufferedInput != null)
+				if (bufferedInput != null) {
 					bufferedInput.close();
+				}
 			}
 		} catch (IOException ioe) {
 			String msg = NLS.bind(Messages.io_failedRead, location);
@@ -133,8 +136,9 @@ public class SimpleArtifactRepositoryIO {
 	}
 
 	private synchronized boolean canLock(URI repositoryLocation) {
-		if (!URIUtil.isFileURI(repositoryLocation))
+		if (!URIUtil.isFileURI(repositoryLocation)) {
 			return false;
+		}
 
 		try {
 			lockLocation = getLockLocation(repositoryLocation);
@@ -145,31 +149,36 @@ public class SimpleArtifactRepositoryIO {
 	}
 
 	private synchronized boolean lock(URI repositoryLocation, boolean wait, IProgressMonitor monitor) throws IOException {
-		if (!Activator.getInstance().enableArtifactLocking())
+		if (!Activator.getInstance().enableArtifactLocking()) {
 			return true; // Don't use locking
+		}
 
 		lockLocation = getLockLocation(repositoryLocation);
 		boolean locked = lockLocation.lock();
-		if (locked || !wait)
+		if (locked || !wait) {
 			return locked;
+		}
 
 		//Someone else must have the directory locked
 		while (true) {
-			if (monitor.isCanceled())
+			if (monitor.isCanceled()) {
 				return false;
+			}
 			try {
 				Thread.sleep(200); // 5x per second
 			} catch (InterruptedException e) {/*ignore*/
 			}
 			locked = lockLocation.lock();
-			if (locked)
+			if (locked) {
 				return true;
+			}
 		}
 	}
 
 	private void unlock(URI repositoryLocation) {
-		if (!Activator.getInstance().enableArtifactLocking())
+		if (!Activator.getInstance().enableArtifactLocking()) {
 			return;
+		}
 
 		if (lockLocation != null) {
 			lockLocation.release();
@@ -298,7 +307,7 @@ public class SimpleArtifactRepositoryIO {
 	private class Parser extends XMLParser implements XMLConstants {
 
 		private SimpleArtifactRepository theRepository = null;
-		private URI uri;
+		private final URI uri;
 
 		public Parser(String bundleId, URI uri) {
 			super(bundleId);
@@ -373,7 +382,7 @@ public class SimpleArtifactRepositoryIO {
 			private ArtifactsHandler artifactsHandler = null;
 
 			private SimpleArtifactRepository repository = null;
-			private URI location;
+			private final URI location;
 
 			public RepositoryHandler(URI uri) {
 				super();
@@ -432,7 +441,7 @@ public class SimpleArtifactRepositoryIO {
 
 		protected class MappingRulesHandler extends AbstractHandler {
 
-			private List<String[]> mappingRules;
+			private final List<String[]> mappingRules;
 
 			public MappingRulesHandler(AbstractHandler parentHandler, Attributes attributes) {
 				super(parentHandler, MAPPING_RULES_ELEMENT);
@@ -476,7 +485,7 @@ public class SimpleArtifactRepositoryIO {
 
 		protected class ArtifactsHandler extends AbstractHandler {
 
-			private Set<SimpleArtifactDescriptor> artifacts;
+			private final Set<SimpleArtifactDescriptor> artifacts;
 
 			public ArtifactsHandler(AbstractHandler parentHandler, Attributes attributes) {
 				super(parentHandler, ARTIFACTS_ELEMENT);
@@ -502,7 +511,7 @@ public class SimpleArtifactRepositoryIO {
 
 			private final String[] required = new String[] {ARTIFACT_CLASSIFIER_ATTRIBUTE, ID_ATTRIBUTE, VERSION_ATTRIBUTE};
 
-			private Set<SimpleArtifactDescriptor> artifacts;
+			private final Set<SimpleArtifactDescriptor> artifacts;
 			SimpleArtifactDescriptor currentArtifact = null;
 
 			private PropertiesHandler propertiesHandler = null;
@@ -568,7 +577,7 @@ public class SimpleArtifactRepositoryIO {
 
 		protected class ProcessingStepsHandler extends AbstractHandler {
 
-			private List<IProcessingStepDescriptor> processingSteps;
+			private final List<IProcessingStepDescriptor> processingSteps;
 
 			public ProcessingStepsHandler(AbstractHandler parentHandler, Attributes attributes) {
 				super(parentHandler, PROCESSING_STEPS_ELEMENT);

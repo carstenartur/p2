@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2008, 2017 IBM Corporation and others.
  *
- * This program and the accompanying materials 
+ * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -22,8 +22,8 @@ import org.eclipse.equinox.p2.repository.artifact.IFileArtifactRepository;
 
 public class BundlePoolFilteredListener extends DirectoryChangeListener {
 
-	private DirectoryChangeListener delegate;
-	private Set<File> bundlePoolFiles = new HashSet<>();
+	private final DirectoryChangeListener delegate;
+	private final Set<File> bundlePoolFiles = new HashSet<>();
 
 	public BundlePoolFilteredListener(DirectoryChangeListener listener) {
 		delegate = listener;
@@ -31,8 +31,9 @@ public class BundlePoolFilteredListener extends DirectoryChangeListener {
 		if (bundlePool != null) {
 			for (IArtifactKey key : bundlePool.query(ArtifactKeyQuery.ALL_KEYS, null)) {
 				File artifactFile = bundlePool.getArtifactFile(key);
-				if (artifactFile != null)
+				if (artifactFile != null) {
 					bundlePoolFiles.add(artifactFile);
+				}
 			}
 		}
 	}
@@ -54,8 +55,9 @@ public class BundlePoolFilteredListener extends DirectoryChangeListener {
 
 	@Override
 	public boolean isInterested(File file) {
-		if (bundlePoolFiles.contains(file))
+		if (bundlePoolFiles.contains(file)) {
 			return false;
+		}
 
 		return delegate.isInterested(file);
 	}

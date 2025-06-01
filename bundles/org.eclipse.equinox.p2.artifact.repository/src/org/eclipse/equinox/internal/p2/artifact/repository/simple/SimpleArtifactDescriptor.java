@@ -51,7 +51,7 @@ public class SimpleArtifactDescriptor extends ArtifactDescriptor {
 				// first value => store in singletonMap (most repositoryProperties have at most 1 entry)
 				repositoryProperties = Collections.singletonMap(key.intern(), value);
 			} else {
-				// if current size is 1 then it is an immutable singletonMap 
+				// if current size is 1 then it is an immutable singletonMap
 				// => copy to mutable map for more entries
 				if (repositoryProperties.size() == 1) {
 					repositoryProperties = new OrderedProperties(repositoryProperties);
@@ -62,8 +62,9 @@ public class SimpleArtifactDescriptor extends ArtifactDescriptor {
 	}
 
 	public void addRepositoryProperties(Map<String, String> additionalProperties) {
-		if (additionalProperties.isEmpty())
+		if (additionalProperties.isEmpty()) {
 			return;
+		}
 		for (Entry<String, String> entry : additionalProperties.entrySet()) {
 			setRepositoryProperty(entry.getKey(), entry.getValue());
 		}
@@ -82,19 +83,20 @@ public class SimpleArtifactDescriptor extends ArtifactDescriptor {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null || !(obj instanceof SimpleArtifactDescriptor))
+		}
+		if (obj == null || !(obj instanceof SimpleArtifactDescriptor other)) {
 			return false;
-
-		SimpleArtifactDescriptor other = (SimpleArtifactDescriptor) obj;
+		}
 
 		//Properties affecting SimpleArtifactRepository#getLocation
 		String locationProperty = getRepositoryProperty(ARTIFACT_REFERENCE);
 		String otherProperty = other.getRepositoryProperty(ARTIFACT_REFERENCE);
 		// want not null and the same, or both null
-		if (locationProperty != null ? !locationProperty.equals(otherProperty) : otherProperty != null)
+		if (locationProperty != null ? !locationProperty.equals(otherProperty) : otherProperty != null) {
 			return false;
+		}
 
 		return super.equals(obj);
 	}
@@ -103,8 +105,9 @@ public class SimpleArtifactDescriptor extends ArtifactDescriptor {
 	public int hashCode() {
 		int superHash = super.hashCode();
 		String ref = getRepositoryProperty(ARTIFACT_REFERENCE);
-		if (ref != null)
+		if (ref != null) {
 			return 31 * superHash + ref.hashCode();
+		}
 		return superHash;
 	}
 }

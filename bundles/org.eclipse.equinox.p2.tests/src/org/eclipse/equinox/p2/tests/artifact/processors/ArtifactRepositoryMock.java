@@ -26,7 +26,7 @@ import org.eclipse.equinox.p2.tests.TestActivator;
  */
 public class ArtifactRepositoryMock implements InvocationHandler {
 
-	private String artifactResource;
+	private final String artifactResource;
 
 	public static IArtifactRepository getMock(String artifactResource) {
 		return (IArtifactRepository) Proxy.newProxyInstance(IArtifactRepository.class.getClassLoader(), new Class[] {IArtifactRepository.class}, new ArtifactRepositoryMock(artifactResource));
@@ -38,8 +38,9 @@ public class ArtifactRepositoryMock implements InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		if (!method.getName().equals("getArtifact"))
+		if (!method.getName().equals("getArtifact")) {
 			throw new RuntimeException("Unexpected usage!");
+		}
 
 		return getArtifact((IArtifactDescriptor) args[0], (OutputStream) args[1], (IProgressMonitor) args[2]);
 	}

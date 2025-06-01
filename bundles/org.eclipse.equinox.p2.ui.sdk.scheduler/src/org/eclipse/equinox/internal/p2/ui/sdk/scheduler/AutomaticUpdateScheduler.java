@@ -102,7 +102,7 @@ public class AutomaticUpdateScheduler implements IStartup {
 	/**
 	 * Invokes the garbage collector to discard unused plugins, if specified by a
 	 * corresponding preference.
-	 * 
+	 *
 	 * @param agent non null
 	 */
 	private void removeUnusedPlugins(IProfileRegistry registry, IProvisioningAgent agent) {
@@ -116,8 +116,9 @@ public class AutomaticUpdateScheduler implements IStartup {
 			return;
 		}
 		IProfile profile = registry.getProfile(IProfileRegistry.SELF);
-		if (profile == null)
+		if (profile == null) {
 			return;
+		}
 		collector.runGC(profile);
 	}
 

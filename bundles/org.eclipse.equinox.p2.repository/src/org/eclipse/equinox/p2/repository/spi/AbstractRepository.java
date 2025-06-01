@@ -35,7 +35,7 @@ public abstract class AbstractRepository<T> extends PlatformObject implements IR
 	private String description;
 	private transient URI location;
 	private String name;
-	private Map<String, String> properties = new OrderedProperties();
+	private final Map<String, String> properties = new OrderedProperties();
 	private String provider;
 	private String type;
 	private String version;
@@ -60,8 +60,9 @@ public abstract class AbstractRepository<T> extends PlatformObject implements IR
 		this.location = location;
 		this.description = description == null ? "" : description; //$NON-NLS-1$
 		this.provider = provider == null ? "" : provider; //$NON-NLS-1$
-		if (properties != null)
+		if (properties != null) {
 			this.properties.putAll(properties);
+		}
 	}
 
 	/**
@@ -70,8 +71,9 @@ public abstract class AbstractRepository<T> extends PlatformObject implements IR
 	 * to write to a repository.
 	 */
 	protected void assertModifiable() {
-		if (!isModifiable())
+		if (!isModifiable()) {
 			throw new UnsupportedOperationException("Repository not modifiable: " + location); //$NON-NLS-1$
+		}
 	}
 
 	/**
@@ -111,7 +113,7 @@ public abstract class AbstractRepository<T> extends PlatformObject implements IR
 	}
 
 	@Override
-	public String getProperty(String key) {
+	public synchronized String getProperty(String key) {
 		return properties.get(key);
 	}
 
@@ -236,7 +238,8 @@ public abstract class AbstractRepository<T> extends PlatformObject implements IR
 	 * @param properties the repository provider
 	 */
 	protected synchronized void setProperties(Map<String, String> properties) {
-		this.properties = properties;
+		this.properties.clear();
+		this.properties.putAll(properties);
 	}
 
 	@Override

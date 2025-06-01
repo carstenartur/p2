@@ -1,4 +1,4 @@
-/******************************************************************************* 
+/*******************************************************************************
 * Copyright (c) 2009, 2017 EclipseSource and others.
  *
  * This
@@ -21,7 +21,7 @@ import org.eclipse.equinox.p2.internal.repository.tools.Activator;
 import org.eclipse.equinox.p2.metadata.IInstallableUnit;
 
 /**
- * An abstract base class for the Analyzer.  Clients are encouraged to extends this 
+ * An abstract base class for the Analyzer.  Clients are encouraged to extends this
  * class when defining IU Analysis extension points.
  * @since 2.0
  */
@@ -35,15 +35,17 @@ public abstract class IUAnalyzer implements IIUAnalyzer {
 	}
 
 	protected void error(IInstallableUnit iu, String error) {
-		if (errors == null)
+		if (errors == null) {
 			errors = new ArrayList<>();
+		}
 		errors.add(new Status(IStatus.ERROR, Activator.ID, error));
 	}
 
 	@Override
 	public IStatus postAnalysis() {
-		if (errors == null || errors.size() == 0)
+		if (errors == null || errors.size() == 0) {
 			return Status.OK_STATUS;
+		}
 		return new MultiStatus(Activator.ID, IStatus.ERROR, errors.toArray(new IStatus[errors.size()]), analyzerName, null);
 	}
 }

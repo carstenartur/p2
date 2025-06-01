@@ -34,7 +34,7 @@ import org.eclipse.osgi.util.NLS;
  * An instance of VersionFormat is immutable and thus thread safe. The parser
  * does not maintain any state.
  * </p>
- * 
+ *
  * @Immutable
  * @noextend This class is not intended to be subclassed by clients.
  */
@@ -92,8 +92,9 @@ public class VersionFormat implements IVersionFormat, Serializable {
 				if (si.fragment == frag) {
 					int nsegs = segments.size();
 					int segMax = si.segmentCount;
-					while (nsegs > segMax)
+					while (nsegs > segMax) {
 						segments.remove(--nsegs);
+					}
 					top = idx - 1;
 					break;
 				}
@@ -102,9 +103,9 @@ public class VersionFormat implements IVersionFormat, Serializable {
 
 		void pushState(int segCount, Fragment fragment) {
 			int pos = get(top).position;
-			if (++top == size())
+			if (++top == size()) {
 				add(new StateInfo(pos, segCount, fragment));
-			else {
+			} else {
 				StateInfo si = get(top);
 				si.fragment = fragment;
 				si.position = pos;
@@ -151,11 +152,11 @@ public class VersionFormat implements IVersionFormat, Serializable {
 	/**
 	 * Compile a version format string into a compiled format. This method is
 	 * shorthand for:
-	 * 
+	 *
 	 * <pre>
 	 * CompiledFormat.compile(format, 0, format.length())
 	 * </pre>
-	 * 
+	 *
 	 * .
 	 *
 	 * @param format The format to compile.
@@ -215,10 +216,11 @@ public class VersionFormat implements IVersionFormat, Serializable {
 			sb.append('<');
 			((VersionVector) e).toString(sb, forRange);
 			sb.append('>');
-		} else if (e instanceof EnumDefinition.EnumSegment)
+		} else if (e instanceof EnumDefinition.EnumSegment) {
 			((EnumDefinition.EnumSegment) e).toString(sb);
-		else
+		} else {
 			sb.append(e);
+		}
 	}
 
 	/**
@@ -227,7 +229,7 @@ public class VersionFormat implements IVersionFormat, Serializable {
 	 * and vice versa). A string that contains both will be written as several
 	 * adjacent quoted strings so that each string is quoted with a quote character
 	 * that it does not contain.
-	 * 
+	 *
 	 * @param sb        The buffer that will receive the string
 	 * @param rangeSafe Set to <code>true</code> if the resulting string will be
 	 *                  used in a range string and hence need to escape the range
@@ -259,11 +261,13 @@ public class VersionFormat implements IVersionFormat, Serializable {
 					quote = otherQuote;
 					sb.setCharAt(quotePos, quote);
 					didFlip = true;
-				} else
+				} else {
 					otherSeen = true;
+				}
 			}
-			if (rangeSafe && (c == '\\' || c == '[' || c == '(' || c == ']' || c == ')' || c == ',' || c <= ' '))
+			if (rangeSafe && (c == '\\' || c == '[' || c == '(' || c == ']' || c == ')' || c == ',' || c <= ' ')) {
 				sb.append('\\');
+			}
 			sb.append(c);
 		}
 		sb.append(quote);
@@ -298,14 +302,16 @@ public class VersionFormat implements IVersionFormat, Serializable {
 	}
 
 	List<Comparable<?>> parse(String version, int start, int maxPos) {
-		if (start == maxPos)
+		if (start == maxPos) {
 			throw new IllegalArgumentException(
 					NLS.bind(Messages.format_0_unable_to_parse_empty_version, this, version.substring(start, maxPos)));
+		}
 		TreeInfo info = new TreeInfo(topFragment, start);
 		ArrayList<Comparable<?>> entries = new ArrayList<>(5);
-		if (!(topFragment.parse(entries, version, maxPos, info) && info.getPosition() == maxPos))
+		if (!(topFragment.parse(entries, version, maxPos, info) && info.getPosition() == maxPos)) {
 			throw new IllegalArgumentException(
 					NLS.bind(Messages.format_0_unable_to_parse_1, this, version.substring(start, maxPos)));
+		}
 		entries.add(VersionParser.removeRedundantTrail(entries, info.getPadValue()));
 		return entries;
 	}
@@ -338,17 +344,18 @@ public class VersionFormat implements IVersionFormat, Serializable {
 
 	@Override
 	public synchronized void toString(StringBuilder sb) {
-		if (fmtString != null)
+		if (fmtString != null) {
 			sb.append(fmtString);
-		else {
+		} else {
 			int start = sb.length();
 			sb.append("format"); //$NON-NLS-1$
 			if (topFragment.getPadValue() != null) {
 				sb.append('(');
 				topFragment.toString(sb);
 				sb.append(')');
-			} else
+			} else {
 				topFragment.toString(sb);
+			}
 			fmtString = sb.substring(start);
 		}
 	}

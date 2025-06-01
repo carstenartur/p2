@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -64,8 +64,9 @@ public class GeneratorBundleInfo extends BundleInfo {
 	public String toString() {
 		StringBuilder buffer = new StringBuilder();
 		String superSt = super.toString();
-		if (superSt.length() > 0)
+		if (superSt.length() > 0) {
 			buffer.append(superSt.substring(0, superSt.length() - 1));
+		}
 		buffer.append(", this.specialConfigCommands="); //$NON-NLS-1$
 		buffer.append(this.specialConfigCommands);
 		buffer.append(')');

@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2011, 2018 WindRiver Corporation and others.
  *
- * This program and the accompanying materials 
+ * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     WindRiver Corporation - initial API and implementation
  *     IBM Corporation - Ongoing development
@@ -98,8 +98,9 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 				public void aboutToRun(IJobChangeEvent event) {
 					Display.getDefault().syncExec(() -> {
 						Object[] checked = viewer.getCheckedElements();
-						if (checkState == null)
+						if (checkState == null) {
 							checkState = new ArrayList<>(checked.length);
+						}
 						for (Object checked1 : checked) {
 							if (!viewer.getGrayed(checked1)) {
 								if (!checkState.contains(checked1)) {
@@ -114,13 +115,15 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
 						Display.getDefault().asyncExec(() -> {
-							if (viewer == null || viewer.getTree().isDisposed())
+							if (viewer == null || viewer.getTree().isDisposed()) {
 								return;
-							if (checkState == null)
+							}
+							if (checkState == null) {
 								return;
+							}
 
 							viewer.setCheckedElements(new Object[0]);
-							viewer.setGrayedElements(new Object[0]);
+							viewer.setGrayedElements();
 							// Now we are only going to set the check state of the leaf nodes
 							// and rely on our container checked code to update the parents properly.
 							Iterator<Object> iter = checkState.iterator();
@@ -148,11 +151,9 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 			IInstallableUnit iu1 = ProvUI.getAdapter(e1, IInstallableUnit.class);
 			IInstallableUnit iu2 = ProvUI.getAdapter(e2, IInstallableUnit.class);
 			if (iu1 != null && iu2 != null) {
-				if (viewer1 instanceof TreeViewer) {
-					TreeViewer treeViewer = (TreeViewer) viewer1;
+				if (viewer1 instanceof TreeViewer treeViewer) {
 					IBaseLabelProvider baseLabel = treeViewer.getLabelProvider();
-					if (baseLabel instanceof ITableLabelProvider) {
-						ITableLabelProvider tableProvider = (ITableLabelProvider) baseLabel;
+					if (baseLabel instanceof ITableLabelProvider tableProvider) {
 						String e1p = tableProvider.getColumnText(e1, getSortColumn());
 						String e2p = tableProvider.getColumnText(e2, getSortColumn());
 						// don't suppress this warning as it will cause build-time warning
@@ -218,8 +219,9 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 		tracker.open();
 		agent = tracker.getService();
 		tracker.close();
-		if (agent != null)
+		if (agent != null) {
 			profileRegistry = agent.getService(IProfileRegistry.class);
+		}
 	}
 
 	public AbstractPage(String pageName) {
@@ -233,8 +235,9 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 	protected IProfile getSelfProfile() {
 		if (profileRegistry != null) {
 			String selfID = System.getProperty("eclipse.p2.profile"); //$NON-NLS-1$
-			if (selfID == null)
+			if (selfID == null) {
 				selfID = IProfileRegistry.SELF;
+			}
 			return profileRegistry.getProfile(selfID);
 		}
 		return null;
@@ -247,8 +250,9 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 			column.getColumn().setText(titles[i]);
 			column.getColumn().setResizable(true);
 			column.getColumn().setMoveable(true);
-			if (Messages.Column_Name.equals(titles[i]))
+			if (Messages.Column_Name.equals(titles[i])) {
 				updateTableSorting(i);
+			}
 			final int columnIndex = i;
 			column.getColumn().addSelectionListener(
 					SelectionListener.widgetSelectedAdapter(event -> updateTableSorting(columnIndex)));
@@ -451,10 +455,11 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 			}
 		});
 		ICheckStateProvider provider = getViewerDefaultState();
-		if (provider != null)
+		if (provider != null) {
 			viewer.setCheckStateProvider(provider);
-		else
+		} else {
 			viewer.addSelectionChangedListener(event -> updatePageCompletion());
+		}
 		viewer.getControl().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 		viewer.getControl().setSize(300, 200);
 		viewer.setInput(getInput());
@@ -503,15 +508,17 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 		ProvElementContentProvider provider = new ProvElementContentProvider() {
 			@Override
 			public boolean hasChildren(Object element) {
-				if (element instanceof InstalledIUElement)
+				if (element instanceof InstalledIUElement) {
 					return false;
+				}
 				return super.hasChildren(element);
 			}
 
 			@Override
 			public Object[] getChildren(Object parent) {
-				if (parent instanceof InstalledIUElement)
+				if (parent instanceof InstalledIUElement) {
 					return new Object[0];
+				}
 				return super.getChildren(parent);
 			}
 		};
@@ -543,14 +550,14 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 
 	/**
 	 * returns the destination label
-	 * 
+	 *
 	 * @return non null string
 	 */
 	protected abstract String getDestinationLabel();
 
 	/**
 	 * Answer the contents of self's destination specification widget
-	 * 
+	 *
 	 * @return java.lang.String
 	 */
 	protected String getDestinationValue() {
@@ -559,7 +566,7 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 
 	/**
 	 * return the title of dialog
-	 * 
+	 *
 	 * @return non null string
 	 */
 	protected abstract String getDialogTitle();
@@ -587,8 +594,9 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 		String selectedFileName = dialog.open();
 
 		if (selectedFileName != null) {
-			if (!selectedFileName.endsWith(Messages.EXTENSION_p2F.substring(1)))
+			if (!selectedFileName.endsWith(Messages.EXTENSION_p2F.substring(1))) {
 				selectedFileName += Messages.EXTENSION_p2F.substring(1);
+			}
 			setDestinationValue(selectedFileName);
 			handleDestinationChanged(selectedFileName);
 		}
@@ -627,15 +635,16 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 		boolean pageComplete = determinePageCompletion();
 		setPageComplete(pageComplete);
 		if (pageComplete) {
-			if (this instanceof AbstractImportPage)
+			if (this instanceof AbstractImportPage) {
 				saveWidgetValues();
+			}
 			setMessage(null);
 		}
 	}
 
 	/**
 	 * Validate the destination group.
-	 * 
+	 *
 	 * @return <code>true</code> if the group is valid. If not set the error message
 	 *         and return <code>false</code>.
 	 */
@@ -649,16 +658,18 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 	}
 
 	protected boolean validateOptionsGroup() {
-		if (viewer == null || viewer.getCheckedElements().length > 0)
+		if (viewer == null || viewer.getCheckedElements().length > 0) {
 			return true;
+		}
 
 		currentMessage = getNoOptionsMessage();
 		return false;
 	}
 
 	protected boolean validDestination() {
-		if (this.destinationNameField == null)
+		if (this.destinationNameField == null) {
 			return true;
+		}
 		File file = new File(getDestinationValue());
 		return !(file.getPath().length() <= 0 || file.isDirectory());
 	}
@@ -719,7 +730,7 @@ public abstract class AbstractPage extends WizardPage implements Listener {
 
 	/**
 	 * Add the passed value to self's destination widget's history
-	 * 
+	 *
 	 * @param value java.lang.String
 	 */
 	protected void addDestinationItem(String value) {

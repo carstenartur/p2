@@ -122,8 +122,9 @@ public class UpdateWizard extends WizardWithLicenses {
 
 	@Override
 	protected void initializeResolutionModelElements(Object[] selectedElements) {
-		if (selectedElements == null)
+		if (selectedElements == null) {
 			return;
+		}
 		root = new IUElementListRoot(ui);
 		if (operation instanceof RemediationOperation) {
 			AvailableIUElement[] elements = ElementUtils
@@ -134,14 +135,12 @@ public class UpdateWizard extends WizardWithLicenses {
 			ArrayList<AvailableUpdateElement> list = new ArrayList<>(selectedElements.length);
 			ArrayList<AvailableUpdateElement> selected = new ArrayList<>(selectedElements.length);
 			for (Object selectedElement : selectedElements) {
-				if (selectedElement instanceof AvailableUpdateElement) {
-					AvailableUpdateElement element = (AvailableUpdateElement) selectedElement;
+				if (selectedElement instanceof AvailableUpdateElement element) {
 					AvailableUpdateElement newElement = new AvailableUpdateElement(root, element.getIU(),
 							element.getIUToBeUpdated(), getProfileId(), shouldShowProvisioningPlanChildren());
 					list.add(newElement);
 					selected.add(newElement);
-				} else if (selectedElement instanceof Update) {
-					Update update = (Update) selectedElement;
+				} else if (selectedElement instanceof Update update) {
 					AvailableUpdateElement newElement = new AvailableUpdateElement(root, update.replacement,
 							update.toUpdate, getProfileId(), shouldShowProvisioningPlanChildren());
 					list.add(newElement);
@@ -167,8 +166,9 @@ public class UpdateWizard extends WizardWithLicenses {
 		if (skipSelectionsPage) {
 			// TODO see https://bugs.eclipse.org/bugs/show_bug.cgi?id=276963
 			IWizardPage page = getNextPage(mainPage);
-			if (page != null)
+			if (page != null) {
 				return page;
+			}
 		}
 		return mainPage;
 	}

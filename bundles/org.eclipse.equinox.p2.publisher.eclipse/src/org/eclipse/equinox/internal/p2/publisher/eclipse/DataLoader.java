@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   Red Hat Inc. - Bug 460967
  ******************************************************************************/
@@ -45,9 +45,9 @@ public class DataLoader {
 	private final File configurationLocation;
 
 	/**
-	 * 
+	 *
 	 * @param configurationLocation configuration file (i.e. config.ini).
-	 * @param executableLocation executable file (i.e. eclipse.exe). 
+	 * @param executableLocation executable file (i.e. eclipse.exe).
 	 */
 	public DataLoader(File configurationLocation, File executableLocation) {
 		this.configurationLocation = configurationLocation;
@@ -60,8 +60,9 @@ public class DataLoader {
 		LauncherData launcherData = manipulator.getLauncherData();
 		launcherData.setFwPersistentDataLocation(config, true);
 		launcherData.setLauncher(executable);
-		if (executable == null)
+		if (executable == null) {
 			launcherData.setHome(config.getParentFile());
+		}
 		try {
 			manipulator.load();
 		} catch (IllegalStateException e2) {
@@ -77,13 +78,15 @@ public class DataLoader {
 	}
 
 	public ConfigData getConfigData() {
-		if (manipulator == null)
+		if (manipulator == null) {
 			return null;
+		}
 
 		EquinoxFwConfigFileParser parser = new EquinoxFwConfigFileParser(Activator.getContext());
 		try {
-			if (configurationLocation != null && configurationLocation.exists())
+			if (configurationLocation != null && configurationLocation.exists()) {
 				parser.readFwConfig(manipulator, configurationLocation);
+			}
 		} catch (IOException e) {
 			LogHelper.log(new Status(IStatus.ERROR, Activator.ID, "Error loading config.", e)); //$NON-NLS-1$ //TODO: Fix error string
 		} catch (URISyntaxException e) {
@@ -123,11 +126,13 @@ public class DataLoader {
 	 */
 	private void getFrameworkManipulator() {
 		FrameworkAdmin admin = getFrameworkAdmin();
-		if (admin == null)
+		if (admin == null) {
 			throw new RuntimeException("Framework admin service not found"); //$NON-NLS-1$
+		}
 		manipulator = admin.getManipulator();
-		if (manipulator == null)
+		if (manipulator == null) {
 			throw new RuntimeException("Framework manipulator not found"); //$NON-NLS-1$
+		}
 	}
 
 	private FrameworkAdmin getFrameworkAdmin() {

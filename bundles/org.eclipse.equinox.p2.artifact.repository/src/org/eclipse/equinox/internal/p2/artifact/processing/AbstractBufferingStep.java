@@ -44,8 +44,9 @@ public abstract class AbstractBufferingStep extends ProcessingStep {
 	}
 
 	protected OutputStream getOutputStream() throws IOException {
-		if (incomingStream != null)
+		if (incomingStream != null) {
 			return incomingStream;
+		}
 		// if buffering, store input stream in temporary file
 		incomingStream = createIncomingStream();
 		return incomingStream;
@@ -56,16 +57,17 @@ public abstract class AbstractBufferingStep extends ProcessingStep {
 	@Override
 	public void close() throws IOException {
 		// When we go to close we must have seen all the content we are going to see.
-		// If no one wrote to the temp stream then we return an error. If there is 
+		// If no one wrote to the temp stream then we return an error. If there is
 		// content then close the temporary stream and perform the processing.
-		// Performing the step should result in the new content being written to 
+		// Performing the step should result in the new content being written to
 		// the destination.  Make sure we delete the temporary file if any.
 		try {
 			if (incomingStream != null) {
 				incomingStream.close();
 				// if canceled then skip processing
-				if (getStatus() != null && getStatus().getSeverity() != IStatus.CANCEL)
+				if (getStatus() != null && getStatus().getSeverity() != IStatus.CANCEL) {
 					performProcessing();
+				}
 			} else {
 				setStatus(new Status(IStatus.ERROR, Activator.ID, Messages.Empty_stream));
 			}
@@ -76,7 +78,7 @@ public abstract class AbstractBufferingStep extends ProcessingStep {
 		}
 
 		super.close();
-		// TODO need to get real status here.  sometimes the optimizers do not give 
+		// TODO need to get real status here.  sometimes the optimizers do not give
 		// any reasonable return status
 		// COMMENT status is initially set to OK!
 	}
@@ -89,20 +91,23 @@ public abstract class AbstractBufferingStep extends ProcessingStep {
 	private void cleanupWorkDir() {
 		if (workDir != null) {
 			FileUtils.deleteAll(workDir);
-			// TODO try twice since there seems to be some cases where the dir is not 
+			// TODO try twice since there seems to be some cases where the dir is not
 			// deleted the first time.  At least on Windows...
 			FileUtils.deleteAll(workDir);
 		}
 	}
 
 	protected File getWorkDir() throws IOException {
-		if (workDir != null)
+		if (workDir != null) {
 			return workDir;
+		}
 		workDir = File.createTempFile(WORK_DIR_PREFIX, WORK_DIR_SUFFIX);
-		if (!workDir.delete())
+		if (!workDir.delete()) {
 			throw new IOException(NLS.bind(Messages.Can_not_delete_temp_dir, workDir));
-		if (!workDir.mkdirs())
+		}
+		if (!workDir.mkdirs()) {
 			throw new IOException(NLS.bind(Messages.Can_not_create_temp_dir, workDir));
+		}
 		return workDir;
 	}
 

@@ -28,7 +28,7 @@ public class TestRepositoryListener implements SynchronousProvisioningListener {
 	public boolean lastEnablement;
 	public int lastKind;
 	public int lastRepoType;
-	private URI repoLocation;
+	private final URI repoLocation;
 	private boolean wasCalled;
 
 	public TestRepositoryListener(URI location) {
@@ -37,11 +37,12 @@ public class TestRepositoryListener implements SynchronousProvisioningListener {
 
 	@Override
 	public void notify(EventObject o) {
-		if (!(o instanceof RepositoryEvent))
+		if (!(o instanceof RepositoryEvent event)) {
 			return;
-		RepositoryEvent event = (RepositoryEvent) o;
-		if (repoLocation != null && !event.getRepositoryLocation().equals(repoLocation))
+		}
+		if (repoLocation != null && !event.getRepositoryLocation().equals(repoLocation)) {
 			return;
+		}
 		setCalled(true);
 		lastKind = event.getKind();
 		lastRepoType = event.getRepositoryType();

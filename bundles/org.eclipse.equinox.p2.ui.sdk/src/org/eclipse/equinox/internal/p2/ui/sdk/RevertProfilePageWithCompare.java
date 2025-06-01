@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -36,9 +36,9 @@ import org.eclipse.swt.widgets.Composite;
 
 /**
  * Same as {@link RevertProfilePage} but adds a compare button to compare profiles.
- * 
+ *
  * @see RevertProfilePage
- * 
+ *
  * @noextend This class is not intended to be subclassed by clients.
  * @noinstantiate This class is not intended to be instantiated by clients.
  * @since 2.0
@@ -50,8 +50,9 @@ public class RevertProfilePageWithCompare extends RevertProfilePage {
 
 	@Override
 	public void createPageButtons(Composite parent) {
-		if (ProvisioningUI.getDefaultUI().getProfileId() == null)
+		if (ProvisioningUI.getDefaultUI().getProfileId() == null) {
 			return;
+		}
 		compareButton = createButton(parent, COMPARE_ID, ProvUIMessages.RevertProfilePage_CompareLabel);
 		compareButton.setToolTipText(ProvUIMessages.RevertProfilePage_CompareTooltip);
 		compareButton.setEnabled(computeCompareEnablement(getSelection()));
@@ -89,17 +90,20 @@ public class RevertProfilePageWithCompare extends RevertProfilePage {
 		super.handleSelectionChanged(selection);
 		if (!selection.isEmpty()) {
 			if (selection.size() == 1) {
-				if (compareButton != null)
+				if (compareButton != null) {
 					compareButton.setEnabled(false);
+				}
 			} else {
 				// multiple selections, we can compare
-				if (compareButton != null)
+				if (compareButton != null) {
 					compareButton.setEnabled(computeCompareEnablement(selection));
+				}
 			}
 		} else {
 			// Nothing is selected
-			if (compareButton != null)
+			if (compareButton != null) {
 				compareButton.setEnabled(false);
+			}
 		}
 	}
 
@@ -112,8 +116,9 @@ public class RevertProfilePageWithCompare extends RevertProfilePage {
 			if (selected != null && selected instanceof RollbackProfileElement) {
 				result[i++] = (RollbackProfileElement) selected;
 			}
-			if (i == 2)
+			if (i == 2) {
 				break;
+			}
 		}
 		return result;
 	}
@@ -125,8 +130,8 @@ public class RevertProfilePageWithCompare extends RevertProfilePage {
 
 	private class ProfileCompareEditorInput extends CompareEditorInput {
 		private Object root;
-		private ProvElementNode l;
-		private ProvElementNode r;
+		private final ProvElementNode l;
+		private final ProvElementNode r;
 
 		public ProfileCompareEditorInput(RollbackProfileElement[] rpe) {
 			super(new CompareConfiguration());
@@ -160,8 +165,8 @@ public class RevertProfilePageWithCompare extends RevertProfilePage {
 	}
 
 	private class ProvElementNode implements IStructureComparator, ITypedElement, IStreamContentAccessor {
-		private ProvElement pe;
-		private IInstallableUnit iu;
+		private final ProvElement pe;
+		private final IInstallableUnit iu;
 		final static String BLANK = ""; //$NON-NLS-1$
 		private String id = BLANK;
 
@@ -197,8 +202,9 @@ public class RevertProfilePageWithCompare extends RevertProfilePage {
 		 */
 		@Override
 		public boolean equals(Object other) {
-			if (other instanceof ProvElementNode)
+			if (other instanceof ProvElementNode) {
 				return id.equals(((ProvElementNode) other).id);
+			}
 			return super.equals(other);
 		}
 

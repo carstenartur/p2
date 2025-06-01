@@ -24,7 +24,7 @@ import org.eclipse.equinox.p2.metadata.index.IIndexProvider;
 
 public class Pipe extends NAry {
 
-	private class NoIndexProvider implements IIndexProvider<Object> {
+	private static class NoIndexProvider implements IIndexProvider<Object> {
 		private final IIndexProvider<?> indexProvider;
 		private Everything<Object> everything;
 
@@ -44,11 +44,11 @@ public class Pipe extends NAry {
 
 		@Override
 		public Object getManagedProperty(Object client, String memberName, Object key) {
-			if (indexProvider != null)
+			if (indexProvider != null) {
 				return indexProvider.getManagedProperty(client, memberName, key);
-			if (client instanceof IInstallableUnit && memberName.equals(InstallableUnit.MEMBER_TRANSLATED_PROPERTIES)) {
-				IInstallableUnit iu = (IInstallableUnit) client;
-				return key instanceof KeyWithLocale ? iu.getProperty(((KeyWithLocale) key).getKey()) : iu.getProperty(key.toString());
+			}
+			if (client instanceof IInstallableUnit iu && memberName.equals(InstallableUnit.MEMBER_TRANSLATED_PROPERTIES)) {
+				return key instanceof KeyWithLocale k ? iu.getProperty(k.getKey()) : iu.getProperty(key.toString());
 			}
 			return null;
 		}
@@ -86,46 +86,51 @@ public class Pipe extends NAry {
 					booleans.clear();
 				}
 				pipeables.add(operand);
-			} else
+			} else {
 				booleans.add(operand);
+			}
 		}
 
 		if (!booleans.isEmpty()) {
-			if (pipeables.isEmpty())
+			if (pipeables.isEmpty()) {
 				return normalizeBoolean(factory, booleans);
+			}
 			pipeables.add(makePipeableOfBooleans(factory, booleans));
 		}
 		int top = pipeables.size();
-		if (top > 1)
+		if (top > 1) {
 			return new Pipe(pipeables.toArray(new Expression[top]));
+		}
 		return (top == 1) ? pipeables.get(0) : Literal.TRUE_CONSTANT;
 	}
 
 	private static Expression normalizeBoolean(IExpressionFactory factory, ArrayList<Expression> booleans) {
 		int top = booleans.size();
 		Expression boolExpr;
-		if (top > 1)
+		if (top > 1) {
 			boolExpr = (Expression) factory.and(booleans.toArray(new IExpression[top]));
-		else if (top == 1)
+		} else if (top == 1) {
 			boolExpr = booleans.get(0);
-		else
+		} else {
 			boolExpr = Literal.TRUE_CONSTANT;
+		}
 		return boolExpr;
 	}
 
 	private static Expression makePipeableOfBooleans(IExpressionFactory factory, ArrayList<Expression> booleans) {
 		Expression boolExpr = normalizeBoolean(factory, booleans);
 		Object[] params = null;
-		if (boolExpr instanceof MatchExpression<?>) {
-			MatchExpression<?> matchExpr = (MatchExpression<?>) boolExpr;
+		if (boolExpr instanceof MatchExpression<?> matchExpr) {
 			boolExpr = (Expression) matchExpr.getPredicate();
 			params = matchExpr.getParameters();
-			if (params.length == 0)
+			if (params.length == 0) {
 				params = null;
+			}
 		}
 		Expression expr = (Expression) factory.select(ExpressionFactory.EVERYTHING, factory.lambda(ExpressionFactory.THIS, boolExpr));
-		if (params != null)
+		if (params != null) {
 			expr = new ContextExpression<>(expr, params);
+		}
 		return expr;
 	}
 
@@ -151,8 +156,9 @@ public class Pipe extends NAry {
 	@Override
 	public Iterator<?> evaluateAsIterator(IEvaluationContext context) {
 		Iterator<?> iterator = operands[0].evaluateAsIterator(context);
-		if (operands.length == 0 || !iterator.hasNext())
+		if (operands.length == 0 || !iterator.hasNext()) {
 			return iterator;
+		}
 
 		Class<Object> elementClass = Object.class;
 		Variable everything = ExpressionFactory.EVERYTHING;
@@ -164,8 +170,9 @@ public class Pipe extends NAry {
 			Expression expr = operands[idx];
 			noIndexProvider.setEverything(new Everything<>(elementClass, iterator, expr));
 			iterator = expr.evaluateAsIterator(nextContext);
-			if (!iterator.hasNext())
+			if (!iterator.hasNext()) {
 				break;
+			}
 		}
 		return iterator;
 	}

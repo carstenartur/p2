@@ -1,13 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2009, 2017 IBM Corporation and others.
  *
- * This program and the accompanying materials 
+ * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -30,7 +30,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
  * SDKPolicy defines the Eclipse SDK UI policies for the
  * p2 UI.  The policy is declared as an OSGi service in
  * the policy_component.xml file.
- * 
+ *
  * @since 3.6
  */
 public class SDKPolicy extends Policy {
@@ -53,12 +53,14 @@ public class SDKPolicy extends Policy {
 	public boolean continueWorkingOperation(ProfileChangeOperation operation, Shell shell) {
 		// don't continue if superclass has already identified problem scenarios
 		boolean ok = super.continueWorkingWithOperation(operation, shell);
-		if (!ok)
+		if (!ok) {
 			return false;
+		}
 
 		IProvisioningPlan plan = operation.getProvisioningPlan();
-		if (plan == null)
+		if (plan == null) {
 			return false;
+		}
 
 		// Check the preference to see whether to continue.
 		IPreferenceStore prefs = ProvSDKUIActivator.getDefault().getPreferenceStore();
@@ -73,8 +75,9 @@ public class SDKPolicy extends Policy {
 		MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoCancelQuestion(shell, ProvSDKMessages.ProvSDKUIActivator_Question, ProvSDKMessages.ProvSDKUIActivator_OpenWizardAnyway, null, false, prefs, PreferenceConstants.PREF_OPEN_WIZARD_ON_ERROR_PLAN);
 
 		// Any answer but yes will stop the performance of the plan, but NO is interpreted to mean, show me the error.
-		if (dialog.getReturnCode() == IDialogConstants.NO_ID)
+		if (dialog.getReturnCode() == IDialogConstants.NO_ID) {
 			StatusManager.getManager().handle(plan.getStatus(), StatusManager.SHOW | StatusManager.LOG);
+		}
 		return dialog.getReturnCode() == IDialogConstants.YES_ID;
 	}
 }

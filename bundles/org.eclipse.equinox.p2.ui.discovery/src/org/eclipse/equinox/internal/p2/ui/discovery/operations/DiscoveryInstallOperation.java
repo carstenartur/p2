@@ -7,10 +7,10 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     Tasktop Technologies - initial API and implementation
- *     David Dubrow - fix for bug 313412 
+ *     David Dubrow - fix for bug 313412
  *******************************************************************************/
 package org.eclipse.equinox.internal.p2.ui.discovery.operations;
 
@@ -43,7 +43,7 @@ import org.eclipse.swt.widgets.Display;
  * p2; this class just sets up the p2 repository meta-data and selects the
  * appropriate features to install. After running the job the install action
  * must be run to perform the installation.
- * 
+ *
  * @author David Green
  * @author Steffen Pingel
  */
@@ -198,7 +198,7 @@ public class DiscoveryInstallOperation implements IRunnableWithProgress {
 					detailedMessage += Messages.InstallConnectorsJob_commaSeparator;
 				}
 				detailedMessage += NLS.bind(Messages.PrepareInstallProfileJob_notFoundDescriptorDetail,
-						new Object[] { descriptor.getName(), unavailableIds.toString(), descriptor.getSiteUrl() });
+						descriptor.getName(), unavailableIds.toString(), descriptor.getSiteUrl());
 			}
 		}
 
@@ -258,8 +258,9 @@ public class DiscoveryInstallOperation implements IRunnableWithProgress {
 			final Set<String> installableUnitIdsThisRepository = getDescriptorIds(repository);
 			for (IInstallableUnit iu : repository.query(createInstalledIUsQuery(), monitor.newChild(1))) {
 				String id = iu.getId();
-				if (installableUnitIdsThisRepository.contains(id))
+				if (installableUnitIdsThisRepository.contains(id)) {
 					installableUnits.add(iu);
+				}
 			}
 		}
 		return installableUnits;

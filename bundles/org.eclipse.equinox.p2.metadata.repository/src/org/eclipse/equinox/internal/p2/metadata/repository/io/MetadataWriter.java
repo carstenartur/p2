@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2007, 2017 IBM Corporation and others.
+ *  Copyright (c) 2007, 2025 IBM Corporation and others.
  *
  *  This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License 2.0
@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Genuitec, LLC - added license support
@@ -15,9 +15,9 @@
 package org.eclipse.equinox.internal.p2.metadata.repository.io;
 
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.util.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.equinox.internal.p2.core.helpers.LogHelper;
 import org.eclipse.equinox.internal.p2.metadata.RequiredCapability;
 import org.eclipse.equinox.internal.p2.metadata.RequiredPropertiesMatch;
@@ -39,14 +39,16 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 	 * @param size The number of units to write
 	 */
 	public void writeInstallableUnits(Iterator<IInstallableUnit> units, int size) {
-		if (!units.hasNext())
+		if (!units.hasNext()) {
 			return;
+		}
 		start(INSTALLABLE_UNITS_ELEMENT);
 
 		// The size is a bummer. Is it really needed? It forces the use of a collect
 		attribute(COLLECTION_SIZE_ATTRIBUTE, size);
-		while (units.hasNext())
+		while (units.hasNext()) {
 			writeInstallableUnit(units.next());
+		}
 		end(INSTALLABLE_UNITS_ELEMENT);
 	}
 
@@ -59,16 +61,15 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 		//		attribute(FRAGMENT_ATTRIBUTE, iu.isFragment(), false);
 
 		boolean simpleRequirements = hasOnlySimpleRequirements(iu);
-		if (!simpleRequirements)
+		if (!simpleRequirements) {
 			attribute(GENERATION_ATTRIBUTE, 2);
+		}
 
-		if (iu instanceof IInstallableUnitFragment) {
-			IInstallableUnitFragment fragment = (IInstallableUnitFragment) iu;
+		if (iu instanceof IInstallableUnitFragment fragment) {
 			writeHostRequirements(fragment.getHost());
 		}
 
-		if (iu instanceof IInstallableUnitPatch) {
-			IInstallableUnitPatch patch = (IInstallableUnitPatch) iu;
+		if (iu instanceof IInstallableUnitPatch patch) {
 			writeApplicabilityScope(patch.getApplicabilityScope());
 			writeRequirementsChange(patch.getRequirementsChange());
 			writeLifeCycle(patch.getLifeCycle());
@@ -97,44 +98,55 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 	}
 
 	private boolean hasOnlySimpleRequirements(IInstallableUnit iu) {
-		for (IRequirement r : iu.getRequirements())
-			if (r.getMax() == 0 || !RequiredCapability.isVersionRangeRequirement(r.getMatches()))
+		for (IRequirement r : iu.getRequirements()) {
+			if (r.getMax() == 0 || !RequiredCapability.isVersionRangeRequirement(r.getMatches())) {
 				return false;
-
-		if (iu.getUpdateDescriptor() != null) {
-			for (IMatchExpression<IInstallableUnit> m : iu.getUpdateDescriptor().getIUsBeingUpdated()) {
-				if (!RequiredCapability.isVersionRangeRequirement(m))
-					return false;
 			}
 		}
 
-		for (IRequirement r : iu.getMetaRequirements())
-			if (r.getMax() == 0 || !RequiredCapability.isVersionRangeRequirement(r.getMatches()))
-				return false;
-
-		if (iu instanceof IInstallableUnitFragment) {
-			for (IRequirement r : ((IInstallableUnitFragment) iu).getHost())
-				if (!RequiredCapability.isVersionRangeRequirement(r.getMatches()))
+		if (iu.getUpdateDescriptor() != null) {
+			for (IMatchExpression<IInstallableUnit> m : iu.getUpdateDescriptor().getIUsBeingUpdated()) {
+				if (!RequiredCapability.isVersionRangeRequirement(m)) {
 					return false;
+				}
+			}
 		}
 
-		if (iu instanceof IInstallableUnitPatch) {
-			IInstallableUnitPatch iuPatch = (IInstallableUnitPatch) iu;
-			for (IRequirement[] rArr : iuPatch.getApplicabilityScope())
-				for (IRequirement r : rArr)
-					if (!RequiredCapability.isVersionRangeRequirement(r.getMatches()))
+		for (IRequirement r : iu.getMetaRequirements()) {
+			if (r.getMax() == 0 || !RequiredCapability.isVersionRangeRequirement(r.getMatches())) {
+				return false;
+			}
+		}
+
+		if (iu instanceof IInstallableUnitFragment) {
+			for (IRequirement r : ((IInstallableUnitFragment) iu).getHost()) {
+				if (!RequiredCapability.isVersionRangeRequirement(r.getMatches())) {
+					return false;
+				}
+			}
+		}
+
+		if (iu instanceof IInstallableUnitPatch iuPatch) {
+			for (IRequirement[] rArr : iuPatch.getApplicabilityScope()) {
+				for (IRequirement r : rArr) {
+					if (!RequiredCapability.isVersionRangeRequirement(r.getMatches())) {
 						return false;
+					}
+				}
+			}
 
 			IRequirement lifeCycle = iuPatch.getLifeCycle();
-			if (lifeCycle != null && !RequiredCapability.isVersionRangeRequirement(lifeCycle.getMatches()))
+			if (lifeCycle != null && !RequiredCapability.isVersionRangeRequirement(lifeCycle.getMatches())) {
 				return false;
+			}
 		}
 		return true;
 	}
 
 	protected void writeLifeCycle(IRequirement capability) {
-		if (capability == null)
+		if (capability == null) {
 			return;
+		}
 		start(LIFECYCLE);
 		writeRequirement(capability);
 		end(LIFECYCLE);
@@ -203,11 +215,13 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 	}
 
 	protected void writeUpdateDescriptor(IInstallableUnit iu, IUpdateDescriptor descriptor) {
-		if (descriptor == null)
+		if (descriptor == null) {
 			return;
+		}
 
-		if (descriptor.getIUsBeingUpdated().size() > 1)
+		if (descriptor.getIUsBeingUpdated().size() > 1) {
 			throw new IllegalStateException();
+		}
 		IMatchExpression<IInstallableUnit> singleUD = descriptor.getIUsBeingUpdated().iterator().next();
 		start(UPDATE_DESCRIPTOR_ELEMENT);
 		if (RequiredCapability.isVersionRangeRequirement(singleUD)) {
@@ -316,8 +330,9 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 		if (params.length > 0) {
 			IExpressionFactory factory = ExpressionUtil.getFactory();
 			IExpression[] constantArray = new IExpression[params.length];
-			for (int idx = 0; idx < params.length; ++idx)
+			for (int idx = 0; idx < params.length; ++idx) {
 				constantArray[idx] = factory.constant(params[idx]);
+			}
 			attribute(MATCH_PARAMETERS_ATTRIBUTE, factory.array(constantArray));
 		}
 	}
@@ -357,8 +372,9 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 						start(TOUCHPOINT_DATA_INSTRUCTION_ELEMENT);
 						attribute(TOUCHPOINT_DATA_INSTRUCTION_KEY_ATTRIBUTE, entry.getKey());
 						ITouchpointInstruction instruction = entry.getValue();
-						if (instruction.getImportAttribute() != null)
+						if (instruction.getImportAttribute() != null) {
 							attribute(TOUCHPOINT_DATA_INSTRUCTION_IMPORT_ATTRIBUTE, instruction.getImportAttribute());
+						}
 						cdata(instruction.getBody(), true);
 						end(TOUCHPOINT_DATA_INSTRUCTION_ELEMENT);
 					}
@@ -380,25 +396,21 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 
 	private void writeLicenses(Collection<ILicense> licenses) {
 		if (licenses != null && licenses.size() > 0) {
-			// In the future there may be more than one license, so we write this 
+			// In the future there may be more than one license, so we write this
 			// as a collection of one.
 			// See bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=216911
 			start(LICENSES_ELEMENT);
 			attribute(COLLECTION_SIZE_ATTRIBUTE, licenses.size());
 			for (ILicense license : licenses) {
-				if (license == null)
+				if (license == null) {
 					continue;
+				}
 				start(LICENSE_ELEMENT);
 				if (license.getLocation() != null) {
 					attribute(URI_ATTRIBUTE, license.getLocation().toString());
-
-					try {
-						// we write the URL attribute for backwards compatibility with 3.4.x
-						// this attribute should be removed if we make a breaking format change.
-						attribute(URL_ATTRIBUTE, URIUtil.toURL(license.getLocation()).toExternalForm());
-					} catch (MalformedURLException e) {
-						attribute(URL_ATTRIBUTE, license.getLocation().toString());
-					}
+					// we write the URL attribute for backwards compatibility with 3.4.x
+					// this attribute should be removed if we make a breaking format change.
+					attribute(URL_ATTRIBUTE, license.getLocation().toString());
 				}
 				cdata(license.getBody(), true);
 				end(LICENSE_ELEMENT);
@@ -413,13 +425,9 @@ public class MetadataWriter extends XMLWriter implements XMLConstants {
 			try {
 				if (copyright.getLocation() != null) {
 					attribute(URI_ATTRIBUTE, copyright.getLocation().toString());
-					try {
-						// we write the URL attribute for backwards compatibility with 3.4.x
-						// this attribute should be removed if we make a breaking format change.
-						attribute(URL_ATTRIBUTE, URIUtil.toURL(copyright.getLocation()).toExternalForm());
-					} catch (MalformedURLException e) {
-						attribute(URL_ATTRIBUTE, copyright.getLocation().toString());
-					}
+					// we write the URL attribute for backwards compatibility with 3.4.x
+					// this attribute should be removed if we make a breaking format change.
+					attribute(URL_ATTRIBUTE, copyright.getLocation().toString());
 				}
 			} catch (IllegalStateException ise) {
 				LogHelper.log(new Status(IStatus.INFO, Constants.ID, "Error writing the copyright URL: " + copyright.getLocation())); //$NON-NLS-1$

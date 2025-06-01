@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -27,7 +27,7 @@ public class StatusLineCLabelContribution extends ContributionItem {
 
 	public final static int DEFAULT_CHAR_WIDTH = 40;
 
-	private int charWidth;
+	private final int charWidth;
 	private CLabel label;
 	private Image image;
 	private String text = ""; //$NON-NLS-1$
@@ -79,36 +79,41 @@ public class StatusLineCLabelContribution extends ContributionItem {
 	}
 
 	public void setText(String text) {
-		if (text == null)
+		if (text == null) {
 			throw new NullPointerException();
+		}
 
 		this.text = text;
 
-		if (label != null && !label.isDisposed())
+		if (label != null && !label.isDisposed()) {
 			label.setText(this.text);
+		}
 
 		if (this.text.length() == 0) {
 			if (isVisible()) {
 				setVisible(false);
 				IContributionManager contributionManager = getParent();
 
-				if (contributionManager != null)
+				if (contributionManager != null) {
 					contributionManager.update(true);
+				}
 			}
 		} else {
 			if (!isVisible()) {
 				setVisible(true);
 				IContributionManager contributionManager = getParent();
 
-				if (contributionManager != null)
+				if (contributionManager != null) {
 					contributionManager.update(true);
+				}
 			}
 		}
 	}
 
 	public void setTooltip(String tooltip) {
-		if (tooltip == null)
+		if (tooltip == null) {
 			throw new NullPointerException();
+		}
 
 		this.tooltip = tooltip;
 
@@ -118,20 +123,23 @@ public class StatusLineCLabelContribution extends ContributionItem {
 	}
 
 	public void setImage(Image image) {
-		if (image == null)
+		if (image == null) {
 			throw new NullPointerException();
+		}
 
 		this.image = image;
 
-		if (label != null && !label.isDisposed())
+		if (label != null && !label.isDisposed()) {
 			label.setImage(this.image);
+		}
 
 		if (!isVisible()) {
 			setVisible(true);
 			IContributionManager contributionManager = getParent();
 
-			if (contributionManager != null)
+			if (contributionManager != null) {
 				contributionManager.update(true);
+			}
 		}
 	}
 }

@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
@@ -33,14 +33,14 @@ import org.eclipse.osgi.util.NLS;
  * framework since we are doing a single poll on startup, but we will leave the code here in case we
  * want to watch for changes during a session. Note that the code to actually synchronize the repositories
  * is on the Activator so we will need to call out to that if this behaviour is changed.
- * 
+ *
  * @since 1.0
  */
 public class PlatformXmlListener extends DirectoryChangeListener {
 
 	private static final String PLATFORM_XML = "platform.xml"; //$NON-NLS-1$
 	private boolean changed = false;
-	private File root;
+	private final File root;
 	private long lastModified = -1l;
 	private Set<IMetadataRepository> configRepositories;
 
@@ -54,8 +54,9 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 				} else {
 					String id = feature.getId();
 					String version = feature.getVersion();
-					if (id != null && version != null)
-						buffer.append("features/" + id + "_" + version + "/,"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$					
+					if (id != null && version != null) {
+						buffer.append("features/" + id + "_" + version + "/,"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+					}
 				}
 			}
 		}
@@ -64,8 +65,9 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 				buffer.append(list1).append(',');
 			}
 		}
-		if (buffer.length() == 0)
+		if (buffer.length() == 0) {
 			return ""; //$NON-NLS-1$
+		}
 
 		return buffer.substring(0, buffer.length() - 1);
 	}
@@ -75,8 +77,9 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 	 */
 	public PlatformXmlListener(File file) {
 		super();
-		if (!PLATFORM_XML.equals(file.getName()))
+		if (!PLATFORM_XML.equals(file.getName())) {
 			throw new IllegalArgumentException();
+		}
 		this.root = file;
 	}
 
@@ -128,8 +131,9 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 	}
 
 	public Collection<IMetadataRepository> getMetadataRepositories() {
-		if (configRepositories == null)
+		if (configRepositories == null) {
 			return Collections.emptySet();
+		}
 		return configRepositories;
 	}
 
@@ -139,27 +143,32 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 	 * be found.
 	 */
 	private IMetadataRepository getMatchingRepo(Collection<IMetadataRepository> repositoryList, String urlString) {
-		if (repositoryList == null)
+		if (repositoryList == null) {
 			return null;
+		}
 		IPath urlPath = IPath.fromOSString(urlString).makeAbsolute();
 		for (IMetadataRepository repo : repositoryList) {
 			File file = URIUtil.toFile(repo.getLocation());
-			if (file == null)
+			if (file == null) {
 				continue;
+			}
 			IPath repoPath = IPath.fromOSString(file.getAbsolutePath());
-			if (repoPath.makeAbsolute().equals(urlPath))
+			if (repoPath.makeAbsolute().equals(urlPath)) {
 				return repo;
+			}
 			// normalize the URLs to be the same
 			if (repo instanceof ExtensionLocationMetadataRepository) {
 				try {
 					File one = ExtensionLocationMetadataRepository.getBaseDirectory(repo.getLocation());
 					File two = ExtensionLocationMetadataRepository.getBaseDirectory(new URI(urlString));
-					if (one.equals(two))
+					if (one.equals(two)) {
 						return repo;
+					}
 				} catch (ProvisionException e) {
 					// Skip the repo if it's not found. Log all other errors.
-					if (e.getStatus().getCode() != ProvisionException.REPOSITORY_NOT_FOUND)
+					if (e.getStatus().getCode() != ProvisionException.REPOSITORY_NOT_FOUND) {
 						LogHelper.log(new Status(IStatus.ERROR, Activator.ID, "Error occurred while comparing repository locations.", e)); //$NON-NLS-1$
+					}
 				} catch (URISyntaxException e) {
 					LogHelper.log(new Status(IStatus.ERROR, Activator.ID, "Error occurred while comparing repository locations.", e)); //$NON-NLS-1$
 				}
@@ -193,7 +202,7 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 						continue;
 					}
 					String eclipseExtensionURL = siteURL + Constants.EXTENSION_LOCATION;
-					// use the URI constructor here and not URIUtil#fromString because 
+					// use the URI constructor here and not URIUtil#fromString because
 					// our string is already encoded
 					URI location = new URI(eclipseExtensionURL);
 					Map<String, String> properties = new HashMap<>();
@@ -202,7 +211,7 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 					// In a "USER-INCLUDE" we add the site's features to the list
 					// this is done to support backwards compatibility where previously features were not really installed.
 					// One can always directly add the features to this list. This might be useful for excluding a particular feature
-					// in a "USER-EXCLUDE" site. 
+					// in a "USER-EXCLUDE" site.
 					Feature[] listFeatures = site.getPolicy().equals(Site.POLICY_USER_INCLUDE) ? site.getFeatures() : null;
 
 					properties.put(SiteListener.SITE_LIST, toString(listFeatures, site.getList()));
@@ -217,7 +226,7 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 						} catch (ProvisionException inner) {
 							// handle the case where someone has removed the extension location from
 							// disk. Note: we use the siteURL not the eclipseextensionURL
-							// use the URI constructor here and not URIUtil#fromString because 
+							// use the URI constructor here and not URIUtil#fromString because
 							// our string is already encoded
 							URI fileURI = new URI(siteURL);
 							File file = URIUtil.toFile(fileURI);
@@ -249,16 +258,18 @@ public class PlatformXmlListener extends DirectoryChangeListener {
 					LogHelper.log(new Status(IStatus.ERROR, Activator.ID, NLS.bind(Messages.errorLoadingRepository, siteURL), e));
 				} catch (ProvisionException e) {
 					// Skip the repo if it's not found. Log all other errors.
-					if (e.getStatus().getCode() != ProvisionException.REPOSITORY_NOT_FOUND)
+					if (e.getStatus().getCode() != ProvisionException.REPOSITORY_NOT_FOUND) {
 						LogHelper.log(new Status(IStatus.ERROR, Activator.ID, NLS.bind(Messages.errorLoadingRepository, siteURL), e));
+					}
 				}
 			} else {
 				newRepos.add(match);
 			}
 		}
 		if (!toBeRemoved.isEmpty()) {
-			for (Site site : toBeRemoved)
+			for (Site site : toBeRemoved) {
 				config.removeSite(site);
+			}
 			try {
 				config.save(root, Activator.getOSGiInstallArea());
 			} catch (ProvisionException e) {

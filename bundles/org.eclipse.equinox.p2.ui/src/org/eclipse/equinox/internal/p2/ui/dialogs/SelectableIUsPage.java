@@ -61,12 +61,14 @@ public class SelectableIUsPage extends ResolutionStatusPage implements IResoluti
 			Object[] initialSelections) {
 		super("IUSelectionPage", ui, wizard); //$NON-NLS-1$
 		this.root = root;
-		if (root == null)
+		if (root == null) {
 			root = new IUElementListRoot(ui);
-		if (initialSelections == null)
+		}
+		if (initialSelections == null) {
 			this.initialSelections = new IInstallableUnit[0];
-		else
+		} else {
 			this.initialSelections = initialSelections;
+		}
 
 	}
 
@@ -213,8 +215,9 @@ public class SelectableIUsPage extends ResolutionStatusPage implements IResoluti
 
 	@Override
 	public Object[] getCheckedIUElements() {
-		if (tableViewer == null)
+		if (tableViewer == null) {
 			return initialSelections;
+		}
 		return tableViewer.getCheckedElements();
 	}
 
@@ -244,8 +247,7 @@ public class SelectableIUsPage extends ResolutionStatusPage implements IResoluti
 		ArrayList<Object> selections = new ArrayList<>(initialSelections.length);
 
 		for (Object initialSelection : initialSelections) {
-			if (initialSelection instanceof AvailableUpdateElement) {
-				AvailableUpdateElement element = (AvailableUpdateElement) initialSelection;
+			if (initialSelection instanceof AvailableUpdateElement element) {
 				if (element.isLockedForUpdate()) {
 					continue;
 				}
@@ -281,8 +283,9 @@ public class SelectableIUsPage extends ResolutionStatusPage implements IResoluti
 		StringBuilder buffer = new StringBuilder();
 		Object[] elements = getSelectedElements();
 		for (int i = 0; i < elements.length; i++) {
-			if (i > 0)
+			if (i > 0) {
 				buffer.append(CopyUtils.NEWLINE);
+			}
 			buffer.append(labelProvider.getClipboardText(elements[i], CopyUtils.DELIMITER));
 		}
 		return buffer.toString();
@@ -291,8 +294,9 @@ public class SelectableIUsPage extends ResolutionStatusPage implements IResoluti
 	@Override
 	protected IInstallableUnit getSelectedIU() {
 		java.util.List<IInstallableUnit> units = ElementUtils.elementsToIUs(getSelectedElements());
-		if (units.size() == 0)
+		if (units.size() == 0) {
 			return null;
+		}
 		return units.get(0);
 	}
 
@@ -311,18 +315,20 @@ public class SelectableIUsPage extends ResolutionStatusPage implements IResoluti
 		resolvedOperation = op;
 		if (newRoot != null && root != newRoot) {
 			root = newRoot;
-			if (tableViewer != null)
+			if (tableViewer != null) {
 				tableViewer.setInput(newRoot);
+			}
 		}
 
 	}
 
 	@Override
 	public void setCheckedElements(Object[] elements) {
-		if (tableViewer == null)
+		if (tableViewer == null) {
 			initialSelections = elements;
-		else
+		} else {
 			tableViewer.setCheckedElements(elements);
+		}
 	}
 
 	@Override

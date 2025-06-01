@@ -24,10 +24,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 
 /**
- * An IUPropertiesGroup is a reusable UI component that displays and edits the 
- * user-oriented properties of an IU. It can be used in 
+ * An IUPropertiesGroup is a reusable UI component that displays and edits the
+ * user-oriented properties of an IU. It can be used in
  * different dialogs that manipulate or define IU's.
- * 
+ *
  * @since 3.4
  */
 public class IUProfilePropertiesGroup extends IUGroup {
@@ -73,8 +73,9 @@ public class IUProfilePropertiesGroup extends IUGroup {
 			TableItem item = new TableItem(propertiesTable, SWT.NULL);
 			IProfile profile = getProfile((InstalledIUElement) iuElement);
 			String value = profile == null ? null : profile.getInstallableUnitProperty(getIU(), propNames[i]);
-			if (value != null)
+			if (value != null) {
 				item.setText(new String[] {userPropNames[i], value});
+			}
 		}
 	}
 

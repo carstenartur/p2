@@ -30,14 +30,14 @@ import org.eclipse.equinox.p2.core.IAgentLocation;
 public final class ProfileScope implements IScopeContext {
 
 	/**
-	 * String constant (value of <code>"profile"</code>) used for the 
+	 * String constant (value of <code>"profile"</code>) used for the
 	 * scope name for this preference scope.
 	 */
 	public static final String SCOPE = "profile"; //$NON-NLS-1$
 
-	private String profileId;
+	private final String profileId;
 
-	private IAgentLocation location;
+	private final IAgentLocation location;
 
 	/**
 	 * Creates and returns a profile scope for the given profile id and agent.
@@ -65,13 +65,14 @@ public final class ProfileScope implements IScopeContext {
 
 	/*
 	 * Default path hierarchy for profile nodes is /profile/<profileId>/<qualifier>.
-	 * 
+	 *
 	 * @see org.eclipse.core.runtime.preferences.IScopeContext#getNode(java.lang.String)
 	 */
 	@Override
 	public IEclipsePreferences getNode(String qualifier) {
-		if (qualifier == null)
+		if (qualifier == null) {
 			throw new IllegalArgumentException();
+		}
 		String locationString = SlashEncode.encode(location.getRootLocation().toString());
 		//format is /profile/{agentLocationURI}/{profileId}/qualifier
 		return (IEclipsePreferences) PreferencesService.getDefault().getRootNode().node(getName()).node(locationString).node(profileId).node(qualifier);
@@ -79,13 +80,15 @@ public final class ProfileScope implements IScopeContext {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (!(obj instanceof ProfileScope))
+		}
+		if (!(obj instanceof ProfileScope other)) {
 			return false;
-		ProfileScope other = (ProfileScope) obj;
+		}
 		return profileId.equals(other.profileId);
 	}
 

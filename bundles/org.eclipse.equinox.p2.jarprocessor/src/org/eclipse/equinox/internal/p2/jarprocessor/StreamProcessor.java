@@ -7,7 +7,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors:
  *     IBM - Initial API and implementation
  *******************************************************************************/
@@ -55,10 +55,11 @@ public class StreamProcessor {
 					break;
 				}
 				if (verbose) {
-					if (STDERR.equals(name))
+					if (STDERR.equals(name)) {
 						System.err.println(name + ": " + s); //$NON-NLS-1$
-					else
+					} else {
 						System.out.println(name + ": " + s); //$NON-NLS-1$
+					}
 				}
 			}
 		} catch (IOException e) {

@@ -57,33 +57,33 @@ public class Projector {
 	private static final int DEFAULT_SOLVER_TIMEOUT = 10000;
 	static boolean DEBUG = Tracing.DEBUG_PLANNER_PROJECTOR;
 	private static boolean DEBUG_ENCODING = Tracing.DEBUG_PLANNER_PROJECTOR_ENCODING;
-	private IQueryable<IInstallableUnit> picker;
+	private final IQueryable<IInstallableUnit> picker;
 	private QueryableArray patches;
 
-	private List<AbstractVariable> allOptionalAbstractRequirements;
-	private List<AbstractVariable> abstractVariables;
+	private final List<AbstractVariable> allOptionalAbstractRequirements;
+	private final List<AbstractVariable> abstractVariables;
 
-	private Map<String, Map<Version, IInstallableUnit>> slice; //The IUs that have been considered to be part of the problem
+	private final Map<String, Map<Version, IInstallableUnit>> slice; //The IUs that have been considered to be part of the problem
 
-	private IInstallableUnit selectionContext;
+	private final IInstallableUnit selectionContext;
 
 	DependencyHelper<Object, Explanation> dependencyHelper;
 	private Collection<IInstallableUnit> solution;
-	private Collection<Object> assumptions;
+	private final Collection<Object> assumptions;
 
 	private MultiStatus result;
 
 	private Collection<IInstallableUnit> alreadyInstalledIUs;
 	private IQueryable<IInstallableUnit> lastState;
 
-	private boolean considerMetaRequirements;
+	private final boolean considerMetaRequirements;
 	private IInstallableUnit entryPoint;
-	private Map<IInstallableUnitFragment, Set<IInstallableUnit>> fragments = new HashMap<>();
+	private final Map<IInstallableUnitFragment, Set<IInstallableUnit>> fragments = new HashMap<>();
 
 	//Non greedy things
-	private Set<IInstallableUnit> nonGreedyIUs; //All the IUs that would satisfy non greedy dependencies
-	private Map<IInstallableUnit, AbstractVariable> nonGreedyVariables = new HashMap<>();
-	private Map<AbstractVariable, List<Object>> nonGreedyProvider = new HashMap<>(); //Keeps track of all the "object" that provide an IU that is non greedly requested
+	private final Set<IInstallableUnit> nonGreedyIUs; //All the IUs that would satisfy non greedy dependencies
+	private final Map<IInstallableUnit, AbstractVariable> nonGreedyVariables = new HashMap<>();
+	private final Map<AbstractVariable, List<Object>> nonGreedyProvider = new HashMap<>(); //Keeps track of all the "object" that provide an IU that is non greedly requested
 
 	private boolean emptyBecauseFiltered;
 	private boolean userDefinedFunction;
@@ -151,12 +151,14 @@ public class Projector {
 					}
 				}
 			} catch (TimeoutException e) {
-				if (DEBUG)
+				if (DEBUG) {
 					Tracing.debug("Timeout while computing explanations"); //$NON-NLS-1$
+				}
 			} finally {
 				//must never have a null result, because caller is waiting on result to be non-null
-				if (explanation == null)
+				if (explanation == null) {
 					explanation = Collections.emptySet();
+				}
 			}
 			synchronized (this) {
 				ExplanationJob.this.notify();
@@ -210,28 +212,31 @@ public class Projector {
 				// see https://bugs.eclipse.org/336967
 				timeoutString = DirectorActivator.context.map(ctx -> ctx.getProperty(PROP_PROJECTOR_TIMEOUT))
 						.orElse(null);
-				if (timeoutString != null)
+				if (timeoutString != null) {
 					timeout = Math.max(timeout, Integer.parseInt(timeoutString));
+				}
 			} catch (Exception e) {
 				// intentionally catch all errors (npe, number format, etc)
 				// print out to syserr and fall through
 				System.err.println("Ignoring user-specified 'eclipse.p2.projector.timeout' value of: " + timeoutString); //$NON-NLS-1$
 				e.printStackTrace();
 			}
-			if (userDefinedFunction)
+			if (userDefinedFunction) {
 				solver.setTimeoutOnConflicts(timeout / 4);
-			else
+			} else {
 				solver.setTimeoutOnConflicts(timeout);
+			}
 
 			IQueryResult<IInstallableUnit> queryResult = picker.query(QueryUtil.createIUAnyQuery(), null);
 			if (DEBUG_ENCODING) {
 				dependencyHelper = new LexicoHelper<>(solver, false);
 				((UserFriendlyPBStringSolver<Object>) solver).setMapping(dependencyHelper.getMappingToDomain());
 			} else {
-				if (userDefinedFunction)
+				if (userDefinedFunction) {
 					dependencyHelper = new SteppedTimeoutLexicoHelper<>(solver);
-				else
+				} else {
 					dependencyHelper = new DependencyHelper<>(solver);
+				}
 			}
 			List<IInstallableUnit> iusToOrder = new ArrayList<>(queryResult.toSet());
 			iusToOrder.sort(null);
@@ -298,13 +303,15 @@ public class Projector {
 	}
 
 	private void createObjectiveFunction(List<WeightedObject<? extends Object>> weightedObjects) {
-		if (weightedObjects == null)
+		if (weightedObjects == null) {
 			return;
+		}
 		if (DEBUG) {
 			StringBuilder b = new StringBuilder();
 			for (WeightedObject<? extends Object> object : weightedObjects) {
-				if (b.length() > 0)
+				if (b.length() > 0) {
 					b.append(", "); //$NON-NLS-1$
+				}
 				b.append(object.getWeight());
 				b.append(' ');
 				b.append(object.thing);
@@ -344,8 +351,9 @@ public class Projector {
 	}
 
 	private void expandNegatedRequirement(IRequirement req, IInstallableUnit iu, List<AbstractVariable> optionalAbstractRequirements, boolean isRootIu) throws ContradictionException {
-		if (!isApplicable(req))
+		if (!isApplicable(req)) {
 			return;
+		}
 		List<IInstallableUnit> matches = getApplicableMatches(req);
 		if (matches.isEmpty()) {
 			return;
@@ -366,10 +374,10 @@ public class Projector {
 
 	private void determinePotentialHostsForFragment(IInstallableUnit iu) {
 		// determine matching hosts only for fragments
-		if (!(iu instanceof IInstallableUnitFragment))
+		if (!(iu instanceof IInstallableUnitFragment fragment)) {
 			return;
+		}
 
-		IInstallableUnitFragment fragment = (IInstallableUnitFragment) iu;
 		// for each host requirement, find matches and remember them
 		for (IRequirement req : fragment.getHost()) {
 			List<IInstallableUnit> matches = getApplicableMatches(req);
@@ -382,8 +390,9 @@ public class Projector {
 			expandNegatedRequirement(req, iu, optionalAbstractRequirements, isRootIu);
 			return;
 		}
-		if (!isApplicable(req))
+		if (!isApplicable(req)) {
 			return;
+		}
 		List<IInstallableUnit> matches = getApplicableMatches(req);
 		determinePotentialHostsForFragment(iu);
 		if (req.getMin() > 0) {
@@ -456,8 +465,9 @@ public class Projector {
 	}
 
 	private void expandRequirements(Collection<IRequirement> reqs, IInstallableUnit iu, boolean isRootIu) throws ContradictionException {
-		if (reqs.isEmpty())
+		if (reqs.isEmpty()) {
 			return;
+		}
 		for (IRequirement req : reqs) {
 			expandRequirement(req, iu, allOptionalAbstractRequirements, isRootIu);
 		}
@@ -490,8 +500,9 @@ public class Projector {
 	protected Collection<IRequirement> getRequiredCapabilities(IInstallableUnit iu) {
 		boolean isFragment = iu instanceof IInstallableUnitFragment;
 		//Short-circuit for the case of an IInstallableUnit
-		if ((!isFragment) && iu.getMetaRequirements().size() == 0)
+		if ((!isFragment) && iu.getMetaRequirements().size() == 0) {
 			return iu.getRequirements();
+		}
 
 		ArrayList<IRequirement> aggregatedRequirements = new ArrayList<>(iu.getRequirements().size() + iu.getMetaRequirements().size() + (isFragment ? ((IInstallableUnitFragment) iu).getHost().size() : 0));
 		aggregatedRequirements.addAll(iu.getRequirements());
@@ -500,8 +511,9 @@ public class Projector {
 			aggregatedRequirements.addAll(((IInstallableUnitFragment) iu).getHost());
 		}
 
-		if (considerMetaRequirements)
+		if (considerMetaRequirements) {
 			aggregatedRequirements.addAll(iu.getMetaRequirements());
+		}
 		return aggregatedRequirements;
 	}
 
@@ -519,8 +531,9 @@ public class Projector {
 		for (IInstallableUnit iup : applicablePatches) {
 			IInstallableUnitPatch patch = (IInstallableUnitPatch) iup;
 			IRequirement[][] reqs = mergeRequirements(iu, patch);
-			if (reqs.length == 0)
+			if (reqs.length == 0) {
 				return;
+			}
 
 			// Optional requirements are encoded via:
 			// ABS -> (match1(req) or match2(req) or ... or matchN(req))
@@ -711,8 +724,9 @@ public class Projector {
 			List<IInstallableUnitPatch> requiredPatches = new ArrayList<>();
 			while (allPatches.hasNext()) {
 				IInstallableUnitPatch patch = (IInstallableUnitPatch) allPatches.next();
-				if (!patchesApplied.contains(patch))
+				if (!patchesApplied.contains(patch)) {
 					requiredPatches.add(patch);
+				}
 			}
 			IRequirement req = entry.getKey();
 			List<IInstallableUnit> matches = getApplicableMatches(req);
@@ -732,8 +746,9 @@ public class Projector {
 							nonGreedys.add(getNonGreedyVariable(current));
 						}
 					}
-					if (!requiredPatches.isEmpty())
+					if (!requiredPatches.isEmpty()) {
 						matches.addAll(requiredPatches);
+					}
 					if (req.isGreedy()) {
 						IInstallableUnit reqIu = matches.get(0);
 						Explanation explanation;
@@ -762,8 +777,9 @@ public class Projector {
 				}
 			} else {
 				if (!matches.isEmpty()) {
-					if (!requiredPatches.isEmpty())
+					if (!requiredPatches.isEmpty()) {
 						matches.addAll(requiredPatches);
+					}
 					AbstractVariable abs;
 					if (req.isGreedy()) {
 						abs = getAbstractVariable(req);
@@ -788,12 +804,13 @@ public class Projector {
 	}
 
 	private void expandLifeCycle(IInstallableUnit iu, boolean isRootIu) throws ContradictionException {
-		if (!(iu instanceof IInstallableUnitPatch))
+		if (!(iu instanceof IInstallableUnitPatch patch)) {
 			return;
-		IInstallableUnitPatch patch = (IInstallableUnitPatch) iu;
+		}
 		IRequirement req = patch.getLifeCycle();
-		if (req == null)
+		if (req == null) {
 			return;
+		}
 		expandRequirement(req, iu, Collections.emptyList(), isRootIu);
 	}
 
@@ -819,8 +836,9 @@ public class Projector {
 
 	//Return a new array of requirements representing the application of the patch
 	private IRequirement[][] mergeRequirements(IInstallableUnit iu, IInstallableUnitPatch patch) {
-		if (patch == null)
+		if (patch == null) {
 			return null;
+		}
 		List<IRequirementChange> changes = patch.getRequirementsChange();
 		Collection<IRequirement> iuRequirements = iu.getRequirements();
 		IRequirement[] originalRequirements = iuRequirements.toArray(new IRequirement[iuRequirements.size()]);
@@ -830,22 +848,25 @@ public class Projector {
 			for (int j = 0; j < originalRequirements.length; j++) {
 				if (originalRequirements[j] != null && safeMatch(originalRequirements, change, j)) {
 					found = true;
-					if (change.newValue() != null)
+					if (change.newValue() != null) {
 						rrr.add(new IRequirement[] {originalRequirements[j], change.newValue()});
-					else
+					} else {
 						// case where a requirement is removed
 						rrr.add(new IRequirement[] {originalRequirements[j], null});
+					}
 					originalRequirements[j] = null;
 				}
 				//				break;
 			}
-			if (!found && change.applyOn() == null && change.newValue() != null) //Case where a new requirement is added
+			if (!found && change.applyOn() == null && change.newValue() != null) { //Case where a new requirement is added
 				rrr.add(new IRequirement[] {null, change.newValue()});
+			}
 		}
 		//Add all the unmodified requirements to the result
 		for (IRequirement originalRequirement : originalRequirements) {
-			if (originalRequirement != null)
+			if (originalRequirement != null) {
 				rrr.add(new IRequirement[] {originalRequirement, originalRequirement});
+			}
 		}
 		return rrr.toArray(new IRequirement[rrr.size()][]);
 	}
@@ -863,15 +884,16 @@ public class Projector {
 		if (DEBUG) {
 			Tracing.debug(name + ": " + left + "->" + right); //$NON-NLS-1$ //$NON-NLS-2$
 		}
-		for (Object r : right)
-			dependencyHelper.implication(new Object[] {left}).impliesNot(r).named(name);
+		for (Object r : right) {
+			dependencyHelper.implication(left).impliesNot(r).named(name);
+		}
 	}
 
 	private void createImplication(Object left, List<?> right, Explanation name) throws ContradictionException {
 		if (DEBUG) {
 			Tracing.debug(name + ": " + left + "->" + right); //$NON-NLS-1$ //$NON-NLS-2$
 		}
-		dependencyHelper.implication(new Object[] {left}).implies(right.toArray()).named(name);
+		dependencyHelper.implication(left).implies(right.toArray()).named(name);
 	}
 
 	private void createImplication(Object[] left, List<?> right, Explanation name) throws ContradictionException {
@@ -883,8 +905,9 @@ public class Projector {
 
 	//Return IUPatches that are applicable for the given iu
 	private IQueryResult<IInstallableUnit> getApplicablePatches(IInstallableUnit iu) {
-		if (patches == null)
+		if (patches == null) {
 			patches = new QueryableArray(picker.query(QueryUtil.createIUPatchQuery(), null).toUnmodifiableSet());
+		}
 
 		return patches.query(new ApplicablePatchQuery(iu), null);
 	}
@@ -895,8 +918,9 @@ public class Projector {
 		Set<Entry<String, Map<Version, IInstallableUnit>>> s = slice.entrySet();
 		for (Entry<String, Map<Version, IInstallableUnit>> entry : s) {
 			Map<Version, IInstallableUnit> conflictingEntries = entry.getValue();
-			if (conflictingEntries.size() < 2)
+			if (conflictingEntries.size() < 2) {
 				continue;
+			}
 
 			Collection<IInstallableUnit> conflictingVersions = conflictingEntries.values();
 			List<IInstallableUnit> singletons = new ArrayList<>();
@@ -908,8 +932,9 @@ public class Projector {
 					nonSingletons.add(iu);
 				}
 			}
-			if (singletons.isEmpty())
+			if (singletons.isEmpty()) {
 				continue;
+			}
 
 			IInstallableUnit[] singletonArray;
 			if (nonSingletons.isEmpty()) {
@@ -958,23 +983,27 @@ public class Projector {
 	}
 
 	public IStatus invokeSolver(IProgressMonitor monitor) {
-		if (result.getSeverity() == IStatus.ERROR)
+		if (result.getSeverity() == IStatus.ERROR) {
 			return result;
+		}
 		// CNF filename is given on the command line
 		long start = System.currentTimeMillis();
-		if (DEBUG)
+		if (DEBUG) {
 			Tracing.debug("Invoking solver: " + start); //$NON-NLS-1$
+		}
 		try {
-			if (monitor.isCanceled())
+			if (monitor.isCanceled()) {
 				return Status.CANCEL_STATUS;
+			}
 			if (dependencyHelper.hasASolution(assumptions)) {
 				if (DEBUG) {
 					Tracing.debug("Satisfiable !"); //$NON-NLS-1$
 				}
 				backToIU();
 				long stop = System.currentTimeMillis();
-				if (DEBUG)
+				if (DEBUG) {
 					Tracing.debug("Solver solution found in: " + (stop - start) + " ms."); //$NON-NLS-1$ //$NON-NLS-2$
+				}
 			} else {
 				long stop = System.currentTimeMillis();
 				if (DEBUG) {
@@ -989,8 +1018,9 @@ public class Projector {
 		} catch (Exception e) {
 			result.merge(Status.error(Messages.Planner_Unexpected_problem, e));
 		}
-		if (DEBUG)
+		if (DEBUG) {
 			System.out.println();
+		}
 		return result;
 	}
 
@@ -999,10 +1029,10 @@ public class Projector {
 		IVec<Object> sat4jSolution = dependencyHelper.getSolution();
 		for (Iterator<Object> iter = sat4jSolution.iterator(); iter.hasNext();) {
 			Object var = iter.next();
-			if (var instanceof IInstallableUnit) {
-				IInstallableUnit iu = (IInstallableUnit) var;
-				if (iu == entryPoint)
+			if (var instanceof IInstallableUnit iu) {
+				if (iu == entryPoint) {
 					continue;
+				}
 				solution.add(iu);
 			}
 		}
@@ -1019,8 +1049,9 @@ public class Projector {
 	}
 
 	public Collection<IInstallableUnit> extractSolution() {
-		if (DEBUG)
+		if (DEBUG) {
 			printSolution(solution);
+		}
 		return solution;
 	}
 
@@ -1041,8 +1072,9 @@ public class Projector {
 					try {
 						job.wait(100);
 					} catch (InterruptedException e) {
-						if (DEBUG)
+						if (DEBUG) {
 							Tracing.debug("Interrupted while computing explanations"); //$NON-NLS-1$
+						}
 					}
 				}
 			}
@@ -1055,16 +1087,19 @@ public class Projector {
 	public Map<IInstallableUnitFragment, List<IInstallableUnit>> getFragmentAssociation() {
 		Map<IInstallableUnitFragment, List<IInstallableUnit>> resolvedFragments = new HashMap<>(fragments.size());
 		for (Entry<IInstallableUnitFragment, Set<IInstallableUnit>> fragment : fragments.entrySet()) {
-			if (!dependencyHelper.getBooleanValueFor(fragment.getKey()))
+			if (!dependencyHelper.getBooleanValueFor(fragment.getKey())) {
 				continue;
+			}
 			Set<IInstallableUnit> potentialHosts = fragment.getValue();
 			List<IInstallableUnit> resolvedHost = new ArrayList<>(potentialHosts.size());
 			for (IInstallableUnit host : potentialHosts) {
-				if (dependencyHelper.getBooleanValueFor(host))
+				if (dependencyHelper.getBooleanValueFor(host)) {
 					resolvedHost.add(host);
+				}
 			}
-			if (resolvedHost.size() != 0)
+			if (resolvedHost.size() != 0) {
 				resolvedFragments.put(fragment.getKey(), resolvedHost);
+			}
 		}
 		return resolvedFragments;
 	}

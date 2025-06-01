@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2017 IBM Corporation and others. 
+ * Copyright (c) 2007, 2017 IBM Corporation and others.
  *
  * This
  * program and the accompanying materials are made available under the terms of
@@ -8,7 +8,7 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors: IBM - Initial API and implementation
  ******************************************************************************/
 
@@ -27,8 +27,9 @@ public class VerifyStep extends CommandStep {
 	static Boolean canVerify = null;
 
 	public static boolean canVerify() {
-		if (canVerify != null)
+		if (canVerify != null) {
 			return canVerify.booleanValue();
+		}
 
 		String javaHome = System.getProperty("java.home"); //$NON-NLS-1$
 		String command = javaHome + "/../bin/jarsigner"; //$NON-NLS-1$
@@ -62,11 +63,13 @@ public class VerifyStep extends CommandStep {
 				System.out.print("Verifying " + input.getName() + ":  "); //$NON-NLS-1$ //$NON-NLS-2$
 				String[] cmd = new String[] {verifyCommand, "-verify", input.getCanonicalPath()}; //$NON-NLS-1$
 				int result = execute(cmd, true);
-				if (result != 0 && verbose)
+				if (result != 0 && verbose) {
 					System.out.println("Error: " + result + " was returned from command: " + Utils.concat(cmd)); //$NON-NLS-1$ //$NON-NLS-2$
+				}
 			} catch (IOException e) {
-				if (verbose)
+				if (verbose) {
 					e.printStackTrace();
+				}
 				return null;
 			}
 			return input;

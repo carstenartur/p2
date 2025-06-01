@@ -81,8 +81,8 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 															// not installed in current profile.
 	private IProfile toImportFrom = null;
 	// private File instancePath = null;
-	private URI[] metaURIs = null;
-	private URI[] artiURIs = null;
+	private final URI[] metaURIs = null;
+	private final URI[] artiURIs = null;
 
 	/**
 	 * {@link DelayedFilterCheckboxTree} has a timing bug to prevent restoring the
@@ -111,8 +111,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 				public void aboutToRun(IJobChangeEvent event) {
 					Display.getDefault().syncExec(() -> {
 						Object[] checked = viewer.getCheckedElements();
-						if (checkState == null)
+						if (checkState == null) {
 							checkState = new ArrayList<>(checked.length);
+						}
 						for (Object checked1 : checked) {
 							if (!viewer.getGrayed(checked1)) {
 								if (!checkState.contains(checked1)) {
@@ -127,13 +128,15 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 				public void done(IJobChangeEvent event) {
 					if (event.getResult().isOK()) {
 						Display.getDefault().asyncExec(() -> {
-							if (viewer == null || viewer.getTree().isDisposed())
+							if (viewer == null || viewer.getTree().isDisposed()) {
 								return;
-							if (checkState == null)
+							}
+							if (checkState == null) {
 								return;
+							}
 
 							viewer.setCheckedElements(new Object[0]);
-							viewer.setGrayedElements(new Object[0]);
+							viewer.setGrayedElements();
 							// Now we are only going to set the check state of the leaf nodes
 							// and rely on our container checked code to update the parents properly.
 							Iterator<Object> iter = checkState.iterator();
@@ -161,11 +164,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 			IInstallableUnit iu1 = ProvUI.getAdapter(e1, IInstallableUnit.class);
 			IInstallableUnit iu2 = ProvUI.getAdapter(e2, IInstallableUnit.class);
 			if (iu1 != null && iu2 != null) {
-				if (viewer1 instanceof TreeViewer) {
-					TreeViewer treeViewer = (TreeViewer) viewer1;
+				if (viewer1 instanceof TreeViewer treeViewer) {
 					IBaseLabelProvider baseLabel = treeViewer.getLabelProvider();
-					if (baseLabel instanceof ITableLabelProvider) {
-						ITableLabelProvider tableProvider = (ITableLabelProvider) baseLabel;
+					if (baseLabel instanceof ITableLabelProvider tableProvider) {
 						String e1p = tableProvider.getColumnText(e1, getSortColumn());
 						String e2p = tableProvider.getColumnText(e2, getSortColumn());
 						// don't suppress this warning as it will cause build-time warning
@@ -231,8 +232,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		tracker.open();
 		agent = tracker.getService();
 		tracker.close();
-		if (agent != null)
+		if (agent != null) {
 			profileRegistry = agent.getService(IProfileRegistry.class);
+		}
 	}
 
 	public MigrationPage(String pageName) {
@@ -264,8 +266,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 	protected IProfile getSelfProfile() {
 		if (profileRegistry != null) {
 			String selfID = System.getProperty("eclipse.p2.profile"); //$NON-NLS-1$
-			if (selfID == null)
+			if (selfID == null) {
 				selfID = IProfileRegistry.SELF;
+			}
 			return profileRegistry.getProfile(selfID);
 		}
 		return null;
@@ -452,16 +455,16 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		selectedUnitsToMigrate = identifyUnitsToBeMigrated();
 
 		ICheckStateProvider provider = getViewerDefaultState();
-		if (provider != null)
+		if (provider != null) {
 			viewer.setCheckStateProvider(provider);
-		else
+		} else {
 			viewer.addSelectionChangedListener(event -> updatePageCompletion());
+		}
 		viewer.getControl().setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, true));
 		viewer.setInput(getInput());
 
 		viewer.getTree().addListener(SWT.Selection, event -> {
-			if (event.item instanceof TreeItem && event.detail == SWT.CHECK) {
-				TreeItem treeItem = (TreeItem) event.item;
+			if (event.item instanceof TreeItem treeItem && event.detail == SWT.CHECK) {
 				IInstallableUnit iu = ProvUI.getAdapter(event.item.getData(), IInstallableUnit.class);
 				if (treeItem.getChecked()) {
 					selectedUnitsToMigrate.add(iu);
@@ -569,15 +572,17 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		ProvElementContentProvider provider = new ProvElementContentProvider() {
 			@Override
 			public boolean hasChildren(Object element) {
-				if (element instanceof InstalledIUElement)
+				if (element instanceof InstalledIUElement) {
 					return false;
+				}
 				return super.hasChildren(element);
 			}
 
 			@Override
 			public Object[] getChildren(Object parent) {
-				if (parent instanceof InstalledIUElement)
+				if (parent instanceof InstalledIUElement) {
 					return new Object[0];
+				}
 				return super.getChildren(parent);
 			}
 		};
@@ -628,8 +633,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 	}
 
 	protected boolean validateOptionsGroup() {
-		if (viewer == null || viewer.getCheckedElements().length > 0)
+		if (viewer == null || viewer.getCheckedElements().length > 0) {
 			return true;
+		}
 
 		currentMessage = getNoOptionsMessage();
 		return false;
@@ -662,13 +668,15 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 				if (compareValue > 0) {
 					hasHigherVersion = true;
 					break;
-				} else if (compareValue == 0)
+				} else if (compareValue == 0) {
 					hasEqualVersion = true;
+				}
 			}
-			if (hasHigherVersion)
+			if (hasHigherVersion) {
 				return NLS.bind(ProvUIMessages.AbstractImportPage_HigherVersionInstalled, text);
-			else if (hasEqualVersion)
+			} else if (hasEqualVersion) {
 				return NLS.bind(ProvUIMessages.AbstractImportPage_SameVersionInstalled, text);
+			}
 		}
 		return text;
 	}
@@ -720,8 +728,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		@Override
 		public Color getForeground(Object element) {
 			IInstallableUnit iu = ProvUI.getAdapter(element, IInstallableUnit.class);
-			if (hasInstalled(iu))
+			if (hasInstalled(iu)) {
 				return Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
+			}
 			return super.getForeground(element);
 		}
 	}
@@ -745,11 +754,13 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		if (metaURIs != null && metaURIs.length > 0) {
 			IProvisioningAgent runningAgent = getProvisioningUI().getSession().getProvisioningAgent();
 			IMetadataRepositoryManager manager = runningAgent.getService(IMetadataRepositoryManager.class);
-			for (URI uri : metaURIs)
+			for (URI uri : metaURIs) {
 				manager.removeRepository(uri);
+			}
 			IArtifactRepositoryManager artifactManager = runningAgent.getService(IArtifactRepositoryManager.class);
-			for (URI uri : artiURIs)
+			for (URI uri : artiURIs) {
 				artifactManager.removeRepository(uri);
+			}
 		}
 	}
 
@@ -877,8 +888,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 
 	private static boolean hasHigherFidelity(IInstallableUnit iu, IInstallableUnit currentIU) {
 		if (Boolean.parseBoolean(currentIU.getProperty(IInstallableUnit.PROP_PARTIAL_IU))
-				&& !Boolean.parseBoolean(iu.getProperty(IInstallableUnit.PROP_PARTIAL_IU)))
+				&& !Boolean.parseBoolean(iu.getProperty(IInstallableUnit.PROP_PARTIAL_IU))) {
 			return true;
+		}
 		return false;
 	}
 
@@ -895,8 +907,9 @@ public class MigrationPage extends WizardPage implements ISelectableIUsPage, Lis
 		for (IInstallableUnit iu : queryable.query(new UpdateQuery(toUpdate), sub.newChild(500))) {
 			String key = iu.getId() + "_" + iu.getVersion().toString(); //$NON-NLS-1$
 			IInstallableUnit currentIU = resultsMap.get(key);
-			if (currentIU == null || hasHigherFidelity(iu, currentIU))
+			if (currentIU == null || hasHigherFidelity(iu, currentIU)) {
 				resultsMap.put(key, iu);
+			}
 		}
 		sub.done();
 		return resultsMap.values();

@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     Red Hat Incorporated - initial API and implementation
  *     IBM Corporation - ongoing development
@@ -97,28 +97,33 @@ public class ChmodAction extends ProvisioningAction {
 	@Override
 	public IStatus execute(Map<String, Object> parameters) {
 		// on Windows this isn't implemented, so we can return right here.
-		if (WINDOWS)
+		if (WINDOWS) {
 			return Status.OK_STATUS;
+		}
 		Object absoluteFiles = parameters.get(ActionConstants.PARM_ABSOLUTE_FILES); // String or String[]
 		String targetDir = (String) parameters.get(ActionConstants.PARM_TARGET_DIR);
 		String targetFile = (String) parameters.get(ActionConstants.PARM_TARGET_FILE);
 
-		if (targetFile != null && absoluteFiles != null)
+		if (targetFile != null && absoluteFiles != null) {
 			return Util.createError(Messages.chmod_param_cant_be_set_together);
+		}
 
-		if (targetDir != null && targetFile == null)
+		if (targetDir != null && targetFile == null) {
 			return Util.createError(NLS.bind(Messages.param_not_set, ActionConstants.PARM_TARGET_FILE, ACTION_CHMOD));
+		}
 
-		if (targetDir == null && targetFile != null)
+		if (targetDir == null && targetFile != null) {
 			return Util.createError(NLS.bind(Messages.param_not_set, ActionConstants.PARM_TARGET_DIR, ACTION_CHMOD));
+		}
 
 		String permissions = (String) parameters.get(ActionConstants.PARM_PERMISSIONS);
-		if (permissions == null)
+		if (permissions == null) {
 			return Util.createError(NLS.bind(Messages.param_not_set, ActionConstants.PARM_PERMISSIONS, ACTION_CHMOD));
+		}
 		String optionsString = (String) parameters.get(ActionConstants.PARM_OPTIONS);
 
 		String[] filesToProcess = absoluteFiles != null
-				? ((absoluteFiles instanceof String) ? new String[] { (String) absoluteFiles }
+				? ((absoluteFiles instanceof String s) ? new String[] { s }
 						: (String[]) absoluteFiles)
 				: makeFilesAbsolute(targetDir, targetFile);
 
@@ -136,7 +141,7 @@ public class ChmodAction extends ProvisioningAction {
 				}
 			} catch (IOException e) {
 				rStatus.add(Util.createError(NLS.bind(Messages.action_0_failed_on_file_1_reason_2,
-						new String[] { ACTION_CHMOD, fileToChmod, e.getMessage() }), e));
+						ACTION_CHMOD, fileToChmod, e.getMessage()), e));
 				continue;
 			}
 			IStatus chmodStatus = doChmod(fileToChmod, permissions, optionsString);
@@ -184,8 +189,9 @@ public class ChmodAction extends ProvisioningAction {
 	}
 
 	public IStatus chmod(String fileToChmod, String perms, String[] options) {
-		if (WINDOWS)
+		if (WINDOWS) {
 			return Status.OK_STATUS;
+		}
 		Runtime r = Runtime.getRuntime();
 		try {
 			// Note: 3 is from chmod, permissions, and target
@@ -210,7 +216,7 @@ public class ChmodAction extends ProvisioningAction {
 			}
 		} catch (IOException e) {
 			return Util.createError(NLS.bind(Messages.action_0_failed_on_file_1_reason_2,
-					new String[] { ACTION_CHMOD, fileToChmod, e.getMessage() }), e);
+					ACTION_CHMOD, fileToChmod, e.getMessage()), e);
 		}
 		return Status.OK_STATUS;
 	}

@@ -33,7 +33,7 @@ public class DeferredQueryContentProvider extends ProvElementContentProvider {
 	private Object currentInput;
 	private HashMap<Object, Object> alreadyQueried = new HashMap<>();
 	private HashSet<Object> queryCompleted = new HashSet<>();
-	private ListenerList<IInputChangeListener> listeners = new ListenerList<>();
+	private final ListenerList<IInputChangeListener> listeners = new ListenerList<>();
 	private boolean synchronous = false;
 	private IDeferredQueryTreeListener onFetchingActionListener;
 
@@ -57,8 +57,9 @@ public class DeferredQueryContentProvider extends ProvElementContentProvider {
 	public void inputChanged(Viewer v, Object oldInput, Object newInput) {
 		super.inputChanged(v, oldInput, newInput);
 
-		if (manager != null)
+		if (manager != null) {
 			manager.cancel(oldInput);
+		}
 		if (v instanceof AbstractTreeViewer atv) {
 			manager = new DeferredQueryTreeContentManager(atv);
 			manager.addListener(onFetchingActionListener);
@@ -102,34 +103,37 @@ public class DeferredQueryContentProvider extends ProvElementContentProvider {
 	@Override
 	public boolean hasChildren(Object element) {
 		if (manager != null) {
-			if (manager.isDeferredAdapter(element))
+			if (manager.isDeferredAdapter(element)) {
 				return manager.mayHaveChildren(element);
+			}
 		}
 		return super.hasChildren(element);
 	}
 
 	@Override
 	public Object[] getChildren(final Object parent) {
-		if (parent instanceof RemoteQueriedElement) {
-			RemoteQueriedElement element = (RemoteQueriedElement) parent;
+		if (parent instanceof RemoteQueriedElement element) {
 			// We rely on the assumption that the queryable is the most expensive
 			// thing to get vs. the query itself being expensive.
 			// (loading a repo vs. querying a repo afterward)
 			if (manager != null && !synchronous
 					&& (element instanceof MetadataRepositoryElement || element instanceof MetadataRepositories)) {
-				if (element.getCachedChildren().length == 0)
+				if (element.getCachedChildren().length == 0) {
 					return manager.getChildren(element);
+				}
 				return element.getChildren(element);
 			}
-			if (element.hasQueryable())
+			if (element.hasQueryable()) {
 				return element.getChildren(element);
+			}
 		}
 		return super.getChildren(parent);
 	}
 
 	public void setSynchronous(boolean sync) {
-		if (sync == true && manager != null)
+		if (sync == true && manager != null) {
 			manager.cancel(currentInput);
+		}
 		this.synchronous = sync;
 	}
 

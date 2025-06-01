@@ -50,7 +50,7 @@ public class MigrationWizard extends InstallWizard implements IImportWizard {
 	private IProfile toImportFrom;
 	Collection<IInstallableUnit> unitsToMigrate;
 	private URI[] reposToMigrate;
-	private List<URI> addedRepos = new ArrayList<>();
+	private final List<URI> addedRepos = new ArrayList<>();
 	private boolean firstTime = false;
 
 	public MigrationWizard() {
@@ -77,14 +77,15 @@ public class MigrationWizard extends InstallWizard implements IImportWizard {
 		setWindowTitle(firstTime ? ProvUIMessages.MigrationWizard_WINDOWTITLE_FIRSTRUN
 				: ProvUIMessages.MigrationWizard_WINDOWTITLE);
 		setDefaultPageImageDescriptor(ImageDescriptor
-				.createFromURL(Platform.getBundle(ProvUIActivator.PLUGIN_ID).getEntry("icons/install_wiz.png"))); //$NON-NLS-1$
+				.createFromURL(Platform.getBundle(ProvUIActivator.PLUGIN_ID).getEntry("icons/wizban/install_wiz.svg"))); //$NON-NLS-1$
 		setNeedsProgressMonitor(true);
 	}
 
 	@Override
 	protected ISelectableIUsPage createMainPage(IUElementListRoot input, Object[] selections) {
-		if (unitsToMigrate != null)
+		if (unitsToMigrate != null) {
 			return new MigrationPage(ui, this, toImportFrom, unitsToMigrate, firstTime);
+		}
 		return new MigrationPage(ui, this, firstTime);
 	}
 
@@ -147,12 +148,13 @@ public class MigrationWizard extends InstallWizard implements IImportWizard {
 		IProfileRegistry registry = ProvisioningUI.getDefaultUI().getSession().getProvisioningAgent()
 				.getService(IProfileRegistry.class);
 		for (long timestamp : registry.listProfileTimestamps(toImportFrom.getProfileId())) {
-			if (timestamp < toImportFrom.getTimestamp())
+			if (timestamp < toImportFrom.getTimestamp()) {
 				try {
 					registry.removeProfile(toImportFrom.getProfileId(), timestamp);
 				} catch (ProvisionException e) {
 					// Can't happen
 				}
+			}
 		}
 	}
 

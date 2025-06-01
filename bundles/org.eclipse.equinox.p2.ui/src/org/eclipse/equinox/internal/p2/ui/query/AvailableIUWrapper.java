@@ -34,7 +34,7 @@ import org.eclipse.equinox.p2.query.QueryUtil;
  */
 public class AvailableIUWrapper extends QueriedElementWrapper {
 
-	private boolean makeCategories;
+	private final boolean makeCategories;
 	private IProfile profile;
 	private boolean hideInstalledIUs = false;
 	private boolean drillDownChild = false;
@@ -121,24 +121,24 @@ public class AvailableIUWrapper extends QueriedElementWrapper {
 			isPatch = iuInformation.isPatch;
 		}
 		// subclass already made this an element, just set the install flag
-		if (item instanceof AvailableIUElement) {
-			AvailableIUElement element = (AvailableIUElement) item;
+		if (item instanceof AvailableIUElement element) {
 			element.setIsInstalled(isInstalled);
 			element.setIsUpdate(isUpdate);
 			element.setIsPatch(isPatch);
 			return super.wrap(item);
 		}
 		// If it's not an IU or element, we have nothing to do here
-		if (!(item instanceof IInstallableUnit))
+		if (!(item instanceof IInstallableUnit)) {
 			return super.wrap(item);
+		}
 
 		// We need to make an element
-		if (makeCategories && isCategory(iu))
+		if (makeCategories && isCategory(iu)) {
 			return super.wrap(new CategoryElement(parent, iu));
+		}
 
 		IIUElement element = makeDefaultElement(iu);
-		if (element instanceof AvailableIUElement) {
-			AvailableIUElement availableElement = (AvailableIUElement) element;
+		if (element instanceof AvailableIUElement availableElement) {
 			availableElement.setIsInstalled(isInstalled);
 			availableElement.setIsUpdate(isUpdate);
 			availableElement.setIsPatch(isPatch);
@@ -147,8 +147,9 @@ public class AvailableIUWrapper extends QueriedElementWrapper {
 	}
 
 	protected IIUElement makeDefaultElement(IInstallableUnit iu) {
-		if (parent instanceof AvailableIUElement)
+		if (parent instanceof AvailableIUElement) {
 			drillDownChild = ((AvailableIUElement) parent).shouldShowChildren();
+		}
 		return new AvailableIUElement(parent, iu, null, drillDownChild);
 	}
 

@@ -31,14 +31,14 @@ public class InstallableUnitEvent extends EventObject {
 	public static final int CONFIGURE = 3;
 	private static final long serialVersionUID = 3318712818811459886L;
 
-	private String phaseId;
-	private boolean prePhase;
+	private final String phaseId;
+	private final boolean prePhase;
 
-	private IProfile profile;
-	private IInstallableUnit iu;
-	private Touchpoint touchpoint;
-	private IStatus result;
-	private int type;
+	private final IProfile profile;
+	private final IInstallableUnit iu;
+	private final Touchpoint touchpoint;
+	private final IStatus result;
+	private final int type;
 
 	public InstallableUnitEvent(String phaseId, boolean prePhase, IProfile profile, IInstallableUnit iu, int type, Touchpoint touchpoint) {
 		this(phaseId, prePhase, profile, iu, type, touchpoint, null);
@@ -50,8 +50,9 @@ public class InstallableUnitEvent extends EventObject {
 		this.prePhase = prePhase;
 		this.profile = profile;
 		this.iu = iu;
-		if (type != UNINSTALL && type != INSTALL && type != UNCONFIGURE && type != CONFIGURE)
+		if (type != UNINSTALL && type != INSTALL && type != UNCONFIGURE && type != CONFIGURE) {
 			throw new IllegalArgumentException(Messages.InstallableUnitEvent_type_not_install_or_uninstall_or_configure);
+		}
 		this.type = type;
 		this.result = result;
 		this.touchpoint = touchpoint;

@@ -55,7 +55,7 @@ public class GradientCanvas extends Canvas {
 
 	private GradientInfo gradientInfo;
 
-	private class GradientInfo {
+	private static class GradientInfo {
 		Color[] gradientColors;
 
 		int[] percents;
@@ -70,7 +70,7 @@ public class GradientCanvas extends Canvas {
 
 	/**
 	 * Creates the form content control as a child of the provided parent.
-	 * 
+	 *
 	 * @param parent
 	 *            the parent widget
 	 */

@@ -6,7 +6,7 @@
 t https://www.eclipse.org/legal/epl-2.0/
 t
 t SPDX-License-Identifier: EPL-2.0
- * 
+ *
  * Contributors: IBM Corporation - initial API and implementation
  ******************************************************************************/
 
@@ -39,17 +39,19 @@ public class QuotedTokenizer implements Enumeration<String> {
 	 * @throws IllegalArgumentException if delim contains the quote character '"'
 	 */
 	public QuotedTokenizer(String str, String delim) {
-		if (delim != null && delim.indexOf('"') > -1)
+		if (delim != null && delim.indexOf('"') > -1) {
 			throw new IllegalArgumentException();
+		}
 
 		StringReader reader = new StringReader(str);
 		tokenizer = new StreamTokenizer(reader);
 
 		tokenizer.resetSyntax();
-		if (delim == null)
+		if (delim == null) {
 			tokenizer.ordinaryChars(0, 0x20);
-		else
+		} else {
 			tokenizer.wordChars(0, 0x20);
+		}
 		tokenizer.wordChars(0x21, 0xFF); //characters > 0xFF are also word chars
 		tokenizer.quoteChar('"');
 
@@ -77,15 +79,16 @@ public class QuotedTokenizer implements Enumeration<String> {
 		StringBuffer buffer = new StringBuffer(10);
 		int tokenType = token(buffer);
 
-		if (tokenType == StreamTokenizer.TT_EOF)
+		if (tokenType == StreamTokenizer.TT_EOF) {
 			throw new NoSuchElementException();
+		}
 
 		return buffer.toString();
 	}
 
 	/**
 	 * Get the next token, or check that there is a next token
-	 * @param buffer to hold the token, or null if we just want to know if there is one 
+	 * @param buffer to hold the token, or null if we just want to know if there is one
 	 */
 	private int token(StringBuffer buffer) {
 		int tokenType = 0;
@@ -107,7 +110,7 @@ public class QuotedTokenizer implements Enumeration<String> {
 					}
 					buffer.append(tokenizer.sval);
 
-					// peek at the next token, 
+					// peek at the next token,
 					try {
 						next = tokenizer.nextToken();
 						tokenizer.pushBack();
@@ -116,15 +119,17 @@ public class QuotedTokenizer implements Enumeration<String> {
 					}
 
 					//if the next token is a quote, it is still this token, otherwise we are done
-					if (next == '"')
+					if (next == '"') {
 						continue;
+					}
 					break get_token;
 				case StreamTokenizer.TT_EOF :
 					break get_token;
 				default :
 					//ordinary char from delim, if we have something we are done, otherwise keep looking for a token
-					if (buffer != null && buffer.length() > 0)
+					if (buffer != null && buffer.length() > 0) {
 						break get_token;
+					}
 					continue;
 			}
 		}

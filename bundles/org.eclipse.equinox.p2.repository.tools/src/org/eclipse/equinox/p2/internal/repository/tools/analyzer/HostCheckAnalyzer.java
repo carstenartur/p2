@@ -1,4 +1,4 @@
-/******************************************************************************* 
+/*******************************************************************************
 * Copyright (c) 2009, 2017 EclipseSource and others.
  *
  * This
@@ -35,8 +35,7 @@ public class HostCheckAnalyzer extends IUAnalyzer {
 
 	@Override
 	public void analyzeIU(IInstallableUnit iu) {
-		if (iu instanceof IInstallableUnitFragment) {
-			IInstallableUnitFragment fragment = (IInstallableUnitFragment) iu;
+		if (iu instanceof IInstallableUnitFragment fragment) {
 			Collection<IRequirement> hosts = fragment.getHost();
 			for (IRequirement req : hosts) {
 				IMatchExpression<IInstallableUnit> hostMatch = req.getMatches();

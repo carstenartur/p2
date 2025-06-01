@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Red Hat Inc. - Bug 460967
@@ -40,7 +40,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 /**
  * This class supports the common characteristics for views that manipulate
  * provisioning repositories.
- * 
+ *
  * @since 3.4
  */
 abstract class RepositoriesView extends ProvView {
@@ -231,7 +231,8 @@ abstract class RepositoriesView extends ProvView {
 			} catch (InterruptedException e) {
 				// ignore
 			}
-		} else
+		} else {
 			getRepositoryTracker().refreshRepositories(getRepositoryTracker().getKnownRepositories(getProvisioningUI().getSession()), getProvisioningUI().getSession(), new NullProgressMonitor());
+		}
 	}
 }

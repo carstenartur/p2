@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     EclipseSource - ongoing Development
@@ -18,12 +18,12 @@ import org.eclipse.equinox.p2.metadata.ITouchpointType;
 import org.eclipse.equinox.p2.metadata.Version;
 
 /**
- * Identifies a particular touchpoint. A touchpoint is identified by an id 
+ * Identifies a particular touchpoint. A touchpoint is identified by an id
  * and a version.
  */
 public class TouchpointType implements ITouchpointType {
-	private String id;//never null
-	private Version version;//never null
+	private final String id;//never null
+	private final Version version;//never null
 
 	public TouchpointType(String id, Version aVersion) {
 		this.id = id;
@@ -32,13 +32,15 @@ public class TouchpointType implements ITouchpointType {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (super.equals(obj))
+		}
+		if (super.equals(obj)) {
 			return true;
-		if (obj == null || !(obj instanceof ITouchpointType))
+		}
+		if (obj == null || !(obj instanceof ITouchpointType other)) {
 			return false;
-		ITouchpointType other = (ITouchpointType) obj;
+		}
 		return id.equals(other.getId()) && version.equals(other.getVersion());
 	}
 

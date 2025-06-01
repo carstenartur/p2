@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM - Initial API and implementation
  *******************************************************************************/
@@ -22,11 +22,13 @@ public class TaskHelper {
 
 	public static StringBuffer statusToString(IStatus status, int severities, StringBuffer b) {
 		IStatus[] nestedStatus = status.getChildren();
-		if (b == null)
+		if (b == null) {
 			b = new StringBuffer();
+		}
 		if (severities == -1 || (status.getSeverity() & severities) != 0) {
-			if (b.length() > 0)
+			if (b.length() > 0) {
 				b.append('\n');
+			}
 			b.append(status.getMessage());
 		}
 		for (IStatus s : nestedStatus) {

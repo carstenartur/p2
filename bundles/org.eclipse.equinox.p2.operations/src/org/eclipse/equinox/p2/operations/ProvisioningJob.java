@@ -68,8 +68,9 @@ public abstract class ProvisioningJob extends Job {
 
 		@Override
 		public boolean isCanceled() {
-			if (super.isCanceled())
+			if (super.isCanceled()) {
 				return true;
+			}
 			return additionalMonitor.isCanceled();
 		}
 
@@ -132,7 +133,7 @@ public abstract class ProvisioningJob extends Job {
 	 */
 	public static final int RESTART_ONLY = 3;
 
-	private ProvisioningSession session;
+	private final ProvisioningSession session;
 	private IProgressMonitor additionalMonitor;
 
 	/**
@@ -160,10 +161,12 @@ public abstract class ProvisioningJob extends Job {
 	}
 
 	private IProgressMonitor getCombinedProgressMonitor(IProgressMonitor mon1, IProgressMonitor mon2) {
-		if (mon1 == null)
+		if (mon1 == null) {
 			return mon2;
-		if (mon2 == null)
+		}
+		if (mon2 == null) {
 			return mon1;
+		}
 		return new DoubleProgressMonitor(mon1, mon2);
 	}
 
@@ -225,11 +228,13 @@ public abstract class ProvisioningJob extends Job {
 	 * @return a status that can be used to describe the exception
 	 */
 	protected IStatus getErrorStatus(String message, ProvisionException e) {
-		if (message == null)
-			if (e == null)
+		if (message == null) {
+			if (e == null) {
 				message = NLS.bind(Messages.ProvisioningJob_GenericErrorStatusMessage, getName());
-			else
+			} else {
 				message = e.getLocalizedMessage();
+			}
+		}
 		return new Status(IStatus.ERROR, Constants.BUNDLE_ID, message, e);
 	}
 

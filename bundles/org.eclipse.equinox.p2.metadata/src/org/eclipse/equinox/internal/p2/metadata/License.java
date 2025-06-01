@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2017 Genuitec, LLC and others. 
+ * Copyright (c) 2008, 2017 Genuitec, LLC and others.
  *
  * This
  * program and the accompanying materials are made available under the terms of
@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  * 		Genuitec, LLC - initial API and implementation
  * 		IBM Corporation - ongoing development
  *      EclipseSource - ongoing development
@@ -38,7 +38,7 @@ public class License implements ILicense {
 	/**
 	 * The <code>location</code> is the URL of the license.
 	 */
-	private URI location;
+	private final URI location;
 
 	/**
 	 * The <code>digest</code> is the cached message digest of the normalized body
@@ -49,14 +49,15 @@ public class License implements ILicense {
 	 * Creates a new license object which is identified by users using the <code>body</code> field.
 	 * The body should contain either the full text of the license or an summary for a license
 	 * fully specified in the given location.
-	 * 
+	 *
 	 * @param location the location of a document containing the full license, or <code>null</code>
 	 * @param body the license body, cannot be <code>null</code>
 	 * @throws IllegalArgumentException when the <code>body</code> is <code>null</code>
 	 */
 	public License(URI location, String body, String uuid) {
-		if (body == null)
+		if (body == null) {
 			throw new IllegalArgumentException("body cannot be null"); //$NON-NLS-1$
+		}
 		this.body = body;
 		this.location = location;
 		this.digest = uuid;
@@ -64,7 +65,7 @@ public class License implements ILicense {
 
 	/**
 	 * Returns the location of a document containing the full license.
-	 * 
+	 *
 	 * @return the location of the license document, or <code>null</code>
 	 */
 	@Override
@@ -88,22 +89,25 @@ public class License implements ILicense {
 	 */
 	@Override
 	public synchronized String getUUID() {
-		if (digest == null)
+		if (digest == null) {
 			digest = calculateLicenseDigest().toString(16);
+		}
 
 		return digest;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj == this)
+		if (obj == this) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (obj instanceof ILicense) {
-			ILicense other = (ILicense) obj;
-			if (other.getUUID().equals(getUUID()))
+		}
+		if (obj instanceof ILicense other) {
+			if (other.getUUID().equals(getUUID())) {
 				return true;
+			}
 		}
 		return false;
 	}
@@ -140,10 +144,12 @@ public class License implements ILicense {
 				foundWhitespace = true;
 				c = text.charAt(++i);
 			}
-			if (foundWhitespace)
+			if (foundWhitespace) {
 				result.append(' ');
-			if (i < length)
+			}
+			if (i < length) {
 				result.append(c);
+			}
 		}
 		return result.toString();
 	}

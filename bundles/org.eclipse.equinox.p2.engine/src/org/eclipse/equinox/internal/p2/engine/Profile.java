@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2007, 2023 IBM Corporation and others.
+ * Copyright (c) 2007, 2025 IBM Corporation and others.
  *
  * This
  * program and the accompanying materials are made available under the terms of
@@ -32,7 +32,6 @@ import org.eclipse.equinox.p2.metadata.expression.IExpression;
 import org.eclipse.equinox.p2.metadata.index.IIndex;
 import org.eclipse.equinox.p2.query.IQuery;
 import org.eclipse.equinox.p2.query.IQueryResult;
-import org.eclipse.osgi.util.NLS;
 
 public class Profile extends IndexProvider<IInstallableUnit> implements IProfile {
 
@@ -68,9 +67,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	/**
 	 * This storage is to be used by the touchpoints to store data.
 	 */
-	private OrderedProperties storage = new OrderedProperties();
+	private final OrderedProperties storage = new OrderedProperties();
 
-	private IUMap ius = new IUMap();
+	private final IUMap ius = new IUMap();
 	final Map<IInstallableUnit, OrderedProperties> iuProperties = new HashMap<>();
 	private boolean changed = false;
 
@@ -80,12 +79,13 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	public Profile(IProvisioningAgent agent, String profileId, Profile parent, Map<String, String> properties) {
 		this.agent = agent;
 		if (profileId == null || profileId.length() == 0) {
-			throw new IllegalArgumentException(NLS.bind(Messages.Profile_Null_Profile_Id, null));
+			throw new IllegalArgumentException(Messages.Profile_Null_Profile_Id);
 		}
 		this.profileId = profileId;
 		setParent(parent);
-		if (properties != null)
+		if (properties != null) {
 			storage.putAll(properties);
+		}
 
 	}
 
@@ -99,15 +99,18 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	}
 
 	public void setParent(Profile profile) {
-		if (profile == parentProfile)
+		if (profile == parentProfile) {
 			return;
+		}
 
-		if (parentProfile != null)
+		if (parentProfile != null) {
 			parentProfile.removeSubProfile(profileId);
+		}
 
 		parentProfile = profile;
-		if (parentProfile != null)
+		if (parentProfile != null) {
 			parentProfile.addSubProfile(profileId);
+		}
 	}
 
 	/*
@@ -119,19 +122,22 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	}
 
 	public void addSubProfile(String subProfileId) throws IllegalArgumentException {
-		if (subProfileIds == null)
+		if (subProfileIds == null) {
 			subProfileIds = new ArrayList<>();
+		}
 
-		if (!subProfileIds.contains(subProfileId))
+		if (!subProfileIds.contains(subProfileId)) {
 			subProfileIds.add(subProfileId);
+		}
 
 		//		if (!subProfileIds.add(subProfileId))
 		//			throw new IllegalArgumentException(NLS.bind(Messages.Profile_Duplicate_Child_Profile_Id, new String[] {subProfileId, this.getProfileId()}));
 	}
 
 	public void removeSubProfile(String subProfileId) throws IllegalArgumentException {
-		if (subProfileIds != null)
+		if (subProfileIds != null) {
 			subProfileIds.remove(subProfileId);
+		}
 	}
 
 	public boolean hasSubProfiles() {
@@ -139,8 +145,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	}
 
 	public List<String> getSubProfileIds() {
-		if (subProfileIds == null)
+		if (subProfileIds == null) {
 			return Collections.emptyList();
+		}
 		return Collections.unmodifiableList(subProfileIds);
 	}
 
@@ -174,20 +181,23 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	@Override
 	public synchronized IIndex<IInstallableUnit> getIndex(String memberName) {
 		if (InstallableUnit.MEMBER_ID.equals(memberName)) {
-			if (idIndex == null)
+			if (idIndex == null) {
 				idIndex = new IdIndex(ius);
+			}
 			return idIndex;
 		}
 
 		if (InstallableUnit.MEMBER_PROVIDED_CAPABILITIES.equals(memberName)) {
-			if (capabilityIndex == null)
+			if (capabilityIndex == null) {
 				capabilityIndex = new CapabilityIndex(ius.iterator());
+			}
 			return capabilityIndex;
 		}
 
 		if (InstallableUnit.MEMBER_PROFILE_PROPERTIES.equals(memberName)) {
-			if (propertiesIndex == null)
+			if (propertiesIndex == null) {
 				propertiesIndex = new ProfilePropertyIndex();
+			}
 			return propertiesIndex;
 		}
 		return null;
@@ -205,16 +215,18 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 
 	@Override
 	public Object getManagedProperty(Object client, String memberName, Object key) {
-		if (!(client instanceof IInstallableUnit))
+		if (!(client instanceof IInstallableUnit iu)) {
 			return null;
-		IInstallableUnit iu = (IInstallableUnit) client;
-		if (InstallableUnit.MEMBER_PROFILE_PROPERTIES.equals(memberName) && key instanceof String)
+		}
+		if (InstallableUnit.MEMBER_PROFILE_PROPERTIES.equals(memberName) && key instanceof String) {
 			return getInstallableUnitProperty(iu, (String) key);
+		}
 		if (InstallableUnit.MEMBER_TRANSLATED_PROPERTIES.equals(memberName)) {
 			synchronized (this) {
-				if (translationSupport == null)
+				if (translationSupport == null) {
 					translationSupport = new TranslationSupport(this);
-				return key instanceof KeyWithLocale ? translationSupport.getIUProperty(iu, (KeyWithLocale) key) : translationSupport.getIUProperty(iu, key.toString());
+				}
+				return key instanceof KeyWithLocale k ? translationSupport.getIUProperty(iu, k) : translationSupport.getIUProperty(iu, key.toString());
 			}
 		}
 		return null;
@@ -222,16 +234,18 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 
 	@Override
 	public IQueryResult<IInstallableUnit> available(IQuery<IInstallableUnit> query, IProgressMonitor monitor) {
-		if (surrogateProfileHandler != null)
+		if (surrogateProfileHandler != null) {
 			return surrogateProfileHandler.queryProfile(this, query, monitor);
+		}
 		return query(query, new NullProgressMonitor());
 	}
 
 	@Override
 	public String getInstallableUnitProperty(IInstallableUnit iu, String key) {
 		OrderedProperties properties = iuProperties.get(iu);
-		if (properties == null)
+		if (properties == null) {
 			return null;
+		}
 
 		return properties.getProperty(key);
 	}
@@ -251,12 +265,14 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	public String removeInstallableUnitProperty(IInstallableUnit iu, String key) {
 		//		String iuKey = createIUKey(iu);
 		OrderedProperties properties = iuProperties.get(iu);
-		if (properties == null)
+		if (properties == null) {
 			return null;
+		}
 
 		String oldValue = properties.remove(key);
-		if (properties.isEmpty())
+		if (properties.isEmpty()) {
 			iuProperties.remove(iu);
+		}
 
 		changed = true;
 		return oldValue;
@@ -272,8 +288,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 
 	@Override
 	public Map<String, String> getProperties() {
-		if (parentProfile == null)
+		if (parentProfile == null) {
 			return getLocalProperties();
+		}
 
 		Map<String, String> properties = new HashMap<>(parentProfile.getProperties());
 		properties.putAll(storage);
@@ -296,8 +313,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 
 	public void addInstallableUnit(IInstallableUnit iu) {
 		iu = iu.unresolved();
-		if (ius.contains(iu))
+		if (ius.contains(iu)) {
 			return;
+		}
 
 		ius.add(iu);
 		changed = true;
@@ -312,8 +330,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 	@Override
 	public Map<String, String> getInstallableUnitProperties(IInstallableUnit iu) {
 		OrderedProperties properties = iuProperties.get(iu);
-		if (properties == null)
+		if (properties == null) {
 			properties = new OrderedProperties();
+		}
 
 		return OrderedProperties.unmodifiableProperties(properties);
 	}
@@ -339,12 +358,14 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 
 	public Profile snapshot() {
 		Profile parentSnapshot = null;
-		if (parentProfile != null)
+		if (parentProfile != null) {
 			parentSnapshot = parentProfile.snapshot();
+		}
 
 		Profile snapshot = new Profile(agent, profileId, parentSnapshot, storage);
-		if (surrogateProfileHandler != null)
+		if (surrogateProfileHandler != null) {
 			snapshot.setSurrogateProfileHandler(surrogateProfileHandler);
+		}
 		snapshot.setTimestamp(timestamp);
 
 		if (subProfileIds != null) {
@@ -357,8 +378,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 			IInstallableUnit iu = iter.next();
 			snapshot.addInstallableUnit(iu);
 			Map<String, String> properties = getInstallableUnitProperties(iu);
-			if (properties != null)
+			if (properties != null) {
 				snapshot.addInstallableUnitProperties(iu, properties);
+			}
 		}
 		snapshot.setChanged(false);
 		return snapshot;
@@ -380,8 +402,9 @@ public class Profile extends IndexProvider<IInstallableUnit> implements IProfile
 		//		Set orphans = new HashSet();
 		Collection<IInstallableUnit> toRemove = new ArrayList<>();
 		for (IInstallableUnit iu : keys) {
-			if (!ius.contains(iu))
+			if (!ius.contains(iu)) {
 				toRemove.add(iu);
+			}
 		}
 
 		for (IInstallableUnit iu : toRemove) {

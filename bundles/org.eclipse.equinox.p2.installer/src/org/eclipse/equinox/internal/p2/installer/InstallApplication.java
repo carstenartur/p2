@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Code 9 - ongoing development
@@ -30,7 +30,7 @@ import org.osgi.framework.ServiceReference;
 
 /**
  * This is a simple installer application built using P2.  The application must be given
- * an "install description" as a command line argument or system property 
+ * an "install description" as a command line argument or system property
  * ({@link #SYS_PROP_INSTALL_DESCRIPTION}).  The application reads this
  * install description, and looks for an existing profile in the local install registry that
  * matches it.  If no profile is found, it creates a new profile, and installs the root
@@ -64,11 +64,13 @@ public class InstallApplication implements IApplication {
 	 * before p2 has been started.
 	 */
 	public static Object getService(BundleContext context, String name) {
-		if (context == null)
+		if (context == null) {
 			return null;
+		}
 		ServiceReference<?> reference = context.getServiceReference(name);
-		if (reference == null)
+		if (reference == null) {
 			return null;
+		}
 		Object result = context.getService(reference);
 		context.ungetService(reference);
 		return result;
@@ -106,11 +108,13 @@ public class InstallApplication implements IApplication {
 		//unwrap target exception if applicable
 		if (failure instanceof InvocationTargetException) {
 			cause = ((InvocationTargetException) failure).getTargetException();
-			if (cause == null)
+			if (cause == null) {
 				cause = failure;
+			}
 		}
-		if (cause instanceof CoreException)
+		if (cause instanceof CoreException) {
 			return ((CoreException) cause).getStatus();
+		}
 		return new Status(IStatus.ERROR, InstallerActivator.PI_INSTALLER, Messages.App_Error, cause);
 	}
 
@@ -150,11 +154,12 @@ public class InstallApplication implements IApplication {
 					return IApplication.EXIT_OK;
 				}
 				//just exit after a successful update
-				if (!operation.isFirstInstall())
+				if (!operation.isFirstInstall()) {
 					return IApplication.EXIT_OK;
-				if (canAutoStart(description))
+				}
+				if (canAutoStart(description)) {
 					launchProduct(description);
-				else {
+				} else {
 					//notify user that the product was installed
 					//TODO present the user an option to immediately start the product
 					advisor.setResult(result);
@@ -169,15 +174,17 @@ public class InstallApplication implements IApplication {
 			}
 			return IApplication.EXIT_OK;
 		} finally {
-			if (advisor != null)
+			if (advisor != null) {
 				advisor.stop();
+			}
 		}
 	}
 
 	private void initializeProxySupport() {
 		IProxyService proxies = (IProxyService) getService(InstallerActivator.getDefault().getContext(), IProxyService.class.getName());
-		if (proxies == null)
+		if (proxies == null) {
 			return;
+		}
 		proxies.setProxiesEnabled(true);
 		proxies.setSystemProxiesEnabled(true);
 	}
@@ -187,11 +194,13 @@ public class InstallApplication implements IApplication {
 	 * description can be started automatically.
 	 */
 	private boolean canAutoStart(InstallDescription description) {
-		if (!description.isAutoStart())
+		if (!description.isAutoStart()) {
 			return false;
+		}
 		//can't start if we don't know launcher name and path
-		if (description.getLauncherName() == null || description.getInstallLocation() == null)
+		if (description.getLauncherName() == null || description.getInstallLocation() == null) {
 			return false;
+		}
 		return advisor.promptForLaunch(description);
 	}
 
@@ -200,8 +209,9 @@ public class InstallApplication implements IApplication {
 	 */
 	private IProvisioningAgent startAgent(InstallDescription description) throws CoreException {
 		IPath installLocation = description.getInstallLocation();
-		if (installLocation == null)
+		if (installLocation == null) {
 			throw fail(Messages.App_NoInstallLocation, null);
+		}
 		//set agent location if specified
 		IPath agentLocation = description.getAgentLocation();
 		try {

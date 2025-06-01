@@ -48,12 +48,12 @@ public class ProvElementLabelProvider extends LabelProvider implements ITableLab
 		}
 		if (obj instanceof IProfile) {
 			String name = ((IProfile) obj).getProperty(IProfile.PROP_NAME);
-			if (name != null && name.length() > 0)
+			if (name != null && name.length() > 0) {
 				return name;
+			}
 			return ((IProfile) obj).getProfileId();
 		}
-		if (obj instanceof IInstallableUnit) {
-			IInstallableUnit iu = (IInstallableUnit) obj;
+		if (obj instanceof IInstallableUnit iu) {
 			return iu.getId();
 		}
 		if (obj instanceof IRepository<?>) {
@@ -70,12 +70,10 @@ public class ProvElementLabelProvider extends LabelProvider implements ITableLab
 			}
 			return URIUtil.toUnencodedString(((IRepositoryElement<?>) obj).getLocation());
 		}
-		if (obj instanceof IArtifactKey) {
-			IArtifactKey key = (IArtifactKey) obj;
+		if (obj instanceof IArtifactKey key) {
 			return key.getId() + " [" + key.getClassifier() + "]"; //$NON-NLS-1$//$NON-NLS-2$
 		}
-		if (obj instanceof IProcessingStepDescriptor) {
-			IProcessingStepDescriptor descriptor = (IProcessingStepDescriptor) obj;
+		if (obj instanceof IProcessingStepDescriptor descriptor) {
 			return descriptor.getProcessorId();
 		}
 		if (obj instanceof IRequiredCapability) {
@@ -125,15 +123,17 @@ public class ProvElementLabelProvider extends LabelProvider implements ITableLab
 			case 0 :
 				return getText(element);
 			case 1 :
-				if (element instanceof ProfileElement)
+				if (element instanceof ProfileElement) {
 					element = ((ProfileElement) element).getAdapter(IProfile.class);
+				}
 
 				if (element instanceof IProfile) {
 					return ((IProfile) element).getProperty(IProfile.PROP_DESCRIPTION);
 				}
 				if (element instanceof IIUElement) {
-					if (((IIUElement) element).shouldShowVersion())
+					if (((IIUElement) element).shouldShowVersion()) {
 						return ((IIUElement) element).getIU().getVersion().toString();
+					}
 				}
 				if (element instanceof RollbackProfileElement) {
 					if (((RollbackProfileElement) element).getProfileTag() != null) {
@@ -150,8 +150,7 @@ public class ProvElementLabelProvider extends LabelProvider implements ITableLab
 				if (element instanceof IRepositoryElement<?>) {
 					return URIUtil.toUnencodedString(((IRepositoryElement<?>) element).getLocation());
 				}
-				if (element instanceof IArtifactKey) {
-					IArtifactKey key = (IArtifactKey) element;
+				if (element instanceof IArtifactKey key) {
 					return key.getVersion().toString();
 				}
 				if (element instanceof IRequiredCapability) {

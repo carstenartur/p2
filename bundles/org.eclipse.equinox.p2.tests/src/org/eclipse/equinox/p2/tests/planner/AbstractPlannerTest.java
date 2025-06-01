@@ -64,10 +64,9 @@ public abstract class AbstractPlannerTest extends AbstractProvisioningTest {
 		Map<String, InstallableUnitOperand> result = new HashMap<>();
 		Operand[] operands = ((ProvisioningPlan) plan).getOperands();
 		for (Operand oper : operands) {
-			if (!(oper instanceof InstallableUnitOperand)) {
+			if (!(oper instanceof InstallableUnitOperand operand)) {
 				continue;
 			}
-			InstallableUnitOperand operand = (InstallableUnitOperand) oper;
 			String id = operand.first() == null ? operand.second().getId() : operand.first().getId();
 			InstallableUnitOperand existing = result.get(id);
 			if (existing == null) {
@@ -177,29 +176,32 @@ public abstract class AbstractPlannerTest extends AbstractProvisioningTest {
 			// see if there is an operand in the actual plan which involved this IU.
 			boolean found = false;
 			for (Operand actualOperand : actualOperands) {
-				if (!(actualOperand instanceof InstallableUnitOperand)) {
+				if (!(actualOperand instanceof InstallableUnitOperand actual)) {
 					continue;
 				}
-				InstallableUnitOperand actual = (InstallableUnitOperand) actualOperand;
 				// handle removals
 				if (second == null) {
-					if (actual.second() != null)
+					if (actual.second() != null) {
 						continue;
-					if (!actual.first().getId().equals(first.getId()))
+					}
+					if (!actual.first().getId().equals(first.getId())) {
 						continue;
+					}
 					// we are doing a removal and we have IUs with the same id... do they have the same version too?
 					assertEquals("0.5", first, actual.first());
 				}
 				// treat additions and updates the same as long as we end up with the same IU in the end
 				assertNotNull("1.2 " + actual, actual.second());
-				if (!actual.second().getId().equals(second.getId()))
+				if (!actual.second().getId().equals(second.getId())) {
 					continue;
+				}
 				// we are doing an install or upgrade and we have IUs with the same id... do they have the same version too?
 				assertEquals("2.0", second, actual.second());
 				found = true;
 			}
-			if (!found)
+			if (!found) {
 				fail("3.0 Plan is missing install operand for: " + second);
+			}
 		}
 	}
 

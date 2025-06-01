@@ -23,7 +23,7 @@ public class Feature {
 	private String id;
 	private String url;
 	private String version;
-	private Site site;
+	private final Site site;
 	private String pluginIdentifier;
 	private String pluginVersion;
 	private String application;
@@ -32,8 +32,9 @@ public class Feature {
 
 	public Feature(Site site) {
 		super();
-		if (site == null)
+		if (site == null) {
 			throw new IllegalArgumentException(Messages.empty_feature_site);
+		}
 		this.site = site;
 	}
 
@@ -107,18 +108,22 @@ public class Feature {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Feature))
+		if (!(obj instanceof Feature other)) {
 			return false;
-		Feature other = (Feature) obj;
-		if (!equals(getId(), other.getId()))
+		}
+		if (!equals(getId(), other.getId())) {
 			return false;
+		}
 		// shallow equals here. sites should never be null
-		if (!equals(getSite().getUrl(), other.getSite().getUrl()))
+		if (!equals(getSite().getUrl(), other.getSite().getUrl())) {
 			return false;
-		if (!equals(getUrl(), other.getUrl()))
+		}
+		if (!equals(getUrl(), other.getUrl())) {
 			return false;
-		if (!equals(getVersion(), other.getVersion()))
+		}
+		if (!equals(getVersion(), other.getVersion())) {
 			return false;
+		}
 		return true;
 	}
 

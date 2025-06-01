@@ -24,7 +24,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 /**
  * UpdateHandler invokes the check for updates UI
- * 
+ *
  * @since 3.4
  */
 public class UpdateHandler extends PreloadingRepositoryHandler {
@@ -78,8 +78,9 @@ public class UpdateHandler extends PreloadingRepositoryHandler {
 		operation = getProvisioningUI().getUpdateOperation(null, null);
 		// check for updates
 		IStatus resolveStatus = operation.resolveModal(monitor);
-		if (resolveStatus.getSeverity() == IStatus.CANCEL)
+		if (resolveStatus.getSeverity() == IStatus.CANCEL) {
 			throw new OperationCanceledException();
+		}
 	}
 
 	@Override

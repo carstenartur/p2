@@ -27,7 +27,7 @@ import org.eclipse.swt.dnd.*;
 /**
  * Defines drop behavior for selected IUs to mean install the IU on the target
  * profile.
- * 
+ *
  * @since 3.4
  */
 public class InstallIUDropAdapter extends ViewerDropAdapter {
@@ -36,7 +36,7 @@ public class InstallIUDropAdapter extends ViewerDropAdapter {
 
 	/**
 	 * Constructs a new drop adapter.
-	 * 
+	 *
 	 * @param viewer
 	 *            the navigator's viewer
 	 */
@@ -83,7 +83,7 @@ public class InstallIUDropAdapter extends ViewerDropAdapter {
 
 	/**
 	 * Perform the drop.
-	 * 
+	 *
 	 * @see org.eclipse.swt.dnd.DropTargetListener#drop(org.eclipse.swt.dnd.DropTargetEvent)
 	 */
 	@Override
@@ -91,12 +91,14 @@ public class InstallIUDropAdapter extends ViewerDropAdapter {
 		if (DEBUG) {
 			System.out.println("Perform drop on target: " + getCurrentTarget() + " with data: " + data); //$NON-NLS-1$//$NON-NLS-2$
 		}
-		if (getCurrentTarget() == null || data == null)
+		if (getCurrentTarget() == null || data == null) {
 			return false;
+		}
 
 		ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
-		if (!(selection instanceof IStructuredSelection) || selection.isEmpty())
+		if (!(selection instanceof IStructuredSelection) || selection.isEmpty()) {
 			return false;
+		}
 
 		String profileId = getProfileTarget(getCurrentTarget());
 		if (getCurrentOperation() == DND.DROP_COPY && profileId != null) {
@@ -105,7 +107,7 @@ public class InstallIUDropAdapter extends ViewerDropAdapter {
 
 				@Override
 				public void addSelectionChangedListener(ISelectionChangedListener listener) {
-					// Ignore because the selection won't change 
+					// Ignore because the selection won't change
 				}
 
 				@Override
@@ -128,8 +130,9 @@ public class InstallIUDropAdapter extends ViewerDropAdapter {
 				}
 			};
 			InstallAction action = new InstallAction(ProvAdminUIActivator.getDefault().getProvisioningUI(profileId), selectionProvider);
-			if (DEBUG)
+			if (DEBUG) {
 				System.out.println("Running install action"); //$NON-NLS-1$
+			}
 			action.run();
 			return true;
 		}
@@ -181,18 +184,16 @@ public class InstallIUDropAdapter extends ViewerDropAdapter {
 
 	/**
 	 * Returns the resource selection from the LocalSelectionTransfer.
-	 * 
+	 *
 	 * @return the resource selection from the LocalSelectionTransfer
 	 */
 	private IInstallableUnit[] getSelectedIUs() {
 		ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
 		List<IInstallableUnit> ius = new ArrayList<>();
 
-		if (!(selection instanceof IStructuredSelection) || selection.isEmpty()) {
+		if (!(selection instanceof IStructuredSelection structuredSelection) || selection.isEmpty()) {
 			return null;
 		}
-		IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-
 		Iterator<?> iter = structuredSelection.iterator();
 		while (iter.hasNext()) {
 			IInstallableUnit iu = ProvUI.getAdapter(iter.next(), IInstallableUnit.class);

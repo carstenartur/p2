@@ -7,7 +7,7 @@
  *  https://www.eclipse.org/legal/epl-2.0/
  *
  *  SPDX-License-Identifier: EPL-2.0
- * 
+ *
  *  Contributors:
  *     IBM Corporation - initial API and implementation
  *     Johannes Michler <orgler@gmail.com> - Bug 321568 -  [ui] Preference for automatic-update-reminder doesn't work in multilanguage-environments
@@ -34,7 +34,7 @@ import org.eclipse.ui.*;
 
 /**
  * Preference page for automated updates.
- * 
+ *
  * @since 3.4
  */
 public class AutomaticUpdatesPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
@@ -294,9 +294,11 @@ public class AutomaticUpdatesPreferencePage extends PreferencePage implements IW
 	private int getFuzzyRecurrence(IPreferenceStore pref, boolean useDefault) {
 		String day = useDefault ? pref.getDefaultString(AutomaticUpdateScheduler.P_FUZZY_RECURRENCE)
 				: pref.getString(AutomaticUpdateScheduler.P_FUZZY_RECURRENCE);
-		for (int i = 0; i < AutomaticUpdateScheduler.FUZZY_RECURRENCE.length; i++)
-			if (AutomaticUpdateScheduler.FUZZY_RECURRENCE[i].equals(day))
+		for (int i = 0; i < AutomaticUpdateScheduler.FUZZY_RECURRENCE.length; i++) {
+			if (AutomaticUpdateScheduler.FUZZY_RECURRENCE[i].equals(day)) {
 				return i;
+			}
+		}
 		return 0;
 	}
 }

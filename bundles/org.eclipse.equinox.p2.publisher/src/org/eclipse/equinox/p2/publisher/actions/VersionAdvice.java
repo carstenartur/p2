@@ -8,8 +8,8 @@
  * https://www.eclipse.org/legal/epl-2.0/
  *
  * SPDX-License-Identifier: EPL-2.0
- * 
- * Contributors: 
+ *
+ * Contributors:
  *   Code 9 - initial API and implementation
  *   IBM - ongoing development
  ******************************************************************************/
@@ -29,7 +29,7 @@ public class VersionAdvice extends AbstractAdvice implements IVersionAdvice {
 	Map<String, Map<String, Version>> versions = new HashMap<>(11);
 
 	/**
-	 * Load the given namespace with version mappings from the properties file at 
+	 * Load the given namespace with version mappings from the properties file at
 	 * the given location.  The properties file is expected to be in the normal format
 	 * produced and consumed by PDE Build.
 	 * @param namespace the namespace to populate.  If "null" is passed
@@ -42,8 +42,9 @@ public class VersionAdvice extends AbstractAdvice implements IVersionAdvice {
 
 	public void load(String namespace, String location, String idSuffix) {
 		File file = new File(location);
-		if (namespace == null)
+		if (namespace == null) {
 			namespace = "null"; //$NON-NLS-1$
+		}
 
 		Map<String, String> properties;
 		try (InputStream stream = new BufferedInputStream(new FileInputStream(file))) {
@@ -53,8 +54,9 @@ public class VersionAdvice extends AbstractAdvice implements IVersionAdvice {
 		}
 		for (Entry<String, String> entry : properties.entrySet()) {
 			String key = entry.getKey();
-			if (idSuffix != null)
+			if (idSuffix != null) {
 				key += idSuffix;
+			}
 			setVersion(namespace, key, Version.parseVersion(entry.getValue()));
 		}
 	}
@@ -71,13 +73,15 @@ public class VersionAdvice extends AbstractAdvice implements IVersionAdvice {
 		// if no one says anything then don't say anything.  someone else might have an opinion
 		if (values != null) {
 			Version result = values.get(id);
-			if (result != null)
+			if (result != null) {
 				return result;
+			}
 		}
 
 		values = versions.get("null"); //$NON-NLS-1$
-		if (values == null)
+		if (values == null) {
 			return null;
+		}
 		return values.get(id);
 	}
 
@@ -91,28 +95,31 @@ public class VersionAdvice extends AbstractAdvice implements IVersionAdvice {
 		Map<String, Version> values = versions.get(namespace);
 		if (values == null) {
 			// if we are clearing values then there is nothing to do
-			if (version == null)
+			if (version == null) {
 				return;
+			}
 			values = new HashMap<>();
 			versions.put(namespace, values);
 		}
-		if (version == null)
+		if (version == null) {
 			values.remove(id);
-		else
+		} else {
 			values.put(id, version);
+		}
 	}
 
 	public IPublisherAdvice merge(IPublisherAdvice advice) {
-		if (!(advice instanceof VersionAdvice))
+		if (!(advice instanceof VersionAdvice source)) {
 			return this;
-		VersionAdvice source = (VersionAdvice) advice;
+		}
 		for (String namespace : source.versions.keySet()) {
 			Map<String, Version> myValues = versions.get(namespace);
 			Map<String, Version> sourceValues = source.versions.get(namespace);
-			if (myValues == null)
+			if (myValues == null) {
 				versions.put(namespace, sourceValues);
-			else if (sourceValues != null)
+			} else if (sourceValues != null) {
 				versions.put(namespace, merge(myValues, sourceValues));
+			}
 		}
 		return this;
 	}
@@ -120,8 +127,9 @@ public class VersionAdvice extends AbstractAdvice implements IVersionAdvice {
 	private Map<String, Version> merge(Map<String, Version> myValues, Map<String, Version> sourceValues) {
 		Map<String, Version> result = new HashMap<>(myValues);
 		for (String key : sourceValues.keySet()) {
-			if (result.get(key) == null)
+			if (result.get(key) == null) {
 				result.put(key, sourceValues.get(key));
+			}
 		}
 		return result;
 	}

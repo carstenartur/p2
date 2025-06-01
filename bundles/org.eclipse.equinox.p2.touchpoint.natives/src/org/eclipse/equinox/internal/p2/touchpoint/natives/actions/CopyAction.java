@@ -42,7 +42,7 @@ public class CopyAction extends ProvisioningAction {
 
 	/**
 	 * Perform the copy.
-	 * 
+	 *
 	 * @param parameters  action parameters
 	 * @param restoreable flag indicating if the operation should be backed up
 	 * @return status
@@ -51,14 +51,16 @@ public class CopyAction extends ProvisioningAction {
 		String target = (String) parameters.get(ActionConstants.PARM_COPY_TARGET);
 		IBackupStore backupStore = restoreable ? (IBackupStore) parameters.get(NativeTouchpoint.PARM_BACKUP) : null;
 
-		if (target == null)
+		if (target == null) {
 			return new Status(IStatus.ERROR, Activator.ID, IStatus.OK,
 					NLS.bind(Messages.param_not_set, ActionConstants.PARM_COPY_TARGET, ID), null);
+		}
 
 		String source = (String) parameters.get(ActionConstants.PARM_COPY_SOURCE);
-		if (source == null)
+		if (source == null) {
 			return new Status(IStatus.ERROR, Activator.ID, IStatus.OK,
 					NLS.bind(Messages.param_not_set, ActionConstants.PARM_COPY_SOURCE, ID), null);
+		}
 
 		String overwrite = (String) parameters.get(ActionConstants.PARM_COPY_OVERWRITE);
 		Profile profile = (Profile) parameters.get(ActionConstants.PARM_PROFILE);
@@ -116,39 +118,46 @@ public class CopyAction extends ProvisioningAction {
 
 	/**
 	 * Merge-copy file or directory.
-	 * 
+	 *
 	 * @param copiedFiles - ArrayList where copied files are collected
 	 */
 	private static void xcopy(ArrayList<File> copiedFiles, File source, File target, boolean overwrite,
 			IBackupStore backupStore) throws IOException {
-		if (!source.exists())
+		if (!source.exists()) {
 			throw new IOException("Source: " + source + " does not exists"); //$NON-NLS-1$//$NON-NLS-2$
+		}
 
 		if (source.isDirectory()) {
 			if (target.exists() && target.isFile()) {
-				if (!overwrite)
+				if (!overwrite) {
 					throw new IOException("Target: " + target + " already exists"); //$NON-NLS-1$//$NON-NLS-2$
-				if (backupStore != null)
+				}
+				if (backupStore != null) {
 					backupStore.backup(target);
-				else
+				} else {
 					target.delete();
+				}
 			}
-			if (!target.exists())
+			if (!target.exists()) {
 				target.mkdirs();
+			}
 			copiedFiles.add(target);
 			File[] children = source.listFiles();
-			if (children == null)
+			if (children == null) {
 				throw new IOException("Error while retrieving children of directory: " + source); //$NON-NLS-1$
+			}
 			for (File child : children) {
 				xcopy(copiedFiles, child, new File(target, child.getName()), overwrite, backupStore);
 			}
 			return;
 		}
-		if (target.exists() && !overwrite)
+		if (target.exists() && !overwrite) {
 			throw new IOException("Target: " + target + " already exists"); //$NON-NLS-1$//$NON-NLS-2$
+		}
 
-		if (!target.getParentFile().exists() && !target.getParentFile().mkdirs())
+		if (!target.getParentFile().exists() && !target.getParentFile().mkdirs()) {
 			throw new IOException("Target: Path " + target.getParent() + " could not be created"); //$NON-NLS-1$//$NON-NLS-2$
+		}
 
 		try {
 			Util.copyStream(new FileInputStream(source), true, new FileOutputStream(target), true);
