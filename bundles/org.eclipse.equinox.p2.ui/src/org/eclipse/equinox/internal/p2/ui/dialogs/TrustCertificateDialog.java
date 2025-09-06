@@ -82,7 +82,7 @@ public class TrustCertificateDialog extends SelectionDialog {
 	public TrustCertificateDialog(Shell parentShell, Object input) {
 		super(parentShell);
 
-		setShellStyle(SWT.DIALOG_TRIM | SWT.MODELESS | SWT.RESIZE | SWT.MAX | SWT.ON_TOP | getDefaultOrientation());
+		setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.APPLICATION_MODAL | getDefaultOrientation());
 
 		if (input instanceof TreeNode[]) {
 			init(null, (TreeNode[]) input);
@@ -629,17 +629,11 @@ public class TrustCertificateDialog extends SelectionDialog {
 				// risk, and where the preference is stored if they wish to change it in the
 				// future. Also ensure that the default button is no so that they must
 				// explicitly click the yes button, not just hit enter.
-				MessageDialog messageDialog = new MessageDialog(getShell(),
-						ProvUIMessages.TrustCertificateDialog_AlwaysTrustConfirmationTitle, null,
-						ProvUIMessages.TrustCertificateDialog_AlwaysTrustConfirmationMessage, MessageDialog.QUESTION,
-						new String[] { ProvUIMessages.TrustCertificateDialog_AlwaysTrustYes,
-								ProvUIMessages.TrustCertificateDialog_AlwaysTrustNo },
-						1) {
-					@Override
-					public Image getImage() {
-						return getWarningImage();
-					}
-				};
+				MessageDialog messageDialog = new QuestionDialog(getShell(),
+						ProvUIMessages.TrustCertificateDialog_AlwaysTrustConfirmationTitle,
+						ProvUIMessages.TrustCertificateDialog_AlwaysTrustConfirmationMessage,
+						ProvUIMessages.TrustCertificateDialog_AlwaysTrustYes,
+						ProvUIMessages.TrustCertificateDialog_AlwaysTrustNo);
 				int result = messageDialog.open();
 				if (result != Window.OK) {
 					// Restore the checkbox state.
@@ -732,17 +726,11 @@ public class TrustCertificateDialog extends SelectionDialog {
 		if (!revocationMap.isEmpty()) {
 			// Prompt the user to ensure they really understand that they've chosen to
 			// install content signed with a revoked PGP key.
-			MessageDialog messageDialog = new MessageDialog(getShell(),
-					ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyTitle, null,
-					ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyQuestion, MessageDialog.QUESTION,
-					new String[] { ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyAccept,
-							ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyReject },
-					1) {
-				@Override
-				public Image getImage() {
-					return getWarningImage();
-				}
-			};
+			MessageDialog messageDialog = new QuestionDialog(getShell(),
+					ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyTitle,
+					ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyQuestion,
+					ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyAccept,
+					ProvUIMessages.TrustCertificateDialogQuestionTrustRevokedKeyReject);
 			if (messageDialog.open() != Window.OK) {
 				return;
 			}
@@ -859,5 +847,17 @@ public class TrustCertificateDialog extends SelectionDialog {
 			return null;
 		}
 		return PGPPublicKeyService.toHexFingerprint(key);
+	}
+
+	static class QuestionDialog extends MessageDialog {
+
+		public QuestionDialog(Shell shell, String title, String message, String labelAccept, String labelReject) {
+			super(shell, title, null, message, MessageDialog.QUESTION, new String[] { labelAccept, labelReject }, 1);
+		}
+
+		@Override
+		public Image getImage() {
+			return getWarningImage();
+		}
 	}
 }
